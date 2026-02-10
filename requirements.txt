@@ -1,0 +1,7 @@
+# PyQt runtime
+PyQt5>=5.15.7,<6
+# Build de ejecutable (opcional)
+pyinstaller>=6.3
+# Calidad/estilo (opcionales)
+ruff>=0.4
+mypy>=1.10
