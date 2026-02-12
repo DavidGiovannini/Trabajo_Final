@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Presupuestador</h3>
+
+<form method="post" action="/presupuestador/crear_pedido">
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <input class="form-control" name="cliente" placeholder="Cliente" required>
+    </div>
+    <div class="col-md-4">
+        <input class="form-control" name="telefono" placeholder="Teléfono" required>
+    </div>
+    <div class="col-md-4">
+        <input class="form-control" name="direccion" placeholder="Dirección" required>
+    </div>
+    <div class="col-12">
+        <textarea class="form-control" name="observaciones" rows="2" placeholder="Observaciones (opcional)"></textarea>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <div class="row g-3">
+        {% for p in productos %}
+        <div class="col-md-6">
+          <div class="border rounded p-3 bg-white">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="prod_id[]" value="{{p.id}}" id="p{{p.id}}">
+              <label class="form-check-label fw-bold" for="p{{p.id}}">
+                {{p.tipo}} - {{p.material}}
+              </label>
+            </div>
+
+            <div class="mt-2 d-flex gap-2 align-items-center">
+              <label class="small text-muted">Cant.</label>
+              <input class="form-control form-control-sm" style="width:90px;"
+                     name="cant_{{p.id}}" value="1">
+
+              {% if p.por_metro %}
+                <label class="small text-muted">Metros</label>
+                <input class="form-control form-control-sm" style="width:110px;"
+                       name="metros_{{p.id}}" value="1.0">
+                <span class="small text-muted">
+                  x ${{ precios_pm.get(p.material, 0) }} / m
+                </span>
+              {% else %}
+                <span class="small text-muted">
+                  ${{"%.2f"|format(p.precio)}}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-3">
+        <button class="btn btn-success">Crear pedido</button>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

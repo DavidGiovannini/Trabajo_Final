@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Pedidos totales</div>
+        <div class="fs-3 fw-bold">{{ total_pedidos }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">En curso</div>
+        <div class="fs-3 fw-bold" style="color:#585c58;">{{ en_curso }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Finalizados</div>
+        <div class="fs-3 fw-bold" style="color:#2aa31f;">{{ finalizados }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="fw-semibold mb-2">Últimos 7 días (Total $)</div>
+        <canvas id="chartTotales" height="110"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="fw-semibold mb-2">Cantidad de pedidos (7 días)</div>
+        <canvas id="chartCant" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Grilla del Dashboard -->
+<div class="row g-3 mt-1">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="fw-semibold">Últimos pedidos</div>
+
+            <button class="btn btn-sm btn-light" id="btnExpandirTabla">
+                <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+        </div>
+        <div class="table-responsive">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <input type="text" id="filtroNombre" class="form-control" placeholder="Buscar por cliente...">
+                </div>
+                <div class="col-md-3">
+                    <select id="filtroEstado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="EN_CURSO">En curso</option>
+                        <option value="FINALIZADO">Finalizado</option>
+                    </select>
+                </div>
+            </div>
+            <table class="table" id="tablaPedidos">
+                <thead>
+                <tr>
+                    <th>#</th><th>Cliente</th><th>Teléfono</th><th>Estado</th><th>Total</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for p in ultimos %}
+                    <tr>
+                    <td>{{p.id}}</td>
+                    <td>{{p.cliente}}</td>
+                    <td>{{p.telefono}}</td>
+                    <td>
+                        {% if p.estado == "EN_CURSO" %}
+                        <span class="badge text-bg-success">En curso</span>
+                        {% else %}
+                        <span class="badge text-bg-secondary">Finalizado</span>
+                        {% endif %}
+                    </td>
+                    <td>${{"%.2f"|format(p.total)}}</td>
+                    <td>
+                        <button 
+                            class="btn btn-outline-primary btn-sm btn-ver-detalle"
+                            data-id="{{ p.id }}"
+                            data-cliente="{{ p.cliente }}"
+                            data-telefono="{{ p.telefono }}"
+                            data-direccion="{{ p.direccion }}"
+                            data-estado="{{ p.estado }}"
+                            data-total="{{ p.total }}"
+                            data-observaciones="{{ p.observaciones }}"
+                        >
+                            Ver Detalle
+                        </button>
+                    </td>                 
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tabla Expandida -->
+<div class="modal fade" id="modalTablaExpandida" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Pedidos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Filtros -->
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <input type="text" id="filtroNombreModal" class="form-control" placeholder="Buscar por cliente...">
+          </div>
+          <div class="col-md-3">
+            <select id="filtroEstadoModal" class="form-select">
+              <option value="">Todos los estados</option>
+              <option value="EN_CURSO">En curso</option>
+              <option value="FINALIZADO">Finalizado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+          <table class="table table-striped" id="tablaPedidosModal">
+            <thead>
+              <tr>
+                <th>#</th><th>Cliente</th><th>Teléfono</th><th>Estado</th><th>Total</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in ultimos %}
+              <tr>
+                <td>{{p.id}}</td>
+                <td>{{p.cliente}}</td>
+                <td>{{p.telefono}}</td>
+                <td>
+                  {% if p.estado == "EN_CURSO" %}
+                  <span class="badge text-bg-success">En curso</span>
+                  {% else %}
+                  <span class="badge text-bg-secondary">Finalizado</span>
+                  {% endif %}
+                </td>
+                <td>${{"%.2f"|format(p.total)}}</td>
+                <td>
+                  <button 
+                    class="btn btn-outline-primary btn-sm btn-ver-detalle"
+                    data-id="{{ p.id }}"
+                    data-cliente="{{ p.cliente }}"
+                    data-telefono="{{ p.telefono }}"
+                    data-direccion="{{ p.direccion }}"
+                    data-estado="{{ p.estado }}"
+                    data-total="{{ p.total }}"
+                    data-observaciones="{{ p.observaciones }}"
+                  >
+                    Ver Detalle
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle Pedido -->
+<div class="modal fade" id="modalDetalle" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Cliente:</strong> <span id="det-cliente"></span></p>
+        <p><strong>Teléfono:</strong> <span id="det-telefono"></span></p>
+        <p><strong>Dirección:</strong> <span id="det-direccion"></span></p>
+        <p><strong>Estado:</strong> <span id="det-estado"></span></p>
+        <p><strong>Total:</strong> $<span id="det-total"></span></p>
+        <p><strong>Observaciones:</strong></p>
+        <p id="det-observaciones" class="text-muted"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS Modal Detalle Pedido ------------------------------------------------------------>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const labels = {{ serie_labels|tojson }};
+  const totales = {{ serie_totales|tojson }};
+  const cant = {{ serie_cant|tojson }};
+
+  new Chart(document.getElementById('chartTotales'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Total $', data: totales }]},
+    options: { responsive:true }
+  });
+
+  new Chart(document.getElementById('chartCant'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Pedidos', data: cant }]},
+    options: { responsive:true }
+  });
+</script>
+
+<!-- JS Modal Ver Detalle -->
+<script>
+document.querySelectorAll(".btn-ver-detalle").forEach(btn => {
+  btn.addEventListener("click", function() {
+    document.getElementById("det-cliente").textContent = this.dataset.cliente;
+    document.getElementById("det-telefono").textContent = this.dataset.telefono;
+    document.getElementById("det-direccion").textContent = this.dataset.direccion;
+    document.getElementById("det-estado").textContent = this.dataset.estado;
+    document.getElementById("det-total").textContent = parseFloat(this.dataset.total).toFixed(2);
+    document.getElementById("det-observaciones").textContent = this.dataset.observaciones || "-";
+
+    const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
+    modal.show();
+  });
+});
+</script>
+
+<!-- JS Modal Detalle Pedido -->
+<script>
+const filtroNombre = document.getElementById("filtroNombre");
+const filtroEstado = document.getElementById("filtroEstado");
+const filas = document.querySelectorAll("#tablaPedidos tbody tr");
+
+function aplicarFiltros() {
+  const nombre = filtroNombre.value.toLowerCase();
+  const estado = filtroEstado.value;
+
+  filas.forEach(fila => {
+    const cliente = fila.children[1].textContent.toLowerCase();
+    const estadoFila = fila.children[2].textContent.includes("En curso") ? "EN_CURSO" : "FINALIZADO";
+
+    const coincideNombre = cliente.includes(nombre);
+    const coincideEstado = !estado || estado === estadoFila;
+
+    fila.style.display = (coincideNombre && coincideEstado) ? "" : "none";
+  });
+}
+
+filtroNombre.addEventListener("input", aplicarFiltros);
+filtroEstado.addEventListener("change", aplicarFiltros);
+</script>
+
+<script>
+document.getElementById("btnExpandirTabla").addEventListener("click", function() {
+  const modal = new bootstrap.Modal(document.getElementById("modalTablaExpandida"));
+  modal.show();
+});
+</script>
+
+<!-- Filtros dentro del Modal -->
+<script>
+function aplicarFiltroTabla(tablaId, filtroNombreId, filtroEstadoId) {
+  const filtroNombre = document.getElementById(filtroNombreId);
+  const filtroEstado = document.getElementById(filtroEstadoId);
+  const filas = document.querySelectorAll(`#${tablaId} tbody tr`);
+
+  function filtrar() {
+    const nombre = filtroNombre.value.toLowerCase();
+    const estado = filtroEstado.value;
+
+    filas.forEach(fila => {
+      const cliente = fila.children[1].textContent.toLowerCase();
+      const estadoTexto = fila.children[3].textContent.includes("En curso") ? "EN_CURSO" : "FINALIZADO";
+
+      const coincideNombre = cliente.includes(nombre);
+      const coincideEstado = !estado || estado === estadoTexto;
+
+      fila.style.display = (coincideNombre && coincideEstado) ? "" : "none";
+    });
+  }
+
+  filtroNombre.addEventListener("input", filtrar);
+  filtroEstado.addEventListener("change", filtrar);
+}
+
+aplicarFiltroTabla("tablaPedidos", "filtroNombre", "filtroEstado");
+aplicarFiltroTabla("tablaPedidosModal", "filtroNombreModal", "filtroEstadoModal");
+</script>
+
+{% endblock %}

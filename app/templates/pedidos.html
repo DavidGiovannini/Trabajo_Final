@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Pedidos</h3>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-bold">En curso</div>
+      <div class="card-body">
+        {% for p in en_curso %}
+          <div class="border rounded p-3 mb-2 bg-white">
+            <div class="fw-bold">#{{p.id}} - {{p.cliente}} ({{p.telefono}})</div>
+            <div class="text-muted">Total: ${{"%.2f"|format(p.total)}}</div>
+            <ul class="small mt-2">
+              {% for it in p.items %}
+                <li>{{it.descripcion}} → ${{"%.2f"|format(it.subtotal)}}</li>
+              {% endfor %}
+            </ul>
+            <form method="post" action="/pedidos/{{p.id}}/finalizar">
+              <button class="btn btn-outline-success btn-sm">Marcar finalizado</button>
+            </form>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-dark btn-sm" href="/pedidos/{{p.id}}/pdf">PDF</a>
+                <form method="post" action="/pedidos/{{p.id}}/finalizar">
+                    <button class="btn btn-outline-success btn-sm">Marcar finalizado</button>
+                </form>
+            </div>
+          </div>
+        {% else %}
+          <div class="text-muted">No hay pedidos en curso.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-bold">Finalizados</div>
+      <div class="card-body">
+        {% for p in final %}
+          <div class="border rounded p-3 mb-2 bg-white">
+            <div class="fw-bold">#{{p.id}} - {{p.cliente}}</div>
+            <div class="text-muted">Total: ${{"%.2f"|format(p.total)}}</div>
+          </div>
+        {% else %}
+          <div class="text-muted">No hay pedidos finalizados.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

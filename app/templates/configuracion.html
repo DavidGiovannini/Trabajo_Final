@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Configuración - Precios por metro</h3>
+
+<form method="post" action="/configuracion">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Material</th>
+            <th style="width:200px;">Precio por metro</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><input class="form-control" name="material[]" value="{{r.material}}"></td>
+            <td><input class="form-control" name="precio[]" value="{{r.precio}}"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <button class="btn btn-success">Guardar cambios</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
