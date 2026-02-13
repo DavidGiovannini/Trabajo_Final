@@ -14,7 +14,7 @@
     <div class="card border-0 shadow-sm">
       <div class="card-body">
         <div class="text-muted small">En curso</div>
-        <div class="fs-3 fw-bold" style="color:#585c58;">{{ en_curso }}</div>
+        <div class="fs-3 fw-bold" style="color:#1d2a34;">{{ en_curso }}</div>
       </div>
     </div>
   </div>
@@ -22,7 +22,7 @@
     <div class="card border-0 shadow-sm">
       <div class="card-body">
         <div class="text-muted small">Finalizados</div>
-        <div class="fs-3 fw-bold" style="color:#2aa31f;">{{ finalizados }}</div>
+        <div class="fs-3 fw-bold" style="color:#1d2a34;">{{ finalizados }}</div>
       </div>
     </div>
   </div>
@@ -54,29 +54,19 @@
     <div class="card border-0 shadow-sm">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="fw-semibold">Últimos pedidos</div>
-
-            <button class="btn btn-sm btn-light" id="btnExpandirTabla">
-                <i class="bi bi-arrows-fullscreen"></i>
-            </button>
+          <div class="fw-semibold">Últimos pedidos</div>
+          <button class="btn btn-secondary btn-sm"
+            id="btnExpandirTabla"
+            data-bs-toggle="modal"
+            data-bs-target="#modalPedidos">
+            Ver Más
+          </button>
         </div>
         <div class="table-responsive">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <input type="text" id="filtroNombre" class="form-control" placeholder="Buscar por cliente...">
-                </div>
-                <div class="col-md-3">
-                    <select id="filtroEstado" class="form-select">
-                        <option value="">Todos los estados</option>
-                        <option value="EN_CURSO">En curso</option>
-                        <option value="FINALIZADO">Finalizado</option>
-                    </select>
-                </div>
-            </div>
             <table class="table" id="tablaPedidos">
                 <thead>
                 <tr>
-                    <th>#</th><th>Cliente</th><th>Teléfono</th><th>Estado</th><th>Total</th><th></th>
+                    <th>#</th><th>Cliente</th><th>Forma Pago</th><th>Seña</th><th>Teléfono</th><th>Estado</th><th>Total</th><th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -84,12 +74,14 @@
                     <tr>
                     <td>{{p.id}}</td>
                     <td>{{p.cliente}}</td>
+                    <td>{{ p.forma_pago or "-" }}</td>
+                    <td>{{ "Sí" if p.tiene_sena else "No" }}</td>
                     <td>{{p.telefono}}</td>
                     <td>
                         {% if p.estado == "EN_CURSO" %}
-                        <span class="badge text-bg-success">En curso</span>
+                        <span class="badge text-bg-secondary">En curso</span>
                         {% else %}
-                        <span class="badge text-bg-secondary">Finalizado</span>
+                        <span class="badge text-bg-success">Finalizado</span>
                         {% endif %}
                     </td>
                     <td>${{"%.2f"|format(p.total)}}</td>
@@ -99,10 +91,14 @@
                             data-id="{{ p.id }}"
                             data-cliente="{{ p.cliente }}"
                             data-telefono="{{ p.telefono }}"
-                            data-direccion="{{ p.direccion }}"
+                            data-forma_pago="{{ p.forma_pago }}"
+                            data-sena="{{ 'Sí' if p.tiene_sena else 'No' }}"
+                            data-monto_sena="{{ p.monto_sena }}"
+                            data-email="{{ p.email or '-' }}"
+                            data-direccion="{{ p.direccion or '-' }}"
                             data-estado="{{ p.estado }}"
                             data-total="{{ p.total }}"
-                            data-observaciones="{{ p.observaciones }}"
+                            data-observaciones="{{ p.observaciones or '-' }}"
                         >
                             Ver Detalle
                         </button>
@@ -130,57 +126,68 @@
       <div class="modal-body">
 
         <!-- Filtros -->
-        <div class="row mb-3">
-          <div class="col-md-4">
-            <input type="text" id="filtroNombreModal" class="form-control" placeholder="Buscar por cliente...">
-          </div>
-          <div class="col-md-3">
-            <select id="filtroEstadoModal" class="form-select">
-              <option value="">Todos los estados</option>
-              <option value="EN_CURSO">En curso</option>
-              <option value="FINALIZADO">Finalizado</option>
-            </select>
-          </div>
+        <div class="d-flex gap-3 mb-3">
+          <input type="text"
+           id="buscarCliente"
+           class="form-control"
+           placeholder="Buscar por cliente...">
+          <select id="filtroEstado" class="form-select w-auto">
+            <option value="TODOS">Todos los estados</option>
+            <option value="EN_CURSO">En curso</option>
+            <option value="FINALIZADO">Finalizado</option>
+          </select>
         </div>
-
         <!-- Tabla -->
         <div class="table-responsive">
           <table class="table table-striped" id="tablaPedidosModal">
             <thead>
               <tr>
-                <th>#</th><th>Cliente</th><th>Teléfono</th><th>Estado</th><th>Total</th><th></th>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Forma Pago</th>
+                <th>Seña</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Total</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {% for p in ultimos %}
-              <tr>
-                <td>{{p.id}}</td>
-                <td>{{p.cliente}}</td>
-                <td>{{p.telefono}}</td>
-                <td>
-                  {% if p.estado == "EN_CURSO" %}
-                  <span class="badge text-bg-success">En curso</span>
-                  {% else %}
-                  <span class="badge text-bg-secondary">Finalizado</span>
-                  {% endif %}
-                </td>
-                <td>${{"%.2f"|format(p.total)}}</td>
-                <td>
-                  <button 
-                    class="btn btn-outline-primary btn-sm btn-ver-detalle"
-                    data-id="{{ p.id }}"
-                    data-cliente="{{ p.cliente }}"
-                    data-telefono="{{ p.telefono }}"
-                    data-direccion="{{ p.direccion }}"
-                    data-estado="{{ p.estado }}"
-                    data-total="{{ p.total }}"
-                    data-observaciones="{{ p.observaciones }}"
+            {% for pedido in pedidos_modal %}
+            <tr>
+              <td>{{ pedido.id }}</td>
+              <td>{{ pedido.cliente }}</td>
+              <td>{{ pedido.forma_pago or "-" }}</td>
+              <td>{% if pedido.monto_sena %}Sí{% else %}No{% endif %}</td>
+              <td>{{ pedido.telefono }}</td>
+              <td>
+                {% if pedido.estado == "EN_CURSO" %}
+                  <span class="badge bg-success">En curso</span>
+                {% else %}
+                  <span class="badge bg-secondary">Finalizado</span>
+                {% endif %}
+              </td>
+              <td>${{ "%.2f"|format(pedido.total) }}</td>
+              <td>
+                <button 
+                  class="btn btn-outline-primary btn-sm btn-ver-detalle"
+                  data-id="{{ pedido.id }}"
+                  data-cliente="{{ pedido.cliente }}"
+                  data-telefono="{{ pedido.telefono }}"
+                  data-forma_pago="{{ pedido.forma_pago }}"
+                  data-sena="{{ 'Sí' if pedido.tiene_sena else 'No' }}"
+                  data-monto_sena="{{ pedido.monto_sena }}"
+                  data-email="{{ pedido.email or '-' }}"
+                  data-direccion="{{ pedido.direccion or '-' }}"
+                  data-estado="{{ pedido.estado }}"
+                  data-total="{{ pedido.total }}"
+                  data-observaciones="{{ pedido.observaciones or '-' }}"
                   >
-                    Ver Detalle
-                  </button>
-                </td>
-              </tr>
-              {% endfor %}
+                  Ver Detalle
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
             </tbody>
           </table>
         </div>
@@ -190,34 +197,13 @@
   </div>
 </div>
 
-<!-- Modal Detalle Pedido -->
-<div class="modal fade" id="modalDetalle" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Detalle del Pedido</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p><strong>Cliente:</strong> <span id="det-cliente"></span></p>
-        <p><strong>Teléfono:</strong> <span id="det-telefono"></span></p>
-        <p><strong>Dirección:</strong> <span id="det-direccion"></span></p>
-        <p><strong>Estado:</strong> <span id="det-estado"></span></p>
-        <p><strong>Total:</strong> $<span id="det-total"></span></p>
-        <p><strong>Observaciones:</strong></p>
-        <p id="det-observaciones" class="text-muted"></p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- JS Modal Detalle Pedido ------------------------------------------------------------>
-
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  const labels = {{ serie_labels|tojson }};
-  const totales = {{ serie_totales|tojson }};
-  const cant = {{ serie_cant|tojson }};
+  
+  const labels = JSON.parse('{{ serie_labels|tojson|safe }}');
+  const totales = JSON.parse('{{ serie_totales|tojson|safe }}');
+  const cant = JSON.parse('{{ serie_cant|tojson|safe }}');
 
   new Chart(document.getElementById('chartTotales'), {
     type: 'line',
@@ -232,14 +218,43 @@
   });
 </script>
 
-<!-- JS Modal Ver Detalle -->
+<!-- Modal Detalle Pedido -->
+<div class="modal fade" id="modalDetalle" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Cliente:</strong> <span id="det-cliente"></span></p>
+        <p><strong>Teléfono:</strong> <span id="det-telefono"></span></p>
+        <p><strong>Forma de Pago:</strong> <span id="det-forma-pago"></span></p>
+        <p><strong>Seña:</strong> <span id="det-sena"></span></p>
+        <p><strong>Monto Seña:</strong> $<span id="det-monto-sena"></span></p>
+        <p><strong>E-Mail:</strong> <span id="det-email"></span></p>
+        <p><strong>Dirección:</strong> <span id="det-direccion"></span></p>
+        <p><strong>Estado:</strong> <span id="det-estado"></span></p>
+        <p><strong>Total:</strong> $<span id="det-total"></span></p>
+        <p><strong>Observaciones:</strong></p>
+        <p id="det-observaciones" class="text-muted"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Detalle -->
 <script>
 document.querySelectorAll(".btn-ver-detalle").forEach(btn => {
   btn.addEventListener("click", function() {
-    document.getElementById("det-cliente").textContent = this.dataset.cliente;
-    document.getElementById("det-telefono").textContent = this.dataset.telefono;
-    document.getElementById("det-direccion").textContent = this.dataset.direccion;
-    document.getElementById("det-estado").textContent = this.dataset.estado;
+    document.getElementById("det-cliente").textContent = this.dataset.cliente || "-";
+    document.getElementById("det-telefono").textContent = this.dataset.telefono || "-";
+    document.getElementById("det-forma-pago").textContent = this.dataset.forma_pago || "-";
+    document.getElementById("det-sena").textContent = this.dataset.sena || "No";
+    document.getElementById("det-monto-sena").textContent = this.dataset.monto_sena ? parseFloat(this.dataset.monto_sena).toFixed(2) : "-";
+    document.getElementById("det-email").textContent = this.dataset.email || "-";
+    document.getElementById("det-direccion").textContent = this.dataset.direccion || "-";
+    document.getElementById("det-estado").textContent = this.dataset.estado || "-";
     document.getElementById("det-total").textContent = parseFloat(this.dataset.total).toFixed(2);
     document.getElementById("det-observaciones").textContent = this.dataset.observaciones || "-";
 
@@ -249,31 +264,7 @@ document.querySelectorAll(".btn-ver-detalle").forEach(btn => {
 });
 </script>
 
-<!-- JS Modal Detalle Pedido -->
-<script>
-const filtroNombre = document.getElementById("filtroNombre");
-const filtroEstado = document.getElementById("filtroEstado");
-const filas = document.querySelectorAll("#tablaPedidos tbody tr");
-
-function aplicarFiltros() {
-  const nombre = filtroNombre.value.toLowerCase();
-  const estado = filtroEstado.value;
-
-  filas.forEach(fila => {
-    const cliente = fila.children[1].textContent.toLowerCase();
-    const estadoFila = fila.children[2].textContent.includes("En curso") ? "EN_CURSO" : "FINALIZADO";
-
-    const coincideNombre = cliente.includes(nombre);
-    const coincideEstado = !estado || estado === estadoFila;
-
-    fila.style.display = (coincideNombre && coincideEstado) ? "" : "none";
-  });
-}
-
-filtroNombre.addEventListener("input", aplicarFiltros);
-filtroEstado.addEventListener("change", aplicarFiltros);
-</script>
-
+<!-- Botón Expandir -->
 <script>
 document.getElementById("btnExpandirTabla").addEventListener("click", function() {
   const modal = new bootstrap.Modal(document.getElementById("modalTablaExpandida"));
@@ -281,34 +272,89 @@ document.getElementById("btnExpandirTabla").addEventListener("click", function()
 });
 </script>
 
-<!-- Filtros dentro del Modal -->
+<!-- Script Filtros Modal Pedidos -->
 <script>
-function aplicarFiltroTabla(tablaId, filtroNombreId, filtroEstadoId) {
-  const filtroNombre = document.getElementById(filtroNombreId);
-  const filtroEstado = document.getElementById(filtroEstadoId);
-  const filas = document.querySelectorAll(`#${tablaId} tbody tr`);
+const buscarInput = document.getElementById("buscarCliente");
+const estadoSelect = document.getElementById("filtroEstado");
+const tablaBody = document.querySelector("#modalTablaExpandida tbody");
 
-  function filtrar() {
-    const nombre = filtroNombre.value.toLowerCase();
-    const estado = filtroEstado.value;
+tablaBody.addEventListener("click", function(e) {
 
-    filas.forEach(fila => {
-      const cliente = fila.children[1].textContent.toLowerCase();
-      const estadoTexto = fila.children[3].textContent.includes("En curso") ? "EN_CURSO" : "FINALIZADO";
+    const btn = e.target.closest(".btn-ver-detalle");
+    if (!btn) return;
 
-      const coincideNombre = cliente.includes(nombre);
-      const coincideEstado = !estado || estado === estadoTexto;
+    document.getElementById("det-cliente").textContent = btn.dataset.cliente || "-";
+    document.getElementById("det-telefono").textContent = btn.dataset.telefono || "-";
+    document.getElementById("det-forma-pago").textContent = btn.dataset.forma_pago || "-";
+    document.getElementById("det-sena").textContent = btn.dataset.sena || "No";
+    document.getElementById("det-monto-sena").textContent =
+        btn.dataset.monto_sena ? parseFloat(btn.dataset.monto_sena).toFixed(2) : "-";
+    document.getElementById("det-email").textContent = btn.dataset.email || "-";
+    document.getElementById("det-direccion").textContent = btn.dataset.direccion || "-";
+    document.getElementById("det-estado").textContent = btn.dataset.estado || "-";
+    document.getElementById("det-total").textContent =
+        btn.dataset.total ? parseFloat(btn.dataset.total).toFixed(2) : "0.00";
+    document.getElementById("det-observaciones").textContent =
+        btn.dataset.observaciones || "-";
 
-      fila.style.display = (coincideNombre && coincideEstado) ? "" : "none";
+    const modal = new bootstrap.Modal(document.getElementById("modalDetalle"));
+    modal.show();
+});
+
+async function cargarPedidos() {
+
+    const estado = estadoSelect.value;
+    const cliente = buscarInput.value;
+
+    const response = await fetch(`/api/pedidos?estado=${estado}&cliente=${cliente}`);
+    const data = await response.json();
+
+    tablaBody.innerHTML = "";
+
+    data.pedidos.forEach(p => {
+
+        const badge = p.estado === "EN_CURSO"
+            ? `<span class="badge text-bg-secondary">En curso</span>`
+            : `<span class="badge text-bg-success">Finalizado</span>`;
+
+        tablaBody.innerHTML += `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.cliente}</td>
+                <td>${p.forma_pago}</td>
+                <td>${p.sena}</td>
+                <td>${p.telefono}</td>
+                <td>${badge}</td>
+                <td>$${p.total.toFixed(2)}</td>
+                <td>
+                    <button 
+                        class="btn btn-outline-primary btn-sm btn-ver-detalle"
+                        data-id="${p.id}"
+                        data-cliente="${p.cliente}"
+                        data-telefono="${p.telefono}"
+                        data-forma_pago="${p.forma_pago}"
+                        data-sena="${p.sena}"
+                        data-estado="${p.estado}"
+                        data-total="${p.total}"
+                    >
+                        Ver Detalle
+                    </button>
+                </td>
+            </tr>
+        `;
     });
-  }
-
-  filtroNombre.addEventListener("input", filtrar);
-  filtroEstado.addEventListener("change", filtrar);
 }
 
-aplicarFiltroTabla("tablaPedidos", "filtroNombre", "filtroEstado");
-aplicarFiltroTabla("tablaPedidosModal", "filtroNombreModal", "filtroEstadoModal");
-</script>
+// Eventos
+estadoSelect.addEventListener("change", cargarPedidos);
 
+buscarInput.addEventListener("input", function() {
+    clearTimeout(this.delay);
+    this.delay = setTimeout(cargarPedidos, 300);
+});
+
+// Cargar cuando abre el modal
+document.getElementById("modalTablaExpandida")
+    .addEventListener("shown.bs.modal", cargarPedidos);
+</script>
 {% endblock %}

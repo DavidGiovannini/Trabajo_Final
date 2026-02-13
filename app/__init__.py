@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from pathlib import Path
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -18,6 +19,7 @@ def create_app():
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
     db.init_app(app)
+    migrate = Migrate(app, db)
     login_manager.init_app(app)
 
     from .models import User, Producto, PrecioPorMetro, Pedido, PedidoItem

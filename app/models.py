@@ -42,6 +42,10 @@ class Pedido(db.Model):
     total = db.Column(db.Float, nullable=False)
     estado = db.Column(db.String(20), default="EN_CURSO")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # EN_CURSO / FINALIZADO
+    email = db.Column(db.String(120))
+    forma_pago = db.Column(db.String(50))
+    tiene_sena = db.Column(db.Boolean, default=False)
+    monto_sena = db.Column(db.Float)
 
 class PedidoItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)

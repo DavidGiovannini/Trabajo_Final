@@ -97,8 +97,15 @@ def register_routes(app):
     def crear_pedido():
         cliente = request.form.get("cliente", "").strip()
         telefono = request.form.get("telefono", "").strip()
+        email = request.form.get("email", "").strip()
         direccion = request.form.get("direccion", "").strip()
+        forma_pago = request.form.get("forma_pago")
+        monto_sena = request.form.get("monto_sena")
         observaciones = request.form.get("observaciones", "").strip() or None
+
+        tiene_sena = True if monto_sena else False
+        monto_sena = float(monto_sena) if monto_sena else None
+
         if not cliente or not telefono:
             flash("Completá Cliente y Teléfono.", "warning")
             return redirect(url_for("presupuestador"))
@@ -115,7 +122,7 @@ def register_routes(app):
 
         precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
 
-        pedido = Pedido(cliente=cliente, telefono=telefono, direccion=direccion, observaciones=observaciones, total=0.0, estado="EN_CURSO")
+        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago=forma_pago, tiene_sena=tiene_sena, monto_sena=monto_sena, estado="EN_CURSO")
         db.session.add(pedido)
         db.session.flush()  # para obtener pedido.id
 
@@ -197,8 +204,38 @@ def register_routes(app):
             serie_labels=serie_labels,
             serie_totales=serie_totales,
             serie_cant=serie_cant,
-            ultimos=ultimos
+            ultimos=ultimos,
         )
+    
+    @app.get("/api/pedidos")
+    @login_required
+    def api_pedidos():
+        estado = request.args.get("estado")
+        cliente = request.args.get("cliente")
+
+        query = Pedido.query
+
+        if estado and estado != "TODOS":
+            query = query.filter_by(estado=estado)
+
+        if cliente:
+            query = query.filter(Pedido.cliente.ilike(f"%{cliente}%"))
+
+        pedidos = query.order_by(Pedido.id.desc()).all()
+
+        data = []
+        for p in pedidos:
+            data.append({
+                "id": p.id,
+                "cliente": p.cliente,
+                "forma_pago": p.forma_pago or "-",
+                "sena": "Sí" if p.monto_sena else "No",
+                "telefono": p.telefono,
+                "estado": p.estado,
+                "total": float(p.total)
+            })
+
+        return {"pedidos": data}
     
     @app.get("/pedidos/<int:pid>/pdf")
     @login_required
