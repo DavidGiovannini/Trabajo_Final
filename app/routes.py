@@ -122,7 +122,7 @@ def register_routes(app):
 
         precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
 
-        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago=forma_pago, tiene_sena=tiene_sena, monto_sena=monto_sena, estado="EN_CURSO")
+        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago=forma_pago, tiene_sena=tiene_sena, monto_sena=monto_sena)
         db.session.add(pedido)
         db.session.flush()  # para obtener pedido.id
 
@@ -157,9 +157,10 @@ def register_routes(app):
     @app.get("/pedidos")
     @login_required
     def pedidos():
+        pendiente = Pedido.query.filter_by(estado="PENDIENTE").order_by(Pedido.id.desc()).all()
         en_curso = Pedido.query.filter_by(estado="EN_CURSO").order_by(Pedido.id.desc()).all()
         final = Pedido.query.filter_by(estado="FINALIZADO").order_by(Pedido.id.desc()).all()
-        return render_template("pedidos.html", en_curso=en_curso, final=final)
+        return render_template("pedidos.html", pendiente=pendiente, en_curso=en_curso, final=final)
 
     @app.post("/pedidos/<int:pid>/finalizar")
     @login_required
@@ -174,6 +175,7 @@ def register_routes(app):
     @login_required
     def dashboard():
         total_pedidos = Pedido.query.count()
+        pendientes = Pedido.query.filter_by(estado="PENDIENTE").count()
         en_curso = Pedido.query.filter_by(estado="EN_CURSO").count()
         finalizados = Pedido.query.filter_by(estado="FINALIZADO").count()
 
@@ -199,6 +201,7 @@ def register_routes(app):
         return render_template(
             "dashboard.html",
             total_pedidos=total_pedidos,
+            pendientes=pendientes,
             en_curso=en_curso,
             finalizados=finalizados,
             serie_labels=serie_labels,

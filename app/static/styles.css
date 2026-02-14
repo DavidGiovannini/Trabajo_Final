@@ -1,0 +1,25 @@
+/* KPI base */
+.kpi-card {
+    border-radius: 10px;
+    min-height: 110px;
+}
+/* Sobrescribimos variable interna de Bootstrap */
+.kpi-azul {
+    --bs-card-bg: #0b2a4a;
+    color: white !important;
+}
+
+.kpi-naranja {
+    --bs-card-bg: #c46200;
+    color: white !important;
+}
+
+.kpi-gris {
+    --bs-card-bg: #4a4a4a;
+    color: white !important;
+}
+
+.kpi-blanco {
+    --bs-card-bg: #ffffff;
+    color: black !important;
+}

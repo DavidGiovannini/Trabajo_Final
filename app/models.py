@@ -40,7 +40,7 @@ class Pedido(db.Model):
     direccion = db.Column(db.String(200))
     observaciones = db.Column(db.Text)
     total = db.Column(db.Float, nullable=False)
-    estado = db.Column(db.String(20), default="EN_CURSO")
+    estado = db.Column(db.String(20), default="PENDIENTE")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # EN_CURSO / FINALIZADO
     email = db.Column(db.String(120))
     forma_pago = db.Column(db.String(50))

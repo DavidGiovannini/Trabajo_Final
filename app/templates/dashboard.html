@@ -2,30 +2,43 @@
 {% block content %}
 
 <div class="row g-3 mb-3">
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm">
+
+  <div class="col-lg-3 col-md-6 col-6">
+    <div class="card shadow-sm kpi-card kpi-blanco">
       <div class="card-body">
-        <div class="text-muted small">Pedidos totales</div>
+        <div class="small">Pedidos totale</div>
         <div class="fs-3 fw-bold">{{ total_pedidos }}</div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm">
+
+  <div class="col-lg-3 col-md-6 col-6">
+    <div class="card shadow-sm kpi-card kpi-gris">
       <div class="card-body">
-        <div class="text-muted small">En curso</div>
-        <div class="fs-3 fw-bold" style="color:#1d2a34;">{{ en_curso }}</div>
+        <div class="small">Pendientes</div>
+        <div class="fs-3 fw-bold">{{ pendientes }}</div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm">
+
+  <div class="col-lg-3 col-md-6 col-6">
+    <div class="card shadow-sm kpi-card kpi-naranja">
       <div class="card-body">
-        <div class="text-muted small">Finalizados</div>
-        <div class="fs-3 fw-bold" style="color:#1d2a34;">{{ finalizados }}</div>
+        <div class="small">En curso</div>
+        <div class="fs-3 fw-bold">{{ en_curso }}</div>
       </div>
     </div>
   </div>
+
+  <div class="col-lg-3 col-md-6 col-6">
+    <div class="card shadow-sm kpi-card kpi-azul">
+      <div class="card-body">
+        <div class="small">Finalizados</div>
+        <div class="fs-3 fw-bold">{{ finalizados }}</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="row g-3">
@@ -78,10 +91,12 @@
                     <td>{{ "Sí" if p.tiene_sena else "No" }}</td>
                     <td>{{p.telefono}}</td>
                     <td>
-                        {% if p.estado == "EN_CURSO" %}
-                        <span class="badge text-bg-secondary">En curso</span>
-                        {% else %}
-                        <span class="badge text-bg-success">Finalizado</span>
+                        {% if p.estado == "PENDIENTE" %}
+                          <span class="badge bg-warning text-dark">Pendiente</span>
+                        {% elif p.estado == "EN_CURSO" %}
+                          <span class="badge bg-secondary">En Curso</span>
+                        {% elif p.estado == "FINALIZADO" %}
+                          <span class="badge bg-success">Finalizado</span>
                         {% endif %}
                     </td>
                     <td>${{"%.2f"|format(p.total)}}</td>
@@ -133,6 +148,7 @@
            placeholder="Buscar por cliente...">
           <select id="filtroEstado" class="form-select w-auto">
             <option value="TODOS">Todos los estados</option>
+            <option value="PENDIENTE">Pendiente</option>
             <option value="EN_CURSO">En curso</option>
             <option value="FINALIZADO">Finalizado</option>
           </select>
@@ -161,10 +177,12 @@
               <td>{% if pedido.monto_sena %}Sí{% else %}No{% endif %}</td>
               <td>{{ pedido.telefono }}</td>
               <td>
-                {% if pedido.estado == "EN_CURSO" %}
-                  <span class="badge bg-success">En curso</span>
-                {% else %}
-                  <span class="badge bg-secondary">Finalizado</span>
+                {% if pedido.estado == "PENDIENTE" %}
+                  <span class="badge bg-warning text-dark">Pendiente</span>
+                {% elif pedido.estado == "EN_CURSO" %}
+                  <span class="badge bg-secondary">En Curso</span>
+                {% elif pedido.estado == "FINALIZADO" %}
+                  <span class="badge bg-success">Finalizado</span>
                 {% endif %}
               </td>
               <td>${{ "%.2f"|format(pedido.total) }}</td>
@@ -313,9 +331,15 @@ async function cargarPedidos() {
 
     data.pedidos.forEach(p => {
 
-        const badge = p.estado === "EN_CURSO"
-            ? `<span class="badge text-bg-secondary">En curso</span>`
-            : `<span class="badge text-bg-success">Finalizado</span>`;
+        let badge = "";
+
+        if (p.estado === "PENDIENTE") {
+            badge = `<span class="badge text-bg-warning text-dark">Pendiente</span>`;
+        } else if (p.estado === "EN_CURSO") {
+            badge = `<span class="badge text-bg-secondary">En curso</span>`;
+        } else if (p.estado === "FINALIZADO") {
+            badge = `<span class="badge text-bg-success">Finalizado</span>`;
+        }
 
         tablaBody.innerHTML += `
             <tr>
