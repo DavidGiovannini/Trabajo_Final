@@ -35,23 +35,45 @@ class PrecioPorMetro(db.Model):
 
 class Pedido(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     cliente = db.Column(db.String(150), nullable=False)
     telefono = db.Column(db.String(50))
     direccion = db.Column(db.String(200))
     observaciones = db.Column(db.Text)
     total = db.Column(db.Float, nullable=False)
+
     estado = db.Column(db.String(20), default="PENDIENTE")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # EN_CURSO / FINALIZADO
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_estimada = db.Column(db.Date, nullable=True)
+
     email = db.Column(db.String(120))
     forma_pago = db.Column(db.String(50))
     tiene_sena = db.Column(db.Boolean, default=False)
     monto_sena = db.Column(db.Float)
 
+    activo = db.Column(db.Boolean, nullable=False, default=True)
+
+    items = db.relationship(
+        "PedidoItem",
+        back_populates="pedido",
+        cascade="all, delete-orphan"
+    )
+
 class PedidoItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    pedido_id = db.Column(db.Integer, db.ForeignKey("pedido.id"), nullable=False)
+
+    pedido_id = db.Column(
+        db.Integer,
+        db.ForeignKey("pedido.id"),
+        nullable=False
+    )
+
     descripcion = db.Column(db.String(255), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False, default=1)
     metros = db.Column(db.Float, nullable=True)
     subtotal = db.Column(db.Float, nullable=False, default=0.0)
-    pedido = db.relationship("Pedido", backref=db.backref("items", lazy=True))
+
+    pedido = db.relationship(
+        "Pedido",
+        back_populates="items"
+    )

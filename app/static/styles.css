@@ -2,8 +2,23 @@
 .kpi-card {
     border-radius: 10px;
     min-height: 110px;
+    transition: all 0.25s ease;
+    cursor: pointer;
 }
-/* Sobrescribimos variable interna de Bootstrap */
+
+.kpi-card h2 {
+    transition: transform 0.25s ease;
+}
+
+.kpi-card:hover h2 {
+    transform: scale(1.05);
+}
+
+.kpi-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+
 .kpi-azul {
     --bs-card-bg: #0b2a4a;
     color: white !important;
@@ -22,4 +37,58 @@
 .kpi-blanco {
     --bs-card-bg: #ffffff;
     color: black !important;
+}
+
+.card canvas {
+    height: 380px !important;
+}
+
+.dashboard-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
+.kanban-column {
+    min-height: 250px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    position: relative; 
+}
+
+.pedido-card.dragging {
+    opacity: 0.5;
+    pointer-events: none; 
+}
+
+.kanban-column.drag-over {
+    background-color: #e9ecef;
+}
+
+.pedido-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    cursor: grab;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pedido-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.pedido-card.snap {
+    animation: snapEffect 0.3s ease;
+}
+
+@keyframes snapEffect {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }

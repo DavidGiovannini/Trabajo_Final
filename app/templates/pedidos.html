@@ -2,51 +2,204 @@
 {% block content %}
 <h3 class="mb-3">Pedidos</h3>
 
-<div class="row g-3">
-  <div class="col-md-6">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-bold">En curso</div>
-      <div class="card-body">
-        {% for p in en_curso %}
-          <div class="border rounded p-3 mb-2 bg-white">
-            <div class="fw-bold">#{{p.id}} - {{p.cliente}} ({{p.telefono}})</div>
-            <div class="text-muted">Total: ${{"%.2f"|format(p.total)}}</div>
-            <ul class="small mt-2">
-              {% for it in p.items %}
-                <li>{{it.descripcion}} → ${{"%.2f"|format(it.subtotal)}}</li>
-              {% endfor %}
-            </ul>
-            <form method="post" action="/pedidos/{{p.id}}/finalizar">
-              <button class="btn btn-outline-success btn-sm">Marcar finalizado</button>
-            </form>
-            <div class="d-flex gap-2">
-                <a class="btn btn-outline-dark btn-sm" href="/pedidos/{{p.id}}/pdf">PDF</a>
-                <form method="post" action="/pedidos/{{p.id}}/finalizar">
-                    <button class="btn btn-outline-success btn-sm">Marcar finalizado</button>
-                </form>
-            </div>
-          </div>
-        {% else %}
-          <div class="text-muted">No hay pedidos en curso.</div>
-        {% endfor %}
+<div class="row g-4">
+  <!-- PENDIENTES -->
+  <div class="col-md-4">
+    <h5>Pendientes</h5>
+    <div class="kanban-column" id="PENDIENTE">
+      {% for p in pedidos_pendientes %}
+      <div class="pedido-card" draggable="true" data-id="{{ p.id }}">
+        <strong>{{ p.cliente }}</strong><br>
+        📞 {{ p.telefono }}<br>
+        💲 {{ p.total }}
+
+        {% if p.fecha_estimada %}
+        <br>📅 {{ p.fecha_estimada.strftime("%d/%m/%Y") }}
+        {% endif %}
+
+        <div class="mt-2 d-flex justify-content-between">
+          <a href="{{ url_for('pedido_pdf', pid=p.id) }}"
+             class="btn btn-sm btn-danger">
+             PDF
+          </a>
+
+          <button class="btn btn-sm btn-outline-secondary btn-delete"
+                  data-id="{{ p.id }}">
+            🗑
+          </button>
+        </div>
       </div>
+      {% endfor %}
     </div>
   </div>
 
-  <div class="col-md-6">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-bold">Finalizados</div>
-      <div class="card-body">
-        {% for p in final %}
-          <div class="border rounded p-3 mb-2 bg-white">
-            <div class="fw-bold">#{{p.id}} - {{p.cliente}}</div>
-            <div class="text-muted">Total: ${{"%.2f"|format(p.total)}}</div>
-          </div>
-        {% else %}
-          <div class="text-muted">No hay pedidos finalizados.</div>
-        {% endfor %}
+  <!-- EN CURSO -->
+  <div class="col-md-4">
+    <h5>En Curso</h5>
+    <div class="kanban-column" id="EN_CURSO">
+      {% for p in pedidos_en_curso %}
+      <div class="pedido-card" draggable="true" data-id="{{ p.id }}">
+        <strong>{{ p.cliente }}</strong><br>
+        📞 {{ p.telefono }}<br>
+        💲 {{ p.total }}
+
+        {% if p.fecha_estimada %}
+        <br>📅 {{ p.fecha_estimada.strftime("%d/%m/%Y") }}
+        {% endif %}
+
+        <div class="mt-2 d-flex justify-content-between">
+          <a href="{{ url_for('pedido_pdf', pid=p.id) }}"
+             class="btn btn-sm btn-danger">
+             PDF
+          </a>
+
+          <button class="btn btn-sm btn-outline-secondary btn-delete"
+                  data-id="{{ p.id }}">
+            🗑
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- FINALIZADOS -->
+  <div class="col-md-4">
+    <h5>Finalizados</h5>
+    <div class="kanban-column" id="FINALIZADO">
+      {% for p in pedidos_finalizados %}
+      <div class="pedido-card" draggable="true" data-id="{{ p.id }}">
+        <strong>{{ p.cliente }}</strong><br>
+        📞 {{ p.telefono }}<br>
+        💲 {{ p.total }}
+
+        {% if p.fecha_estimada %}
+        <br>📅 {{ p.fecha_estimada.strftime("%d/%m/%Y") }}
+        {% endif %}
+
+        <div class="mt-2 d-flex justify-content-between">
+          <a href="{{ url_for('pedido_pdf', pid=p.id) }}"
+             class="btn btn-sm btn-danger">
+             PDF
+          </a>
+
+          <button class="btn btn-sm btn-outline-secondary btn-delete"
+                  data-id="{{ p.id }}">
+            🗑
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal Fecha Estimada -->
+<div class="modal fade" id="modalFecha" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Fecha de finalización esperada</h5>
+      </div>
+      <div class="modal-body">
+        <input type="date" id="fechaInput" class="form-control">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="guardarFecha">Guardar</button>
       </div>
     </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+<!-- Script Efecto Drag e Drop -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const columns = document.querySelectorAll(".kanban-column");
+
+    columns.forEach(column => {
+        new Sortable(column, {
+            group: "pedidos",
+            animation: 150,
+            ghostClass: "drag-over",
+
+            onEnd: function (evt) {
+
+                const card = evt.item;
+                const newEstado = evt.to.id;
+                const pedidoId = card.dataset.id;
+
+                let fecha = null;
+
+                if (newEstado === "EN_CURSO") {
+                    fecha = prompt("Ingresá fecha estimada (YYYY-MM-DD):");
+                    if (!fecha) {
+                        evt.from.appendChild(card);
+                        return;
+                    }
+                }
+
+                fetch(`/pedidos/mover/${pedidoId}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        estado: newEstado,
+                        fecha_estimada: fecha
+                    })
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        evt.from.appendChild(card);
+                        alert("Error al mover el pedido");
+                    }
+                })
+                .catch(() => {
+                    evt.from.appendChild(card);
+                    alert("Error al mover el pedido");
+                });
+            }
+        });
+    });
+
+});
+</script>
+
+<!-- Botón Eliminar -->
+<script>
+document.querySelectorAll(".btn-delete").forEach(btn => {
+    btn.addEventListener("click", function () {
+
+        const card = this.closest(".pedido-card");
+
+        if (confirm("¿Seguro que querés eliminar este pedido?")) {
+
+            fetch(`/pedidos/eliminar/${this.dataset.id}`, {
+                method: "POST"
+            })
+            .then(res => {
+                if (res.ok) {
+
+                    card.style.transition = "all 0.35s cubic-bezier(.4,2,.6,1)";
+                    card.style.opacity = "0";
+                    card.style.transform = "scale(0.85) translateY(-10px)";
+                    card.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+
+                    setTimeout(() => {
+                        card.remove();
+                    }, 350);
+
+                } else {
+                    alert("Error al eliminar");
+                }
+            })
+            .catch(() => {
+                alert("Error al eliminar");
+            });
+        }
+    });
+});
+</script>
 {% endblock %}

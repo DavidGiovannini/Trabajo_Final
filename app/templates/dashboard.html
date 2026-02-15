@@ -6,7 +6,7 @@
   <div class="col-lg-3 col-md-6 col-6">
     <div class="card shadow-sm kpi-card kpi-blanco">
       <div class="card-body">
-        <div class="small">Pedidos totale</div>
+        <div class="small">Pedidos totales</div>
         <div class="fs-3 fw-bold">{{ total_pedidos }}</div>
       </div>
     </div>
@@ -41,21 +41,31 @@
 
 </div>
 
-<div class="row g-3">
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
+<div class="row g-3 mb-4">
+  <!-- Dona -->
+  <div class="col-lg-4 col-md-12">
+    <div class="card dashboard-card">
       <div class="card-body">
-        <div class="fw-semibold mb-2">Últimos 7 días (Total $)</div>
-        <canvas id="chartTotales" height="110"></canvas>
+        <h6 class="mb-3">Distribución por Estado ($)</h6>
+        <canvas id="graficoDona"></canvas>
       </div>
     </div>
   </div>
-
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
+  <!-- Línea -->
+  <div class="col-lg-4 col-md-12">
+    <div class="card dashboard-card">
       <div class="card-body">
-        <div class="fw-semibold mb-2">Cantidad de pedidos (7 días)</div>
-        <canvas id="chartCant" height="180"></canvas>
+        <h6 class="mb-3">Ventas últimos 7 días</h6>
+        <canvas id="graficoLinea"></canvas>
+      </div>
+    </div>
+  </div>
+  <!-- Barras -->
+  <div class="col-lg-4 col-md-12">
+    <div class="card dashboard-card">
+      <div class="card-body">
+        <h6 class="mb-3">Productos más vendidos</h6>
+        <canvas id="graficoBarras"></canvas>
       </div>
     </div>
   </div>
@@ -216,24 +226,130 @@
 </div>
 
 <!-- JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  
-  const labels = JSON.parse('{{ serie_labels|tojson|safe }}');
-  const totales = JSON.parse('{{ serie_totales|tojson|safe }}');
-  const cant = JSON.parse('{{ serie_cant|tojson|safe }}');
+// ====== DONA ======
+const totalGeneral = {{ total_pendiente }} + {{ total_en_curso }} + {{ total_finalizado }};
 
-  new Chart(document.getElementById('chartTotales'), {
-    type: 'line',
-    data: { labels, datasets: [{ label: 'Total $', data: totales }]},
-    options: { responsive:true }
-  });
+new Chart(document.getElementById("graficoDona"), {
+  type: "doughnut",
+  data: {
+    labels: ["Pendientes", "En curso", "Finalizados"],
+    datasets: [{
+      data: [
+        {{ total_pendiente }},
+        {{ total_en_curso }},
+        {{ total_finalizado }}
+      ],
+      backgroundColor: [
+        "#4a4a4a",   
+        "#c46200",   
+        "#0b2a4a"    
+      ],
+      borderWidth: 2
+    }]
+  },
+  options: {
+    cutout: "65%",
+    plugins: {
+      legend: { position: "bottom" },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const value = context.raw;
+            const percentage = ((value / totalGeneral) * 100).toFixed(1);
+            return context.label + ": $" + value.toLocaleString() + 
+                    " (" + percentage + "%)";
+          }
+        }
+      }
+    },
+    animation: {
+    animateRotate: true,
+    animateScale: true,
+    duration: 1200,
+    easing: 'easeOutQuart'
+    },
+    responsive: true,
+    maintainAspectRatio: false
+  },
+  plugins: [{
+    id: "centerText",
+    beforeDraw(chart) {
+      const { ctx, chartArea } = chart;
 
-  new Chart(document.getElementById('chartCant'), {
-    type: 'bar',
-    data: { labels, datasets: [{ label: 'Pedidos', data: cant }]},
-    options: { responsive:true }
-  });
+      const centerX = (chartArea.left + chartArea.right) / 2;
+      const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+      ctx.save();
+      ctx.font = "bold 22px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#333";
+
+      ctx.fillText(
+        "$" + totalGeneral.toLocaleString(),
+        centerX,
+        centerY
+      );
+      ctx.restore();
+    }
+  }]
+});
+document.getElementById("graficoDona").onclick = function(evt) {
+    const points = graficoDona.getElementsAtEventForMode(
+        evt, 
+        'nearest', 
+        { intersect: true }, 
+        true
+    );
+
+    if (points.length) {
+        const index = points[0].index;
+        const estado = ["PENDIENTE", "EN_CURSO", "FINALIZADO"][index];
+
+        window.location.href = "/pedidos?estado=" + estado;
+    }
+};
+// ====== LÍNEA ======
+new Chart(document.getElementById("graficoLinea"), {
+  type: "line",
+  data: {
+    labels: {{ serie_labels | tojson }},
+    datasets: [{
+      label: "Total $",
+      data: {{ serie_totales | tojson }},
+      borderColor: "#0b2a4a",
+      backgroundColor: "rgba(11,42,74,0.1)",
+      tension: 0.3,
+      fill: true
+    }]
+},
+  options: {
+    responsive: true,
+    maintainAspectRatio: false
+  }
+});
+// ====== BARRAS ======
+new Chart(document.getElementById("graficoBarras"), {
+  type: "bar",
+  data: {
+    labels: {{ productos_labels | tojson }},
+    datasets: [{
+      label: "Cantidad",
+      data: {{ productos_cantidades | tojson }},
+      backgroundColor: "#c46200"
+    }]
+  },
+  options: {
+    indexAxis: "y",  
+    plugins: {
+      legend: { display: false }
+    },
+    responsive: true,
+    maintainAspectRatio: false
+  }
+});
 </script>
 
 <!-- Modal Detalle Pedido -->

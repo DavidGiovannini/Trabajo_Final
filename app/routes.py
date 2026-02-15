@@ -154,13 +154,22 @@ def register_routes(app):
         return redirect(url_for("pedidos"))
 
     # ---------- PEDIDOS ----------
+    def pedidos_por_estado(estado):
+        return Pedido.query.filter_by(
+            estado=estado,
+            activo=True
+        ).order_by(Pedido.id.desc()).all()
+
+
     @app.get("/pedidos")
     @login_required
     def pedidos():
-        pendiente = Pedido.query.filter_by(estado="PENDIENTE").order_by(Pedido.id.desc()).all()
-        en_curso = Pedido.query.filter_by(estado="EN_CURSO").order_by(Pedido.id.desc()).all()
-        final = Pedido.query.filter_by(estado="FINALIZADO").order_by(Pedido.id.desc()).all()
-        return render_template("pedidos.html", pendiente=pendiente, en_curso=en_curso, final=final)
+        return render_template(
+            "pedidos.html",
+            pedidos_pendientes=pedidos_por_estado("PENDIENTE"),
+            pedidos_en_curso=pedidos_por_estado("EN_CURSO"),
+            pedidos_finalizados=pedidos_por_estado("FINALIZADO"),
+        )
 
     @app.post("/pedidos/<int:pid>/finalizar")
     @login_required
@@ -179,6 +188,19 @@ def register_routes(app):
         en_curso = Pedido.query.filter_by(estado="EN_CURSO").count()
         finalizados = Pedido.query.filter_by(estado="FINALIZADO").count()
 
+        # ===== Totales por estado ($) =====
+        total_pendiente = db.session.query(
+            func.coalesce(func.sum(Pedido.total), 0.0)
+        ).filter_by(estado="PENDIENTE").scalar()
+
+        total_en_curso = db.session.query(
+            func.coalesce(func.sum(Pedido.total), 0.0)
+        ).filter_by(estado="EN_CURSO").scalar()
+
+        total_finalizado = db.session.query(
+            func.coalesce(func.sum(Pedido.total), 0.0)
+        ).filter_by(estado="FINALIZADO").scalar()
+
         # Ventas / totales últimos 7 días (por fecha de creación)
         hoy = datetime.utcnow().date()
         dias = [hoy - timedelta(days=i) for i in range(6, -1, -1)]
@@ -196,6 +218,21 @@ def register_routes(app):
             serie_totales.append(float(total_dia))
             serie_cant.append(int(cant_dia))
 
+        # ===== Productos más vendidos =====
+        productos_data = (
+            db.session.query(
+                PedidoItem.descripcion,
+                func.sum(PedidoItem.cantidad)
+            )
+            .group_by(PedidoItem.descripcion)
+            .order_by(func.sum(PedidoItem.cantidad).desc())
+            .limit(5)
+            .all()
+        )
+
+        productos_labels = [p[0] for p in productos_data]
+        productos_cantidades = [int(p[1]) for p in productos_data]
+
         ultimos = Pedido.query.order_by(Pedido.id.desc()).limit(5).all()
 
         return render_template(
@@ -204,9 +241,13 @@ def register_routes(app):
             pendientes=pendientes,
             en_curso=en_curso,
             finalizados=finalizados,
+            total_pendiente=total_pendiente,
+            total_en_curso=total_en_curso,
+            total_finalizado=total_finalizado,
             serie_labels=serie_labels,
             serie_totales=serie_totales,
-            serie_cant=serie_cant,
+            productos_labels=productos_labels,
+            productos_cantidades=productos_cantidades,
             ultimos=ultimos,
         )
     
@@ -305,3 +346,45 @@ def register_routes(app):
             download_name=f"pedido_{p.id}.pdf",
             mimetype="application/pdf"
         )
+    
+    @app.post("/pedidos/mover/<int:id>")
+    @login_required
+    def mover_pedido(id):
+        data = request.get_json()
+        pedido = Pedido.query.get_or_404(id)
+
+        nuevo_estado = data.get("estado", "").upper()
+
+        if nuevo_estado not in ["PENDIENTE", "EN_CURSO", "FINALIZADO"]:
+            return "Estado inválido", 400
+
+        pedido.estado = nuevo_estado
+
+        if "fecha_estimada" in data:
+            pedido.fecha_estimada = datetime.strptime(
+                data["fecha_estimada"], "%Y-%m-%d"
+            )
+
+        db.session.commit()
+        return "", 204
+    
+    @app.post("/pedidos/eliminar/<int:id>")
+    @login_required
+    def eliminar_pedido(id):
+        try:
+            pedido = Pedido.query.get_or_404(id)
+
+            print("Estado:", pedido.estado)
+            print("Activo:", pedido.activo)
+
+            if pedido.estado in ["PENDIENTE", "EN_CURSO"]:
+                db.session.delete(pedido)
+            else:
+                pedido.activo = False
+
+            db.session.commit()
+            return "", 204
+
+        except Exception as e:
+            print("ERROR:", e)
+            return str(e), 500
