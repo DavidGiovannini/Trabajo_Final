@@ -44,7 +44,9 @@ class Pedido(db.Model):
 
     estado = db.Column(db.String(20), default="PENDIENTE")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    fecha_estimada = db.Column(db.Date, nullable=True)
+    pendiente_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    en_curso_at = db.Column(db.DateTime, nullable=True)
+    finalizado_at = db.Column(db.DateTime, nullable=True)
 
     email = db.Column(db.String(120))
     forma_pago = db.Column(db.String(50))

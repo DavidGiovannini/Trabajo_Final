@@ -2,111 +2,167 @@
 {% block content %}
 <h3 class="mb-3">Pedidos</h3>
 
-<div class="row g-4">
-  <!-- PENDIENTES -->
-  <div class="col-md-4">
-    <h5>Pendientes</h5>
-    <div class="kanban-column" id="PENDIENTE">
-      {% for p in pedidos_pendientes %}
-      <div class="pedido-card" draggable="true" data-id="{{ p.id }}">
-        <strong>{{ p.cliente }}</strong><br>
-        📞 {{ p.telefono }}<br>
-        💲 {{ p.total }}
+<div class="pedidos-board">
+  <div class="row g-4">
+    <!-- PENDIENTES -->
+    <div class="col-md-4">
+      <h5 class="text-center mb-3">Pendientes</h5>
+      <div class="kanban-column" id="PENDIENTE">
+        {% for p in pedidos_pendientes %}
+          {% set fecha_estado = '-' %}
+          {% if p.estado == 'PENDIENTE' and p.pendiente_at %}
+            {% set fecha_estado = p.pendiente_at.strftime('%d/%m/%Y') %}
+          {% elif p.estado == 'EN_CURSO' and p.en_curso_at %}
+            {% set fecha_estado = p.en_curso_at.strftime('%d/%m/%Y') %}
+          {% elif p.estado == 'FINALIZADO' and p.finalizado_at %}
+            {% set fecha_estado = p.finalizado_at.strftime('%d/%m/%Y') %}
+          {% endif %}
 
-        {% if p.fecha_estimada %}
-        <br>📅 {{ p.fecha_estimada.strftime("%d/%m/%Y") }}
-        {% endif %}
+          {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
+          {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-        <div class="mt-2 d-flex justify-content-between">
-          <a href="{{ url_for('pedido_pdf', pid=p.id) }}"
-             class="btn btn-sm btn-danger">
-             PDF
-          </a>
+          <div class="pedido-card pedido-nueva" draggable="true" data-id="{{ p.id }}">
+            <div class="pedido-header">
+              <div class="pedido-title">{{ (p.cliente or '-')|upper }}</div>
+              <div class="pedido-fecha">{{ fecha_estado }}</div>
 
-          <button class="btn btn-sm btn-outline-secondary btn-delete"
-                  data-id="{{ p.id }}">
-            🗑
-          </button>
-        </div>
+              <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
+                <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
+
+            <div class="pedido-body pedido-collapsed">
+              <div class="pedido-label">Pedido: <span class="text-muted">#{{ p.id }}</span></div>
+
+              <div class="pedido-items">
+                {% for it in p.items %}
+                  <div class="pedido-item-line">{{ it.descripcion }}</div>
+                {% else %}
+                  <div class="pedido-item-line text-muted">Sin items</div>
+                {% endfor %}
+              </div>
+
+              <div class="pedido-debe">
+                <div class="pedido-debe-label">Debe:</div>
+                <div class="pedido-debe-valor {{ deb_clase }}">
+                  ${{ '%.2f'|format(deb) }}
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-id="{{ p.id }}">
+                Ver Más
+              </button>
+            </div>
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
 
-  <!-- EN CURSO -->
-  <div class="col-md-4">
-    <h5>En Curso</h5>
-    <div class="kanban-column" id="EN_CURSO">
-      {% for p in pedidos_en_curso %}
-      <div class="pedido-card" draggable="true" data-id="{{ p.id }}">
-        <strong>{{ p.cliente }}</strong><br>
-        📞 {{ p.telefono }}<br>
-        💲 {{ p.total }}
+    <!-- EN CURSO -->
+    <div class="col-md-4">
+      <h5 class="text-center mb-3">En Curso</h5>
+      <div class="kanban-column" id="EN_CURSO">
+        {% for p in pedidos_en_curso %}
+          {% set fecha_estado = '-' %}
+          {% if p.estado == 'PENDIENTE' and p.pendiente_at %}
+            {% set fecha_estado = p.pendiente_at.strftime('%d/%m/%Y') %}
+          {% elif p.estado == 'EN_CURSO' and p.en_curso_at %}
+            {% set fecha_estado = p.en_curso_at.strftime('%d/%m/%Y') %}
+          {% elif p.estado == 'FINALIZADO' and p.finalizado_at %}
+            {% set fecha_estado = p.finalizado_at.strftime('%d/%m/%Y') %}
+          {% endif %}
 
-        {% if p.fecha_estimada %}
-        <br>📅 {{ p.fecha_estimada.strftime("%d/%m/%Y") }}
-        {% endif %}
+          {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
+          {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-        <div class="mt-2 d-flex justify-content-between">
-          <a href="{{ url_for('pedido_pdf', pid=p.id) }}"
-             class="btn btn-sm btn-danger">
-             PDF
-          </a>
+          <div class="pedido-card pedido-nueva" draggable="true" data-id="{{ p.id }}">
+            <div class="pedido-header">
+              <div class="pedido-title">{{ (p.cliente or '-')|upper }}</div>
+              <div class="pedido-fecha">{{ fecha_estado }}</div>
 
-          <button class="btn btn-sm btn-outline-secondary btn-delete"
-                  data-id="{{ p.id }}">
-            🗑
-          </button>
-        </div>
+              <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
+                <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
+
+            <div class="pedido-body pedido-collapsed">
+              <div class="pedido-label">Pedido: <span class="text-muted">#{{ p.id }}</span></div>
+
+              <div class="pedido-items">
+                {% for it in p.items %}
+                  <div class="pedido-item-line">{{ it.descripcion }}</div>
+                {% else %}
+                  <div class="pedido-item-line text-muted">Sin items</div>
+                {% endfor %}
+              </div>
+
+              <div class="pedido-debe">
+                <div class="pedido-debe-label">Debe:</div>
+                <div class="pedido-debe-valor {{ deb_clase }}">
+                  ${{ '%.2f'|format(deb) }}
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-id="{{ p.id }}">
+                Ver Más
+              </button>
+            </div>
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
 
-  <!-- FINALIZADOS -->
-  <div class="col-md-4">
-    <h5>Finalizados</h5>
-    <div class="kanban-column" id="FINALIZADO">
-      {% for p in pedidos_finalizados %}
-      <div class="pedido-card" draggable="true" data-id="{{ p.id }}">
-        <strong>{{ p.cliente }}</strong><br>
-        📞 {{ p.telefono }}<br>
-        💲 {{ p.total }}
+    <!-- FINALIZADOS -->
+    <div class="col-md-4">
+      <h5 class="text-center mb-3">Finalizados</h5>
+      <div class="kanban-column" id="FINALIZADO">
+        {% for p in pedidos_finalizados %}
+          {% set fecha_estado = '-' %}
+          {% if p.estado == 'PENDIENTE' and p.pendiente_at %}
+            {% set fecha_estado = p.pendiente_at.strftime('%d/%m/%Y') %}
+          {% elif p.estado == 'EN_CURSO' and p.en_curso_at %}
+            {% set fecha_estado = p.en_curso_at.strftime('%d/%m/%Y') %}
+          {% elif p.estado == 'FINALIZADO' and p.finalizado_at %}
+            {% set fecha_estado = p.finalizado_at.strftime('%d/%m/%Y') %}
+          {% endif %}
 
-        {% if p.fecha_estimada %}
-        <br>📅 {{ p.fecha_estimada.strftime("%d/%m/%Y") }}
-        {% endif %}
+          {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
+          {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-        <div class="mt-2 d-flex justify-content-between">
-          <a href="{{ url_for('pedido_pdf', pid=p.id) }}"
-             class="btn btn-sm btn-danger">
-             PDF
-          </a>
+          <div class="pedido-card pedido-nueva" draggable="true" data-id="{{ p.id }}">
+            <div class="pedido-header">
+              <div class="pedido-title">{{ (p.cliente or '-')|upper }}</div>
+              <div class="pedido-fecha">{{ fecha_estado }}</div>
 
-          <button class="btn btn-sm btn-outline-secondary btn-delete"
-                  data-id="{{ p.id }}">
-            🗑
-          </button>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</div>
+              <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
+                <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
 
-<!-- Modal Fecha Estimada -->
-<div class="modal fade" id="modalFecha" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Fecha de finalización esperada</h5>
-      </div>
-      <div class="modal-body">
-        <input type="date" id="fechaInput" class="form-control">
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" id="guardarFecha">Guardar</button>
+            <div class="pedido-body pedido-collapsed">
+              <div class="pedido-label">Pedido: <span class="text-muted">#{{ p.id }}</span></div>
+
+              <div class="pedido-items">
+                {% for it in p.items %}
+                  <div class="pedido-item-line">{{ it.descripcion }}</div>
+                {% else %}
+                  <div class="pedido-item-line text-muted">Sin items</div>
+                {% endfor %}
+              </div>
+
+              <div class="pedido-debe">
+                <div class="pedido-debe-label">Debe:</div>
+                <div class="pedido-debe-valor {{ deb_clase }}">
+                  ${{ '%.2f'|format(deb) }}
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-id="{{ p.id }}">
+                Ver Más
+              </button>
+            </div>
+          </div>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -118,88 +174,77 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const columns = document.querySelectorAll(".kanban-column");
+  const columns = document.querySelectorAll(".pedidos-board .kanban-column");
 
-    columns.forEach(column => {
-        new Sortable(column, {
-            group: "pedidos",
-            animation: 150,
-            ghostClass: "drag-over",
+  function refreshEmptyColumns(){
+    columns.forEach(col => {
+      const hasCard = col.querySelector(".pedido-card"); 
+      col.classList.toggle("is-empty", !hasCard);
+    });
+  }
 
-            onEnd: function (evt) {
+  columns.forEach(column => {
+    new Sortable(column, {
+      group: "pedidos",
+      animation: 150,
+      ghostClass: "drag-over",
 
-                const card = evt.item;
-                const newEstado = evt.to.id;
-                const pedidoId = card.dataset.id;
+      onEnd: function (evt) {
+        const card = evt.item;
+        const newEstado = evt.to.id;     
+        const pedidoId = card.dataset.id;
 
-                let fecha = null;
-
-                if (newEstado === "EN_CURSO") {
-                    fecha = prompt("Ingresá fecha estimada (YYYY-MM-DD):");
-                    if (!fecha) {
-                        evt.from.appendChild(card);
-                        return;
-                    }
-                }
-
-                fetch(`/pedidos/mover/${pedidoId}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        estado: newEstado,
-                        fecha_estimada: fecha
-                    })
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        evt.from.appendChild(card);
-                        alert("Error al mover el pedido");
-                    }
-                })
-                .catch(() => {
-                    evt.from.appendChild(card);
-                    alert("Error al mover el pedido");
-                });
-            }
+        fetch(`/pedidos/mover/${pedidoId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ estado: newEstado })
+        })
+        .then(res => {
+          if (!res.ok) {
+            evt.from.appendChild(card);
+            alert("Error al mover el pedido");
+          }
+          refreshEmptyColumns();
+        })
+        .catch(() => {
+          evt.from.appendChild(card);
+          alert("Error al mover el pedido");
+          refreshEmptyColumns();
         });
+      }
     });
+  });
 
-});
-</script>
+  document.addEventListener("click", (e) => {
 
-<!-- Botón Eliminar -->
-<script>
-document.querySelectorAll(".btn-delete").forEach(btn => {
-    btn.addEventListener("click", function () {
+    const toggle = e.target.closest(".pedido-toggle");
+    if (toggle) {
+      e.preventDefault();
+      e.stopPropagation();
 
-        const card = this.closest(".pedido-card");
+      const card = toggle.closest(".pedido-nueva");
+      const body = card.querySelector(".pedido-body");
+      const isCollapsed = body.classList.contains("pedido-collapsed");
 
-        if (confirm("¿Seguro que querés eliminar este pedido?")) {
+      if (isCollapsed) {
+        body.classList.remove("pedido-collapsed");
+        card.classList.add("is-open");
+      } else {
+        body.classList.add("pedido-collapsed");
+        card.classList.remove("is-open");
+      }
+      return;
+    }
 
-            fetch(`/pedidos/eliminar/${this.dataset.id}`, {
-                method: "POST"
-            })
-            .then(res => {
-                if (res.ok) {
+    const btn = e.target.closest(".btn-vermas");
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
+      alert("Ver Más (Pedido #" + btn.dataset.id + ") — Popup lo hacemos después ✅");
+    }
+  });
 
-                    card.style.transition = "all 0.35s cubic-bezier(.4,2,.6,1)";
-                    card.style.opacity = "0";
-                    card.style.transform = "scale(0.85) translateY(-10px)";
-                    card.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
-
-                    setTimeout(() => {
-                        card.remove();
-                    }, 350);
-
-                } else {
-                    alert("Error al eliminar");
-                }
-            })
-            .catch(() => {
-                alert("Error al eliminar");
-            });
-        }
-    });
+  refreshEmptyColumns();
 });
 </script>
 {% endblock %}

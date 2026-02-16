@@ -8,6 +8,7 @@ from flask import send_file
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from datetime import datetime, timedelta
 
 def register_routes(app):
     @app.get("/")
@@ -122,7 +123,7 @@ def register_routes(app):
 
         precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
 
-        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago=forma_pago, tiene_sena=tiene_sena, monto_sena=monto_sena)
+        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago=forma_pago, tiene_sena=tiene_sena, monto_sena=monto_sena, pendiente_at=datetime.utcnow())
         db.session.add(pedido)
         db.session.flush()  # para obtener pedido.id
 
@@ -183,23 +184,25 @@ def register_routes(app):
     @app.get("/dashboard")
     @login_required
     def dashboard():
-        total_pedidos = Pedido.query.count()
-        pendientes = Pedido.query.filter_by(estado="PENDIENTE").count()
-        en_curso = Pedido.query.filter_by(estado="EN_CURSO").count()
-        finalizados = Pedido.query.filter_by(estado="FINALIZADO").count()
+        base = Pedido.query.filter(Pedido.activo == True)
+
+        total_pedidos = base.count()
+        pendientes = base.filter(Pedido.estado == "PENDIENTE").count()
+        en_curso = base.filter(Pedido.estado == "EN_CURSO").count()
+        finalizados = base.filter(Pedido.estado == "FINALIZADO").count()
 
         # ===== Totales por estado ($) =====
         total_pendiente = db.session.query(
             func.coalesce(func.sum(Pedido.total), 0.0)
-        ).filter_by(estado="PENDIENTE").scalar()
+        ).filter_by(activo=True, estado="PENDIENTE").scalar()
 
         total_en_curso = db.session.query(
             func.coalesce(func.sum(Pedido.total), 0.0)
-        ).filter_by(estado="EN_CURSO").scalar()
+        ).filter_by(activo=True, estado="EN_CURSO").scalar()
 
         total_finalizado = db.session.query(
             func.coalesce(func.sum(Pedido.total), 0.0)
-        ).filter_by(estado="FINALIZADO").scalar()
+        ).filter_by(activo=True, estado="FINALIZADO").scalar()
 
         # Ventas / totales últimos 7 días (por fecha de creación)
         hoy = datetime.utcnow().date()
@@ -213,8 +216,8 @@ def register_routes(app):
             inicio = datetime(d.year, d.month, d.day)
             fin = inicio + timedelta(days=1)
             total_dia = db.session.query(func.coalesce(func.sum(Pedido.total), 0.0))\
-                .filter(Pedido.created_at >= inicio, Pedido.created_at < fin).scalar()
-            cant_dia = Pedido.query.filter(Pedido.created_at >= inicio, Pedido.created_at < fin).count()
+                .filter(Pedido.activo == True, Pedido.created_at >= inicio, Pedido.created_at < fin).scalar()
+            cant_dia = Pedido.query.filter(Pedido.activo == True, Pedido.created_at >= inicio, Pedido.created_at < fin).count()
             serie_totales.append(float(total_dia))
             serie_cant.append(int(cant_dia))
 
@@ -224,6 +227,8 @@ def register_routes(app):
                 PedidoItem.descripcion,
                 func.sum(PedidoItem.cantidad)
             )
+            .join(Pedido, Pedido.id == PedidoItem.pedido_id)
+            .filter(Pedido.activo == True)
             .group_by(PedidoItem.descripcion)
             .order_by(func.sum(PedidoItem.cantidad).desc())
             .limit(5)
@@ -233,7 +238,8 @@ def register_routes(app):
         productos_labels = [p[0] for p in productos_data]
         productos_cantidades = [int(p[1]) for p in productos_data]
 
-        ultimos = Pedido.query.order_by(Pedido.id.desc()).limit(5).all()
+        ultimos = Pedido.query.filter(Pedido.activo == True).order_by(Pedido.id.desc()).limit(5).all()
+        pedidos_modal = Pedido.query.filter(Pedido.activo == True).order_by(Pedido.id.desc()).all()
 
         return render_template(
             "dashboard.html",
@@ -249,6 +255,7 @@ def register_routes(app):
             productos_labels=productos_labels,
             productos_cantidades=productos_cantidades,
             ultimos=ultimos,
+            pedidos_modal=pedidos_modal,
         )
     
     @app.get("/api/pedidos")
@@ -257,7 +264,7 @@ def register_routes(app):
         estado = request.args.get("estado")
         cliente = request.args.get("cliente")
 
-        query = Pedido.query
+        query = Pedido.query.filter(Pedido.activo == True)
 
         if estado and estado != "TODOS":
             query = query.filter_by(estado=estado)
@@ -269,6 +276,19 @@ def register_routes(app):
 
         data = []
         for p in pedidos:
+            estado = p.estado
+
+            pend = "-"
+            curso = "-"
+            fin = "-"
+
+            if estado == "PENDIENTE":
+                pend = p.pendiente_at.strftime("%d/%m/%Y") if p.pendiente_at else "-"
+            elif estado == "EN_CURSO":
+                curso = p.en_curso_at.strftime("%d/%m/%Y") if p.en_curso_at else "-"
+            elif estado == "FINALIZADO":
+                fin = p.finalizado_at.strftime("%d/%m/%Y") if p.finalizado_at else "-"
+
             data.append({
                 "id": p.id,
                 "cliente": p.cliente,
@@ -276,7 +296,10 @@ def register_routes(app):
                 "sena": "Sí" if p.monto_sena else "No",
                 "telefono": p.telefono,
                 "estado": p.estado,
-                "total": float(p.total)
+                "total": float(p.total),
+                "pendiente_at": pend,
+                "en_curso_at": curso,
+                "finalizado_at": fin,
             })
 
         return {"pedidos": data}
@@ -346,25 +369,36 @@ def register_routes(app):
             download_name=f"pedido_{p.id}.pdf",
             mimetype="application/pdf"
         )
-    
+
     @app.post("/pedidos/mover/<int:id>")
     @login_required
     def mover_pedido(id):
-        data = request.get_json()
+        data = request.get_json() or {}
         pedido = Pedido.query.get_or_404(id)
 
-        nuevo_estado = data.get("estado", "").upper()
-
+        nuevo_estado = (data.get("estado") or "").upper()
         if nuevo_estado not in ["PENDIENTE", "EN_CURSO", "FINALIZADO"]:
             return "Estado inválido", 400
 
+        if pedido.estado == nuevo_estado:
+            return "", 204
+
+        ahora = datetime.utcnow()
+
+        # setear fechas automáticas la primera vez que entra a cada estado
+        if nuevo_estado == "PENDIENTE":
+            if not pedido.pendiente_at:
+                pedido.pendiente_at = ahora
+
+        elif nuevo_estado == "EN_CURSO":
+            if not pedido.en_curso_at:
+                pedido.en_curso_at = ahora
+
+        elif nuevo_estado == "FINALIZADO":
+            if not pedido.finalizado_at:
+                pedido.finalizado_at = ahora
+
         pedido.estado = nuevo_estado
-
-        if "fecha_estimada" in data:
-            pedido.fecha_estimada = datetime.strptime(
-                data["fecha_estimada"], "%Y-%m-%d"
-            )
-
         db.session.commit()
         return "", 204
     

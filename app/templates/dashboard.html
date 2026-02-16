@@ -124,6 +124,9 @@
                             data-estado="{{ p.estado }}"
                             data-total="{{ p.total }}"
                             data-observaciones="{{ p.observaciones or '-' }}"
+                            data-pendiente_at="{{ p.pendiente_at.strftime('%d/%m/%Y') if (p.estado=='PENDIENTE' and p.pendiente_at) else '-' }}"
+                            data-en_curso_at="{{ p.en_curso_at.strftime('%d/%m/%Y') if (p.estado=='EN_CURSO' and p.en_curso_at) else '-' }}"
+                            data-finalizado_at="{{ p.finalizado_at.strftime('%d/%m/%Y') if (p.estado=='FINALIZADO' and p.finalizado_at) else '-' }}"
                         >
                             Ver Detalle
                         </button>
@@ -206,10 +209,13 @@
                   data-sena="{{ 'Sí' if pedido.tiene_sena else 'No' }}"
                   data-monto_sena="{{ pedido.monto_sena }}"
                   data-email="{{ pedido.email or '-' }}"
-                  data-direccion="{{ pedido.direccion or '-' }}"
+                  data-direccion="{{ pedido.direccion or '-' }}"  
                   data-estado="{{ pedido.estado }}"
                   data-total="{{ pedido.total }}"
                   data-observaciones="{{ pedido.observaciones or '-' }}"
+                  data-pendiente_at="{{ pedido.pendiente_at.strftime('%d/%m/%Y') if (pedido.estado=='PENDIENTE' and pedido.pendiente_at) else '-' }}"
+                  data-en_curso_at="{{ pedido.en_curso_at.strftime('%d/%m/%Y') if (pedido.estado=='EN_CURSO' and pedido.en_curso_at) else '-' }}"
+                  data-finalizado_at="{{ pedido.finalizado_at.strftime('%d/%m/%Y') if (pedido.estado=='FINALIZADO' and pedido.finalizado_at) else '-' }}"
                   >
                   Ver Detalle
                 </button>
@@ -219,7 +225,34 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- Modal Detalle Pedido -->
+<div class="modal fade" id="modalDetalle" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle del Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Cliente:</strong> <span id="det-cliente"></span></p>
+        <p><strong>Teléfono:</strong> <span id="det-telefono"></span></p>
+        <p><strong>Forma de Pago:</strong> <span id="det-forma-pago"></span></p>
+        <p><strong>Seña:</strong> <span id="det-sena"></span></p>
+        <p><strong>Monto Seña:</strong> $<span id="det-monto-sena"></span></p>
+        <p><strong>E-Mail:</strong> <span id="det-email"></span></p>
+        <p><strong>Dirección:</strong> <span id="det-direccion"></span></p>
+        <p><strong>Estado:</strong> <span id="det-estado"></span></p>
+        <p><strong>Total:</strong> $<span id="det-total"></span></p>
+        <p><strong>Observaciones:</strong></p>
+        <p><strong>Fecha Pendiente:</strong> <span id="det-pendiente-at"></span></p>
+        <p><strong>Fecha En Curso:</strong> <span id="det-en-curso-at"></span></p>
+        <p><strong>Fecha Finalizado:</strong> <span id="det-finalizado-at"></span></p>
+        <p id="det-observaciones" class="text-muted"></p>
       </div>
     </div>
   </div>
@@ -352,31 +385,6 @@ new Chart(document.getElementById("graficoBarras"), {
 });
 </script>
 
-<!-- Modal Detalle Pedido -->
-<div class="modal fade" id="modalDetalle" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Detalle del Pedido</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p><strong>Cliente:</strong> <span id="det-cliente"></span></p>
-        <p><strong>Teléfono:</strong> <span id="det-telefono"></span></p>
-        <p><strong>Forma de Pago:</strong> <span id="det-forma-pago"></span></p>
-        <p><strong>Seña:</strong> <span id="det-sena"></span></p>
-        <p><strong>Monto Seña:</strong> $<span id="det-monto-sena"></span></p>
-        <p><strong>E-Mail:</strong> <span id="det-email"></span></p>
-        <p><strong>Dirección:</strong> <span id="det-direccion"></span></p>
-        <p><strong>Estado:</strong> <span id="det-estado"></span></p>
-        <p><strong>Total:</strong> $<span id="det-total"></span></p>
-        <p><strong>Observaciones:</strong></p>
-        <p id="det-observaciones" class="text-muted"></p>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal Ver Detalle -->
 <script>
 document.querySelectorAll(".btn-ver-detalle").forEach(btn => {
@@ -391,6 +399,9 @@ document.querySelectorAll(".btn-ver-detalle").forEach(btn => {
     document.getElementById("det-estado").textContent = this.dataset.estado || "-";
     document.getElementById("det-total").textContent = parseFloat(this.dataset.total).toFixed(2);
     document.getElementById("det-observaciones").textContent = this.dataset.observaciones || "-";
+    document.getElementById("det-pendiente-at").textContent = this.dataset.pendiente_at || "-";
+    document.getElementById("det-en-curso-at").textContent = this.dataset.en_curso_at || "-";
+    document.getElementById("det-finalizado-at").textContent = this.dataset.finalizado_at || "-";
 
     const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
     modal.show();
@@ -421,15 +432,15 @@ tablaBody.addEventListener("click", function(e) {
     document.getElementById("det-telefono").textContent = btn.dataset.telefono || "-";
     document.getElementById("det-forma-pago").textContent = btn.dataset.forma_pago || "-";
     document.getElementById("det-sena").textContent = btn.dataset.sena || "No";
-    document.getElementById("det-monto-sena").textContent =
-        btn.dataset.monto_sena ? parseFloat(btn.dataset.monto_sena).toFixed(2) : "-";
+    document.getElementById("det-monto-sena").textContent = btn.dataset.monto_sena ? parseFloat(btn.dataset.monto_sena).toFixed(2) : "-";
     document.getElementById("det-email").textContent = btn.dataset.email || "-";
     document.getElementById("det-direccion").textContent = btn.dataset.direccion || "-";
     document.getElementById("det-estado").textContent = btn.dataset.estado || "-";
-    document.getElementById("det-total").textContent =
-        btn.dataset.total ? parseFloat(btn.dataset.total).toFixed(2) : "0.00";
-    document.getElementById("det-observaciones").textContent =
-        btn.dataset.observaciones || "-";
+    document.getElementById("det-total").textContent = btn.dataset.total ? parseFloat(btn.dataset.total).toFixed(2) : "0.00";
+    document.getElementById("det-observaciones").textContent = btn.dataset.observaciones || "-";
+    document.getElementById("det-pendiente-at").textContent = btn.dataset.pendiente_at || "-";
+    document.getElementById("det-en-curso-at").textContent = btn.dataset.en_curso_at || "-";
+    document.getElementById("det-finalizado-at").textContent = btn.dataset.finalizado_at || "-";
 
     const modal = new bootstrap.Modal(document.getElementById("modalDetalle"));
     modal.show();
@@ -476,6 +487,9 @@ async function cargarPedidos() {
                         data-sena="${p.sena}"
                         data-estado="${p.estado}"
                         data-total="${p.total}"
+                        data-pendiente_at="${p.pendiente_at}"
+                        data-en_curso_at="${p.en_curso_at}"
+                        data-finalizado_at="${p.finalizado_at}"
                     >
                         Ver Detalle
                     </button>
