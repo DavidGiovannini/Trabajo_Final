@@ -181,6 +181,33 @@ def register_routes(app):
         flash("Pedido finalizado.", "success")
         return redirect(url_for("pedidos"))
     
+    @app.get("/api/pedidos/<int:pid>")
+    @login_required
+    def api_pedido_detalle(pid):
+        p = Pedido.query.get_or_404(pid)
+
+        items = []
+        for it in p.items:
+            items.append({
+                "descripcion": it.descripcion,
+                "cantidad": int(it.cantidad or 0),
+                "metros": float(it.metros) if it.metros is not None else None,
+                "subtotal": float(it.subtotal or 0.0),
+            })
+
+        return {
+            "id": p.id,
+            "cliente": p.cliente,
+            "telefono": p.telefono or "-",
+            "email": p.email or "-",
+            "direccion": p.direccion or "-",
+            "observaciones": p.observaciones or "-",
+            "forma_pago": p.forma_pago or "-",
+            "monto_sena": float(p.monto_sena) if p.monto_sena else None,
+            "total": float(p.total or 0.0),
+            "items": items,
+        }
+        
     @app.get("/dashboard")
     @login_required
     def dashboard():

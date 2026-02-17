@@ -47,25 +47,33 @@
     <div class="card dashboard-card">
       <div class="card-body">
         <h6 class="mb-3">Distribución por Estado ($)</h6>
-        <canvas id="graficoDona"></canvas>
+        <div class="chart-box">
+          <canvas id="graficoDona"></canvas>
+        </div>
       </div>
     </div>
   </div>
+
   <!-- Línea -->
   <div class="col-lg-4 col-md-12">
     <div class="card dashboard-card">
       <div class="card-body">
         <h6 class="mb-3">Ventas últimos 7 días</h6>
-        <canvas id="graficoLinea"></canvas>
+        <div class="chart-box">
+          <canvas id="graficoLinea"></canvas>
+        </div>
       </div>
     </div>
   </div>
+
   <!-- Barras -->
   <div class="col-lg-4 col-md-12">
     <div class="card dashboard-card">
       <div class="card-body">
         <h6 class="mb-3">Productos más vendidos</h6>
-        <canvas id="graficoBarras"></canvas>
+        <div class="chart-box">
+          <canvas id="graficoBarras"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -81,7 +89,7 @@
           <button class="btn btn-secondary btn-sm"
             id="btnExpandirTabla"
             data-bs-toggle="modal"
-            data-bs-target="#modalPedidos">
+            data-bs-target="#modalTablaExpandida">
             Ver Más
           </button>
         </div>
@@ -264,7 +272,7 @@
 // ====== DONA ======
 const totalGeneral = {{ total_pendiente }} + {{ total_en_curso }} + {{ total_finalizado }};
 
-new Chart(document.getElementById("graficoDona"), {
+const graficoDona = new Chart(document.getElementById("graficoDona"), {
   type: "doughnut",
   data: {
     labels: ["Pendientes", "En curso", "Finalizados"],
@@ -275,9 +283,9 @@ new Chart(document.getElementById("graficoDona"), {
         {{ total_finalizado }}
       ],
       backgroundColor: [
-        "#4a4a4a",   
-        "#c46200",   
-        "#0b2a4a"    
+        "#4a4a4a",
+        "#c46200",
+        "#0b2a4a"
       ],
       borderWidth: 2
     }]
@@ -289,19 +297,20 @@ new Chart(document.getElementById("graficoDona"), {
       tooltip: {
         callbacks: {
           label: function(context) {
-            const value = context.raw;
-            const percentage = ((value / totalGeneral) * 100).toFixed(1);
-            return context.label + ": $" + value.toLocaleString() + 
-                    " (" + percentage + "%)";
+            const value = Number(context.raw || 0);
+            const percentage = totalGeneral > 0
+              ? ((value / totalGeneral) * 100).toFixed(1)
+              : "0.0";
+            return context.label + ": $" + value.toLocaleString() + " (" + percentage + "%)";
           }
         }
       }
     },
     animation: {
-    animateRotate: true,
-    animateScale: true,
-    duration: 1200,
-    easing: 'easeOutQuart'
+      animateRotate: true,
+      animateScale: true,
+      duration: 1200,
+      easing: "easeOutQuart"
     },
     responsive: true,
     maintainAspectRatio: false
@@ -320,30 +329,27 @@ new Chart(document.getElementById("graficoDona"), {
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#333";
 
-      ctx.fillText(
-        "$" + totalGeneral.toLocaleString(),
-        centerX,
-        centerY
-      );
+      ctx.fillText("$" + Number(totalGeneral).toLocaleString(), centerX, centerY);
       ctx.restore();
     }
   }]
 });
-document.getElementById("graficoDona").onclick = function(evt) {
-    const points = graficoDona.getElementsAtEventForMode(
-        evt, 
-        'nearest', 
-        { intersect: true }, 
-        true
-    );
 
-    if (points.length) {
-        const index = points[0].index;
-        const estado = ["PENDIENTE", "EN_CURSO", "FINALIZADO"][index];
+document.getElementById("graficoDona").addEventListener("click", function(evt) {
+  const points = graficoDona.getElementsAtEventForMode(
+    evt,
+    "nearest",
+    { intersect: true },
+    true
+  );
 
-        window.location.href = "/pedidos?estado=" + estado;
-    }
-};
+  if (!points.length) return;
+
+  const index = points[0].index;
+  const estado = ["PENDIENTE", "EN_CURSO", "FINALIZADO"][index];
+  window.location.href = "/pedidos?estado=" + estado;
+});
+
 // ====== LÍNEA ======
 new Chart(document.getElementById("graficoLinea"), {
   type: "line",
@@ -357,12 +363,13 @@ new Chart(document.getElementById("graficoLinea"), {
       tension: 0.3,
       fill: true
     }]
-},
+  },
   options: {
     responsive: true,
     maintainAspectRatio: false
   }
 });
+
 // ====== BARRAS ======
 new Chart(document.getElementById("graficoBarras"), {
   type: "bar",
@@ -375,7 +382,7 @@ new Chart(document.getElementById("graficoBarras"), {
     }]
   },
   options: {
-    indexAxis: "y",  
+    indexAxis: "y",
     plugins: {
       legend: { display: false }
     },
@@ -406,14 +413,6 @@ document.querySelectorAll(".btn-ver-detalle").forEach(btn => {
     const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
     modal.show();
   });
-});
-</script>
-
-<!-- Botón Expandir -->
-<script>
-document.getElementById("btnExpandirTabla").addEventListener("click", function() {
-  const modal = new bootstrap.Modal(document.getElementById("modalTablaExpandida"));
-  modal.show();
 });
 </script>
 
@@ -499,7 +498,6 @@ async function cargarPedidos() {
     });
 }
 
-// Eventos
 estadoSelect.addEventListener("change", cargarPedidos);
 
 buscarInput.addEventListener("input", function() {
@@ -507,7 +505,6 @@ buscarInput.addEventListener("input", function() {
     this.delay = setTimeout(cargarPedidos, 300);
 });
 
-// Cargar cuando abre el modal
 document.getElementById("modalTablaExpandida")
     .addEventListener("shown.bs.modal", cargarPedidos);
 </script>

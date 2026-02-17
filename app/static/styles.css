@@ -1,5 +1,5 @@
 /* =========================
-   KPI (no lo toco casi)
+   KPI Cards
 ========================= */
 .kpi-card{
   border-radius: 10px;
@@ -19,8 +19,9 @@
 .kpi-gris{ --bs-card-bg:#4a4a4a; color:#fff !important; }
 .kpi-blanco{ --bs-card-bg:#ffffff; color:#000 !important; }
 
-.card canvas{ height: 380px !important; }
-
+/* =========================
+   Dashboard Cards
+========================= */
 .dashboard-card{
   background: rgba(255,255,255,.75);
   backdrop-filter: blur(8px);
@@ -30,49 +31,42 @@
   border: 1px solid rgba(255,255,255,.4);
 }
 
+.chart-box{ position: relative; height: 360px; width: 100%; }
+.chart-box canvas{ width: 100% !important; height: 100% !important; display:block; }
+
 /* =========================
-   KANBAN COLUMNAS
-   - SIN "rectángulo interno"
-   - vacías => se agrandan
+   Kanban Columns
 ========================= */
 .kanban-column{
-  /* tamaño */
   padding: 12px;
   border-radius: 10px;
-
-  /* look */
   background: rgba(255,255,255,.55);
   border: 2px solid rgba(11,42,74,.20);
-
-  /* comportamiento */
   min-height: 0;
   height: auto;
-
-  transition: background .15s ease, border-color .15s ease;
+  transition: background .15s ease, border-color .15s ease, min-height .15s ease;
 }
 
-/* cuando realmente no hay nada dentro */
-.kanban-column:empty{
-  min-height: 220px;              /* más grande si está vacía */
-  background: rgba(255,255,255,.75);
-  border-color: rgba(11,42,74,.28);
-}
-
-/* si tu JS marca vacía con class is-empty (también funciona) */
 .kanban-column.is-empty{
-  min-height: 220px;
+  min-height: 320px;
   background: rgba(255,255,255,.75);
-  border-color: rgba(11,42,74,.28);
+  border: 2px dashed rgba(11,42,74,.35);
+  display: block;
+  position: relative;
+  padding-top: 18px;
 }
-
-/* feedback al arrastrar encima */
-.kanban-column.drag-over{
-  border-color: rgba(11,42,74,.60) !important;
-  background: rgba(11,42,74,.06) !important;
+.kanban-column.is-empty::after{
+  content: "Arrastrá un pedido aquí";
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(11,42,74,.45);
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 /* =========================
-   CARDS base
+   Pedido Cards (Kanban)
 ========================= */
 .pedido-card{
   background: #fff;
@@ -80,48 +74,23 @@
   padding: 15px;
   margin-bottom: 12px;
   cursor: grab;
-  transition: transform .25s ease, box-shadow .25s ease;
+  transition: box-shadow .2s ease;
 }
+.pedido-card.dragging{ opacity: .55; pointer-events: none; }
 
-.pedido-card.dragging{
-  opacity: .5;
-  pointer-events: none;
-}
-
-.pedido-card:not(.pedido-nueva):hover{
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0,0,0,.15);
-}
-
-.pedido-card.snap{
-  animation: snapEffect .30s ease;
-}
-@keyframes snapEffect{
-  0%{ transform: scale(.95); }
-  50%{ transform: scale(1.05); }
-  100%{ transform: scale(1); }
-}
-
-/* =========================
-   CARD NUEVA (la que usás)
-========================= */
 .pedido-nueva{
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 12px;
   overflow: hidden;
   background: #fbfaf8;
   box-shadow: 0 8px 18px rgba(0,0,0,.08);
-  cursor: grab;
   user-select: none;
   margin-bottom: 12px;
-
-  /* evita el “doble hover” */
-  transform: none !important;
+  cursor: grab;
 }
 .pedido-nueva:active{ cursor: grabbing; }
 .pedido-nueva:hover{ box-shadow: 0 10px 22px rgba(0,0,0,.10); }
 
-/* header azul */
 .pedido-header{
   position: relative;
   padding: 14px 14px 12px;
@@ -131,7 +100,6 @@
   font-weight: 800;
   letter-spacing: .6px;
 }
-
 .pedido-header:before{
   content:"";
   position:absolute;
@@ -142,9 +110,8 @@
   pointer-events:none;
   opacity:.9;
 }
-
 .pedido-title{
-  font-size: 15px;                /* un toque más chica */
+  font-size: 15px;
   line-height: 1.3;
   padding: 0 10px;
   text-shadow: 0 1px 0 rgba(0,0,0,.25);
@@ -152,7 +119,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .pedido-fecha{
   margin-top: 6px;
   font-size: 12px;
@@ -160,32 +126,32 @@
   color: rgba(255,255,255,.92);
 }
 
-/* botón flecha */
 .pedido-toggle{
-  margin: 10px auto 0;
-  width: 38px;
-  height: 28px;
-  background: #0b2a4a;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.28);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   padding: 0;
-  border-radius: 2px;
-  box-shadow: 0 8px 16px rgba(0,0,0,.14);
+  margin: 10px auto 0;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
 }
-.pedido-toggle:hover{ filter: brightness(1.07); }
-
-.pedido-toggle i{ transition: transform .18s ease; }
+.pedido-toggle:focus,
+.pedido-toggle:focus-visible{ outline: none; box-shadow: none; }
+.pedido-toggle i{
+  color: #fff;
+  font-size: 18px;
+  pointer-events:none;
+  transition: transform .18s ease;
+}
 .pedido-nueva.is-open .pedido-toggle i{ transform: rotate(180deg); }
 
-/* body */
 .pedido-body{
   padding: 12px 14px 14px;
   background: #f7f2ea;
   border-top: 1px solid rgba(0,0,0,.06);
 }
+.pedido-nueva .pedido-body.pedido-collapsed{ display:none !important; }
 
 .pedido-label{
   font-weight: 700;
@@ -193,15 +159,14 @@
   margin-bottom: 6px;
 }
 
+/* Items dentro del kanban */
 .pedido-items{
   background: rgba(255,255,255,.55);
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 10px;
   padding: 10px;
   margin-bottom: 10px;
-  box-shadow: none !important;
 }
-
 .pedido-item-line{
   font-size: 13px;
   color: #2f2f2f;
@@ -218,12 +183,10 @@
   border-radius: 10px;
   background: rgba(255,255,255,.45);
   border: 1px solid rgba(0,0,0,.08);
-  box-shadow: none !important;
 }
 .pedido-debe-label{ font-weight: 700; color:#3b2f2a; }
 .pedido-debe-valor{ font-weight: 900; font-size: 16px; }
 
-/* botón ver más */
 .btn-vermas{
   background: #0b2a4a;
   border-color: #0b2a4a;
@@ -235,18 +198,218 @@
 }
 .btn-vermas:hover{ filter: brightness(1.06); }
 
-/* colapsado */
-.pedido-nueva .pedido-body.pedido-collapsed{ display:none !important; }
-.pedido-nueva .pedido-body{ display:block; }
-
-/* sortable */
-.drag-over{
-  opacity: .35 !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
+/* Drag shadows */
 .sortable-chosen,
-.sortable-fallback{
-  box-shadow: 0 12px 26px rgba(0,0,0,.14) !important;
-  transform: none !important;
+.sortable-fallback{ box-shadow: 0 12px 26px rgba(0,0,0,.14) !important; }
+.sortable-drag{ opacity: .95 !important; }
+
+/* =========================
+   Modal Pedido (Ver Más)
+========================= */
+.modal-custom{ max-width: 760px; }
+
+#modalPedido .modal-content{
+  border: 0 !important;                 /* ✅ SACA LA RAYITA (borde bootstrap) */
+  box-shadow: 0 10px 28px rgba(0,0,0,.18);
+}
+
+.pedido-modal{
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f6f3ee;
+}
+.pedido-modal,
+.pedido-modal *{ font-size: 0.95rem; }
+
+#modalPedido .modal-header{ border-bottom: 0 !important; }
+#modalPedido .modal-body{ border-top: 0 !important; }
+
+/* Header azul centrado */
+.pedido-modal-header{
+  background: #0b2a4a;
+  color: #fff;
+  border: 0;
+  position: relative;
+}
+
+.pedido-modal-header .btn-close{
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  opacity: .9;
+}
+
+.mp-header-wrap{
+  width: 100%;
+  text-align: center;
+  padding-right: 34px; /* compensa la X */
+}
+
+.mp-header-title{
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: .8px;
+  line-height: 1.1;
+}
+
+.mp-header-sub{
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  opacity: .95;
+}
+
+/* Sección datos cliente */
+.pedido-modal-body{ padding: 16px; background: #f6f3ee; }
+
+.pedido-datos{
+  background: rgba(11,42,74,.08);
+  border: 1px solid rgba(11,42,74,.15);
+  border-radius: 12px;
+  padding: 12px;
+}
+.pedido-datos .dato{
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.pedido-datos .dato:last-child{ border-bottom: 0; }
+
+/* Hr no lo usamos */
+.pedido-sep{ display:none !important; }
+
+/* Contenedor pedido (naranja pastel) */
+.pedido-box{
+  margin-top: 14px;
+  background: rgba(196,98,0,.08);
+  border: 1px solid rgba(196,98,0,.18);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.seccion-titulo{
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pedido-titulo{ background: #c46200; }
+
+/* Badge estado */
+#mp-estado-badge{
+  font-size: .8rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.mp-badge-pendiente{ background: #ffc107; color: #212529; }
+.mp-badge-curso{ background: #6c757d; color: #fff; }
+.mp-badge-finalizado{ background: #198754; color: #fff; }
+
+/* Items en modal: sin negrita + puntos */
+.pedido-box #mp-items.pedido-items{
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 4px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pedido-item-row{
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+.pedido-item-desc{
+  flex: 0 1 auto;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pedido-item-dots{
+  flex: 1;
+  border-bottom: 2px dotted rgba(0,0,0,0.25);
+  transform: translateY(-2px);
+}
+
+.pedido-item-sub{
+  min-width: 110px;
+  text-align: right;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Total en negrita completo */
+.pedido-total{
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-top: 10px;
+  background: rgba(255,255,255,.92);
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+/* Forma de pago verde pastel */
+.forma-pago-box{
+  margin-top: 14px;
+  background: rgba(34,120,70,.08);
+  border: 1px solid rgba(34,120,70,.18);
+  border-radius: 12px;
+  padding: 12px;
+}
+.forma-pago-box .seccion-titulo{
+  background: #227846;
+  margin-top: 0;
+}
+
+/* Debe rojo/verde */
+.debe-bad{ color:#b02a37; font-weight: 900; }
+.debe-ok{ color:#1e7e34; font-weight: 900; }
+
+/* Agregar pago: centrado, chico, + */
+.mp-addpago-wrap{
+  display:flex;
+  justify-content:center;
+  margin-top: 12px;
+}
+#mp-add-pago{
+  width: auto !important;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: .92rem;
+  font-weight: 700;
+}
+#mp-add-pago .mp-plus{
+  display:inline-block;
+  font-weight: 900;
+  font-size: 1.2rem;
+  line-height: 1;
+  margin-right: 8px;
+  transform: translateY(1px);
+}
+
+/* Acciones: Imprimir / Eliminar prolijo */
+.pedido-acciones{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+.pedido-acciones .btn{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: 700;
 }
