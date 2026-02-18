@@ -41,46 +41,52 @@
 
 </div>
 
-<div class="row g-3 mb-4">
-  <!-- Dona -->
-  <div class="col-lg-4 col-md-12">
-    <div class="card dashboard-card">
-      <div class="card-body">
-        <h6 class="mb-3">Distribución por Estado ($)</h6>
-        <div class="chart-box">
-          <canvas id="graficoDona"></canvas>
+<div class="charts-shell mb-1">
+  <button class="charts-nav left" type="button" aria-label="Anterior">‹</button>
+
+  <div class="charts-track">
+    <!-- Dona -->
+    <div class="charts-slide">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <h6 class="mb-3">Distribución por Estado ($)</h6>
+          <div class="chart-box">
+            <canvas id="graficoDona"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Línea -->
+    <div class="charts-slide">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <h6 class="mb-3">Ventas últimos 7 días</h6>
+          <div class="chart-box">
+            <canvas id="graficoLinea"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barras -->
+    <div class="charts-slide">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <h6 class="mb-3">Productos más vendidos</h6>
+          <div class="chart-box">
+            <canvas id="graficoBarras"></canvas>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Línea -->
-  <div class="col-lg-4 col-md-12">
-    <div class="card dashboard-card">
-      <div class="card-body">
-        <h6 class="mb-3">Ventas últimos 7 días</h6>
-        <div class="chart-box">
-          <canvas id="graficoLinea"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Barras -->
-  <div class="col-lg-4 col-md-12">
-    <div class="card dashboard-card">
-      <div class="card-body">
-        <h6 class="mb-3">Productos más vendidos</h6>
-        <div class="chart-box">
-          <canvas id="graficoBarras"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
+  <button class="charts-nav right" type="button" aria-label="Siguiente">›</button>
 </div>
 
 <!-- Grilla del Dashboard -->
-<div class="row g-3 mt-1">
+<div class="row g-3 mt-0">
   <div class="col-12">
     <div class="card border-0 shadow-sm">
       <div class="card-body">
@@ -93,57 +99,45 @@
             Ver Más
           </button>
         </div>
+
         <div class="table-responsive">
-            <table class="table" id="tablaPedidos">
-                <thead>
-                <tr>
-                    <th>#</th><th>Cliente</th><th>Forma Pago</th><th>Seña</th><th>Teléfono</th><th>Estado</th><th>Total</th><th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for p in ultimos %}
-                    <tr>
-                    <td>{{p.id}}</td>
-                    <td>{{p.cliente}}</td>
-                    <td>{{ p.forma_pago or "-" }}</td>
-                    <td>{{ "Sí" if p.tiene_sena else "No" }}</td>
-                    <td>{{p.telefono}}</td>
-                    <td>
-                        {% if p.estado == "PENDIENTE" %}
-                          <span class="badge bg-warning text-dark">Pendiente</span>
-                        {% elif p.estado == "EN_CURSO" %}
-                          <span class="badge bg-secondary">En Curso</span>
-                        {% elif p.estado == "FINALIZADO" %}
-                          <span class="badge bg-success">Finalizado</span>
-                        {% endif %}
-                    </td>
-                    <td>${{"%.2f"|format(p.total)}}</td>
-                    <td>
-                        <button 
-                            class="btn btn-outline-primary btn-sm btn-ver-detalle"
-                            data-id="{{ p.id }}"
-                            data-cliente="{{ p.cliente }}"
-                            data-telefono="{{ p.telefono }}"
-                            data-forma_pago="{{ p.forma_pago }}"
-                            data-sena="{{ 'Sí' if p.tiene_sena else 'No' }}"
-                            data-monto_sena="{{ p.monto_sena }}"
-                            data-email="{{ p.email or '-' }}"
-                            data-direccion="{{ p.direccion or '-' }}"
-                            data-estado="{{ p.estado }}"
-                            data-total="{{ p.total }}"
-                            data-observaciones="{{ p.observaciones or '-' }}"
-                            data-pendiente_at="{{ p.pendiente_at.strftime('%d/%m/%Y') if (p.estado=='PENDIENTE' and p.pendiente_at) else '-' }}"
-                            data-en_curso_at="{{ p.en_curso_at.strftime('%d/%m/%Y') if (p.estado=='EN_CURSO' and p.en_curso_at) else '-' }}"
-                            data-finalizado_at="{{ p.finalizado_at.strftime('%d/%m/%Y') if (p.estado=='FINALIZADO' and p.finalizado_at) else '-' }}"
-                        >
-                            Ver Detalle
-                        </button>
-                    </td>                 
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+          <table class="table" id="tablaPedidos">
+            <thead>
+              <tr>
+                <th>#</th><th>Cliente</th><th>Forma Pago</th><th>Seña</th><th>Teléfono</th><th>Estado</th><th>Total</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in ultimos %}
+              <tr>
+                <td>{{p.id}}</td>
+                <td>{{p.cliente}}</td>
+                <td>{{ p.forma_pago or "-" }}</td>
+                <td>{{ "Sí" if p.tiene_sena else "No" }}</td>
+                <td>{{p.telefono}}</td>
+                <td>
+                  {% if p.estado == "PENDIENTE" %}
+                    <span class="badge bg-warning text-dark">Pendiente</span>
+                  {% elif p.estado == "EN_CURSO" %}
+                    <span class="badge bg-secondary">En Curso</span>
+                  {% elif p.estado == "FINALIZADO" %}
+                    <span class="badge bg-success">Finalizado</span>
+                  {% endif %}
+                </td>
+                <td>${{"%.2f"|format(p.total)}}</td>
+                <td>
+                  <button 
+                    class="btn btn-outline-primary btn-sm"
+                    data-pedido-open="{{ p.id }}">
+                    Ver Detalle
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+
       </div>
     </div>
   </div>
@@ -209,22 +203,8 @@
               <td>${{ "%.2f"|format(pedido.total) }}</td>
               <td>
                 <button 
-                  class="btn btn-outline-primary btn-sm btn-ver-detalle"
-                  data-id="{{ pedido.id }}"
-                  data-cliente="{{ pedido.cliente }}"
-                  data-telefono="{{ pedido.telefono }}"
-                  data-forma_pago="{{ pedido.forma_pago }}"
-                  data-sena="{{ 'Sí' if pedido.tiene_sena else 'No' }}"
-                  data-monto_sena="{{ pedido.monto_sena }}"
-                  data-email="{{ pedido.email or '-' }}"
-                  data-direccion="{{ pedido.direccion or '-' }}"  
-                  data-estado="{{ pedido.estado }}"
-                  data-total="{{ pedido.total }}"
-                  data-observaciones="{{ pedido.observaciones or '-' }}"
-                  data-pendiente_at="{{ pedido.pendiente_at.strftime('%d/%m/%Y') if (pedido.estado=='PENDIENTE' and pedido.pendiente_at) else '-' }}"
-                  data-en_curso_at="{{ pedido.en_curso_at.strftime('%d/%m/%Y') if (pedido.estado=='EN_CURSO' and pedido.en_curso_at) else '-' }}"
-                  data-finalizado_at="{{ pedido.finalizado_at.strftime('%d/%m/%Y') if (pedido.estado=='FINALIZADO' and pedido.finalizado_at) else '-' }}"
-                  >
+                  class="btn btn-outline-primary btn-sm"
+                  data-pedido-open="{{ pedido.id }}">
                   Ver Detalle
                 </button>
               </td>
@@ -233,34 +213,6 @@
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Detalle Pedido -->
-<div class="modal fade" id="modalDetalle" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Detalle del Pedido</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p><strong>Cliente:</strong> <span id="det-cliente"></span></p>
-        <p><strong>Teléfono:</strong> <span id="det-telefono"></span></p>
-        <p><strong>Forma de Pago:</strong> <span id="det-forma-pago"></span></p>
-        <p><strong>Seña:</strong> <span id="det-sena"></span></p>
-        <p><strong>Monto Seña:</strong> $<span id="det-monto-sena"></span></p>
-        <p><strong>E-Mail:</strong> <span id="det-email"></span></p>
-        <p><strong>Dirección:</strong> <span id="det-direccion"></span></p>
-        <p><strong>Estado:</strong> <span id="det-estado"></span></p>
-        <p><strong>Total:</strong> $<span id="det-total"></span></p>
-        <p><strong>Observaciones:</strong></p>
-        <p><strong>Fecha Pendiente:</strong> <span id="det-pendiente-at"></span></p>
-        <p><strong>Fecha En Curso:</strong> <span id="det-en-curso-at"></span></p>
-        <p><strong>Fecha Finalizado:</strong> <span id="det-finalizado-at"></span></p>
-        <p id="det-observaciones" class="text-muted"></p>
       </div>
     </div>
   </div>
@@ -392,58 +344,11 @@ new Chart(document.getElementById("graficoBarras"), {
 });
 </script>
 
-<!-- Modal Ver Detalle -->
-<script>
-document.querySelectorAll(".btn-ver-detalle").forEach(btn => {
-  btn.addEventListener("click", function() {
-    document.getElementById("det-cliente").textContent = this.dataset.cliente || "-";
-    document.getElementById("det-telefono").textContent = this.dataset.telefono || "-";
-    document.getElementById("det-forma-pago").textContent = this.dataset.forma_pago || "-";
-    document.getElementById("det-sena").textContent = this.dataset.sena || "No";
-    document.getElementById("det-monto-sena").textContent = this.dataset.monto_sena ? parseFloat(this.dataset.monto_sena).toFixed(2) : "-";
-    document.getElementById("det-email").textContent = this.dataset.email || "-";
-    document.getElementById("det-direccion").textContent = this.dataset.direccion || "-";
-    document.getElementById("det-estado").textContent = this.dataset.estado || "-";
-    document.getElementById("det-total").textContent = parseFloat(this.dataset.total).toFixed(2);
-    document.getElementById("det-observaciones").textContent = this.dataset.observaciones || "-";
-    document.getElementById("det-pendiente-at").textContent = this.dataset.pendiente_at || "-";
-    document.getElementById("det-en-curso-at").textContent = this.dataset.en_curso_at || "-";
-    document.getElementById("det-finalizado-at").textContent = this.dataset.finalizado_at || "-";
-
-    const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
-    modal.show();
-  });
-});
-</script>
-
 <!-- Script Filtros Modal Pedidos -->
 <script>
 const buscarInput = document.getElementById("buscarCliente");
 const estadoSelect = document.getElementById("filtroEstado");
 const tablaBody = document.querySelector("#modalTablaExpandida tbody");
-
-tablaBody.addEventListener("click", function(e) {
-
-    const btn = e.target.closest(".btn-ver-detalle");
-    if (!btn) return;
-
-    document.getElementById("det-cliente").textContent = btn.dataset.cliente || "-";
-    document.getElementById("det-telefono").textContent = btn.dataset.telefono || "-";
-    document.getElementById("det-forma-pago").textContent = btn.dataset.forma_pago || "-";
-    document.getElementById("det-sena").textContent = btn.dataset.sena || "No";
-    document.getElementById("det-monto-sena").textContent = btn.dataset.monto_sena ? parseFloat(btn.dataset.monto_sena).toFixed(2) : "-";
-    document.getElementById("det-email").textContent = btn.dataset.email || "-";
-    document.getElementById("det-direccion").textContent = btn.dataset.direccion || "-";
-    document.getElementById("det-estado").textContent = btn.dataset.estado || "-";
-    document.getElementById("det-total").textContent = btn.dataset.total ? parseFloat(btn.dataset.total).toFixed(2) : "0.00";
-    document.getElementById("det-observaciones").textContent = btn.dataset.observaciones || "-";
-    document.getElementById("det-pendiente-at").textContent = btn.dataset.pendiente_at || "-";
-    document.getElementById("det-en-curso-at").textContent = btn.dataset.en_curso_at || "-";
-    document.getElementById("det-finalizado-at").textContent = btn.dataset.finalizado_at || "-";
-
-    const modal = new bootstrap.Modal(document.getElementById("modalDetalle"));
-    modal.show();
-});
 
 async function cargarPedidos() {
 
@@ -478,19 +383,9 @@ async function cargarPedidos() {
                 <td>$${p.total.toFixed(2)}</td>
                 <td>
                     <button 
-                        class="btn btn-outline-primary btn-sm btn-ver-detalle"
-                        data-id="${p.id}"
-                        data-cliente="${p.cliente}"
-                        data-telefono="${p.telefono}"
-                        data-forma_pago="${p.forma_pago}"
-                        data-sena="${p.sena}"
-                        data-estado="${p.estado}"
-                        data-total="${p.total}"
-                        data-pendiente_at="${p.pendiente_at}"
-                        data-en_curso_at="${p.en_curso_at}"
-                        data-finalizado_at="${p.finalizado_at}"
-                    >
-                        Ver Detalle
+                        class="btn btn-outline-primary btn-sm"
+                        data-pedido-open="${p.id}">
+                      Ver Detalle
                     </button>
                 </td>
             </tr>
@@ -508,4 +403,33 @@ buscarInput.addEventListener("input", function() {
 document.getElementById("modalTablaExpandida")
     .addEventListener("shown.bs.modal", cargarPedidos);
 </script>
+
+<!-- Carrusel graficos -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const shell = document.querySelector(".charts-shell");
+  if (!shell) return;
+
+  const track = shell.querySelector(".charts-track");
+  const btnL  = shell.querySelector(".charts-nav.left");
+  const btnR  = shell.querySelector(".charts-nav.right");
+
+  function slideWidth() {
+    const slide = track.querySelector(".charts-slide");
+    if (!slide) return 520; 
+    const gap = parseInt(getComputedStyle(track).gap || "16", 10);
+    return slide.getBoundingClientRect().width + gap;
+  }
+
+  btnL?.addEventListener("click", () => {
+    track.scrollBy({ left: -slideWidth(), behavior: "smooth" });
+  });
+
+  btnR?.addEventListener("click", () => {
+    track.scrollBy({ left:  slideWidth(), behavior: "smooth" });
+  });
+});
+</script>
+
+{% include "partials/pedido_modal.html" %}
 {% endblock %}

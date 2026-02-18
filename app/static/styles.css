@@ -35,6 +35,60 @@
 .chart-box canvas{ width: 100% !important; height: 100% !important; display:block; }
 
 /* =========================
+   Charts Slider (Dashboard) 
+========================= */
+.charts-shell{
+  position: relative;
+}
+
+.chart-box{
+  position: relative;
+  height: 260px;          
+  width: 100%;
+}
+.chart-box canvas{
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.charts-track{
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 6px 54px;      
+}
+
+.charts-slide{
+  flex: 0 0 440px;        
+  scroll-snap-align: start;
+}
+
+.charts-nav{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);  
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  font-size: 20px;
+  line-height: 36px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.charts-nav.left{ left: 10px; }
+.charts-nav.right{ right: 10px; }
+
+.charts-track::-webkit-scrollbar{ height: 10px; }
+
+/* =========================
    Kanban Columns
 ========================= */
 .kanban-column{
@@ -412,4 +466,60 @@
   padding: 10px 12px;
   border-radius: 10px;
   font-weight: 700;
+}
+
+/* Barra naranja: título + badge a la derecha */
+.pedido-titulo{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Para que el texto no empuje raro */
+.pedido-titulo-text{
+  min-width: 0;
+}
+
+/* Badge estado: mismo estilo que venís usando */
+#mp-estado-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: .8rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+/* mismos colores que dashboard */
+.mp-badge-pendiente{ background: #ffc107; color: #212529; } /* warning + text-dark */
+.mp-badge-curso{ background: #6c757d; color: #fff; }        /* secondary */
+.mp-badge-finalizado{ background: #198754; color: #fff; }   /* success */
+
+/* logo */
+aside .sidebar-brand{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  padding: 8px 6px 14px !important;
+  margin-bottom: 6px !important;
+  text-decoration:none !important;
+  color:#fff !important;
+}
+
+aside .sidebar-brand .brand-logo{
+  width: 52px;          
+  height: 52px;
+  object-fit: contain;
+  background: transparent;  
+  padding: 0;               
+  border-radius: 0;         
+  display: block;
+}
+
+aside .sidebar-brand .brand-text{
+  font-weight: 800;
+  letter-spacing: .2px;
+  line-height: 1;
 }

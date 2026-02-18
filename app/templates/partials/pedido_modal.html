@@ -1,0 +1,245 @@
+{# templates/partials/pedido_modal.html #}
+
+<!-- Modal Ver Más (Reutilizable) -->
+<div class="modal fade" id="modalPedido" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-custom">
+    <div class="modal-content pedido-modal">
+
+      <div class="modal-header pedido-modal-header">
+        <div class="mp-header-wrap w-100">
+          <div class="mp-header-title" id="mp-cliente">Cliente</div>
+          <div class="mp-header-sub" id="mp-orden">Nro de Orden: #-</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body pedido-modal-body">
+
+        <div class="pedido-datos">
+          <div class="dato"><strong>Domicilio:</strong> <span id="mp-domicilio"></span></div>
+          <div class="dato"><strong>Teléfono:</strong> <span id="mp-telefono"></span></div>
+          <div class="dato"><strong>E-mail:</strong> <span id="mp-email"></span></div>
+          <div class="dato"><strong>Observaciones:</strong> <span id="mp-obs"></span></div>
+        </div>
+
+        <hr class="pedido-sep">
+
+        <div class="pedido-detalle">
+          <div class="pedido-box">
+            <div class="seccion-titulo pedido-titulo">
+              <span class="pedido-titulo-text">Detalle del Pedido</span>
+              <span id="mp-estado-badge" class="badge d-none"></span>
+            </div>
+
+            <div id="mp-items" class="pedido-items"></div>
+
+            <div class="pedido-total">
+              <span><strong>Total:</strong></span>
+              <span id="mp-total" class="fw-bold"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="forma-pago-box">
+          <div class="seccion-titulo">Forma de Pago</div>
+          <div class="dato"><strong>Forma:</strong> <span id="mp-forma"></span></div>
+          <div class="dato"><strong>Seña:</strong> <span id="mp-sena"></span></div>
+          <div class="dato"><strong>Debe:</strong> <span id="mp-debe"></span></div>
+
+          <div class="mp-addpago-wrap">
+            <button type="button" class="btn btn-success" id="mp-add-pago">
+              <span class="mp-plus">+</span> Agregar Pago
+            </button>
+          </div>
+        </div>
+
+        <div class="pedido-acciones">
+          <a class="btn btn-outline-secondary" id="mp-imprimir" target="_blank">
+            <i class="bi bi-printer"></i> Imprimir
+          </a>
+
+          <button type="button" class="btn btn-outline-secondary text-danger" id="mp-eliminar">
+            <i class="bi bi-trash"></i> Eliminar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * Modal único reutilizable.
+ * Abre con: abrirDetallePedido(id) o click en cualquier elemento con data-pedido-open="ID"
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const modalEl = document.getElementById("modalPedido");
+  if (!modalEl) return;
+
+  const modal = new bootstrap.Modal(modalEl);
+  let pedidoActualId = null;
+
+  const badge = document.getElementById("mp-estado-badge");
+
+  function setBadge(estado) {
+    // reset
+    badge.textContent = "";
+    badge.className = "badge"; // resetea todo
+    badge.classList.remove("d-none");
+
+    if (estado === "PENDIENTE") {
+      badge.textContent = "Pendiente";
+      badge.classList.add("mp-badge-pendiente");
+    } else if (estado === "EN_CURSO") {
+      badge.textContent = "En Curso";
+      badge.classList.add("mp-badge-curso");
+    } else if (estado === "FINALIZADO") {
+      badge.textContent = "Finalizado";
+      badge.classList.add("mp-badge-finalizado");
+    } else {
+      // si viene vacío o raro
+      badge.classList.add("d-none");
+    }
+  }
+
+  window.abrirDetallePedido = async function(id) {
+    pedidoActualId = id;
+
+    // ===== RESET UI =====
+    document.getElementById("mp-orden").textContent = `Nro de Orden: #${id}`;
+    document.getElementById("mp-cliente").textContent = "Cargando...";
+    document.getElementById("mp-domicilio").textContent = "-";
+    document.getElementById("mp-telefono").textContent = "-";
+    document.getElementById("mp-email").textContent = "-";
+    document.getElementById("mp-obs").textContent = "-";
+    document.getElementById("mp-items").innerHTML = "<div class='text-muted'>Cargando...</div>";
+    document.getElementById("mp-total").textContent = "-";
+    document.getElementById("mp-forma").textContent = "-";
+    document.getElementById("mp-sena").textContent = "-";
+
+    const elDebe = document.getElementById("mp-debe");
+    elDebe.textContent = "-";
+    elDebe.classList.remove("debe-ok", "debe-bad");
+
+    // ocultar badge mientras carga
+    badge.className = "badge d-none";
+    badge.textContent = "";
+
+    // Link imprimir
+    document.getElementById("mp-imprimir").setAttribute("href", `/pedidos/${id}/pdf`);
+
+    // Mostrar modal
+    modal.show();
+
+    // ===== FETCH =====
+    let p;
+    try {
+      const res = await fetch(`/api/pedidos/${id}`);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      p = await res.json();
+    } catch (err) {
+      document.getElementById("mp-items").innerHTML =
+        "<div class='text-danger'>Error cargando el pedido</div>";
+      return;
+    }
+
+    // ✅ Badge con estado (ahora viene desde backend)
+    setBadge(p.estado);
+
+    // ===== DATOS =====
+    document.getElementById("mp-cliente").textContent = (p.cliente || "-").toString();
+    document.getElementById("mp-domicilio").textContent = p.direccion || "-";
+    document.getElementById("mp-telefono").textContent = p.telefono || "-";
+    document.getElementById("mp-email").textContent = p.email || "-";
+    document.getElementById("mp-obs").textContent = p.observaciones || "-";
+    document.getElementById("mp-orden").textContent = `Nro de Orden: #${p.id ?? id}`;
+
+    // ===== PAGO =====
+    document.getElementById("mp-forma").textContent = p.forma_pago || "-";
+
+    const senaTxt = (p.monto_sena !== null && p.monto_sena !== undefined)
+      ? `$${Number(p.monto_sena).toLocaleString('es-AR')}`
+      : "-";
+    document.getElementById("mp-sena").textContent = senaTxt;
+
+    const totalTxt = `$${Number(p.total || 0).toLocaleString('es-AR')}`;
+    document.getElementById("mp-total").textContent = totalTxt;
+
+    // ===== DEBE =====
+    const debe = Number(p.total || 0) - Number(p.monto_sena || 0);
+    elDebe.classList.remove("debe-ok", "debe-bad");
+
+    if (debe > 0) {
+      elDebe.textContent = `$${debe.toLocaleString('es-AR')}`;
+      elDebe.classList.add("debe-bad");
+    } else {
+      elDebe.textContent = "No hay Deudas";
+      elDebe.classList.add("debe-ok");
+    }
+
+    // ===== ITEMS =====
+    const cont = document.getElementById("mp-items");
+    cont.innerHTML = "";
+
+    if (!p.items || !p.items.length) {
+      cont.innerHTML = "<div class='text-muted'>Sin items</div>";
+    } else {
+      p.items.forEach(it => {
+        const row = document.createElement("div");
+        row.className = "pedido-item-row";
+        const subtotal = `$${Number(it.subtotal || 0).toLocaleString('es-AR')}`;
+
+        row.innerHTML = `
+          <div class="pedido-item-desc">${it.descripcion || "-"}</div>
+          <div class="pedido-item-dots"></div>
+          <div class="pedido-item-sub">${subtotal}</div>
+        `;
+        cont.appendChild(row);
+      });
+    }
+  };
+
+  // Click global: data-pedido-open
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-pedido-open]");
+    if (!el) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const id = el.getAttribute("data-pedido-open");
+    if (!id) return;
+    window.abrirDetallePedido(id);
+  });
+
+  // Eliminar
+  document.getElementById("mp-eliminar")?.addEventListener("click", async () => {
+    if (!pedidoActualId) return;
+    if (!confirm("¿Eliminar pedido?")) return;
+
+    const res = await fetch(`/pedidos/eliminar/${pedidoActualId}`, { method: "POST" });
+    if (!res.ok) {
+      alert("No se pudo eliminar.");
+      return;
+    }
+
+    modal.hide();
+    window.location.reload();
+  });
+
+  // Placeholder add pago
+  document.getElementById("mp-add-pago")?.addEventListener("click", () => {
+    alert("Agregar Pago lo hacemos después ✅");
+  });
+
+  // Fix backdrop zombie
+  modalEl.addEventListener("hidden.bs.modal", () => {
+    if (!document.querySelector(".modal.show")) {
+      document.body.classList.remove("modal-open");
+      document.body.style.removeProperty("padding-right");
+      document.querySelectorAll(".modal-backdrop").forEach(b => b.remove());
+    }
+  });
+});
+</script>

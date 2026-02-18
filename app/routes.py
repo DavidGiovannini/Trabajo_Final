@@ -1,14 +1,12 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required
 from . import db
 from .models import Producto, PrecioPorMetro, Pedido, PedidoItem
 from sqlalchemy import func
 from datetime import datetime, timedelta
-from flask import send_file
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from datetime import datetime, timedelta
 
 def register_routes(app):
     @app.get("/")
@@ -205,6 +203,7 @@ def register_routes(app):
             "forma_pago": p.forma_pago or "-",
             "monto_sena": float(p.monto_sena) if p.monto_sena else None,
             "total": float(p.total or 0.0),
+            "estado": p.estado,
             "items": items,
         }
         

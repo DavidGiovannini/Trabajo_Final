@@ -14,7 +14,10 @@
 
   <!-- Sidebar -->
   <aside class="text-white p-3" style="width:260px; flex: 0 0 260px; background-color:#0b2a4a;">
-    <div class="fw-bold fs-5 mb-3">S. Valvo y Cía</div>
+    <a class="sidebar-brand" href="{{ url_for('dashboard') }}">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="brand-logo">
+      <span class="brand-text">S. Valvo y Cía</span>
+    </a>
 
     <div class="small text-white-50 mb-2">Atajos</div>
     <div class="list-group list-group-flush">
