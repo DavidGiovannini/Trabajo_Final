@@ -20,5 +20,6 @@ if __name__ == "__main__":
 #3- La sección de Monto Pagado que esté y no que se desplegue al seleccionar el tipo.
 #4- El botón "Adjuntar Comprobante", que esté debajo de el campo de "Monto Pagado" y que su carga, asi como tambien el archivo adjunto que se vea al lado.
 #5- Que en el título de este modal diga el numero del pago (ID).
+#6- Limpiar codigo repetido el styles.css
 
-#6- Hacer la grilla con los pagos en la parte de forma de pago haciendo que la seña aparezca como primer pago, en los casos que tenga.
+#7- Hacer la grilla con los pagos en la parte de forma de pago haciendo que la seña aparezca como primer pago, en los casos que tenga.
