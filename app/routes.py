@@ -1,12 +1,14 @@
 from flask import render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required
 from . import db
-from .models import Producto, PrecioPorMetro, Pedido, PedidoItem
+from .models import Producto, PrecioPorMetro, Pedido, PedidoItem, Pago, PagoComprobante
 from sqlalchemy import func
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+import os
+from werkzeug.utils import secure_filename
 
 def register_routes(app):
     @app.get("/")
@@ -102,7 +104,6 @@ def register_routes(app):
         monto_sena = request.form.get("monto_sena")
         observaciones = request.form.get("observaciones", "").strip() or None
 
-        tiene_sena = True if monto_sena else False
         monto_sena = float(monto_sena) if monto_sena else None
 
         if not cliente or not telefono:
@@ -121,7 +122,7 @@ def register_routes(app):
 
         precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
 
-        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago=forma_pago, tiene_sena=tiene_sena, monto_sena=monto_sena, pendiente_at=datetime.utcnow())
+        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago_preferida=forma_pago, monto_sena=monto_sena)
         db.session.add(pedido)
         db.session.flush()  # para obtener pedido.id
 
@@ -193,6 +194,31 @@ def register_routes(app):
                 "subtotal": float(it.subtotal or 0.0),
             })
 
+        # pagos (opcional para mostrar historial)
+        pagos = []
+        total_pagado = 0.0
+
+        for pay in getattr(p, "pagos", []) or []:
+            total_pagado += float(pay.monto_pagado or 0.0)
+            pagos.append({
+                "id": pay.id,
+                "metodo": pay.metodo,
+                "monto_pagado": float(pay.monto_pagado or 0.0),
+                "cuotas": pay.cuotas,
+                "monto_cuota": float(pay.monto_cuota) if pay.monto_cuota is not None else None,
+                "fecha_pago": pay.fecha_pago.strftime("%Y-%m-%d") if pay.fecha_pago else None,
+                "comprobantes": [
+                    {
+                        "id": c.id,
+                        "original_name": c.original_name,
+                        "url": url_for("ver_comprobante", filename=c.filename)
+                    } for c in (pay.comprobantes or [])
+                ]
+            })
+
+        monto_sena_val = float(p.monto_sena or 0.0)
+        debe = float(p.total or 0.0) - monto_sena_val - total_pagado
+
         return {
             "id": p.id,
             "cliente": p.cliente,
@@ -200,13 +226,16 @@ def register_routes(app):
             "email": p.email or "-",
             "direccion": p.direccion or "-",
             "observaciones": p.observaciones or "-",
-            "forma_pago": p.forma_pago or "-",
+            "forma_pago": p.forma_pago_preferida or "-",   
             "monto_sena": float(p.monto_sena) if p.monto_sena else None,
+            "total_pagado": float(total_pagado),
+            "debe": float(debe),
             "total": float(p.total or 0.0),
             "estado": p.estado,
             "items": items,
+            "pagos": pagos
         }
-        
+    
     @app.get("/dashboard")
     @login_required
     def dashboard():
@@ -309,7 +338,7 @@ def register_routes(app):
             fin = "-"
 
             if estado == "PENDIENTE":
-                pend = p.pendiente_at.strftime("%d/%m/%Y") if p.pendiente_at else "-"
+                pend = p.created_at.strftime("%d/%m/%Y") if p.created_at else "-"
             elif estado == "EN_CURSO":
                 curso = p.en_curso_at.strftime("%d/%m/%Y") if p.en_curso_at else "-"
             elif estado == "FINALIZADO":
@@ -318,7 +347,7 @@ def register_routes(app):
             data.append({
                 "id": p.id,
                 "cliente": p.cliente,
-                "forma_pago": p.forma_pago or "-",
+                "forma_pago": p.forma_pago_preferida or "-",
                 "sena": "Sí" if p.monto_sena else "No",
                 "telefono": p.telefono,
                 "estado": p.estado,
@@ -413,16 +442,13 @@ def register_routes(app):
 
         # setear fechas automáticas la primera vez que entra a cada estado
         if nuevo_estado == "PENDIENTE":
-            if not pedido.pendiente_at:
-                pedido.pendiente_at = ahora
+            pedido.pendiente_at = ahora
 
         elif nuevo_estado == "EN_CURSO":
-            if not pedido.en_curso_at:
-                pedido.en_curso_at = ahora
+            pedido.en_curso_at = ahora
 
         elif nuevo_estado == "FINALIZADO":
-            if not pedido.finalizado_at:
-                pedido.finalizado_at = ahora
+            pedido.finalizado_at = ahora
 
         pedido.estado = nuevo_estado
         db.session.commit()
@@ -448,3 +474,106 @@ def register_routes(app):
         except Exception as e:
             print("ERROR:", e)
             return str(e), 500
+    
+    @app.post("/api/pedidos/<int:pid>/pagos")
+    @login_required
+    def api_crear_pago(pid):
+        pedido = Pedido.query.get_or_404(pid)
+
+        metodo = (request.form.get("metodo") or "").strip()
+        fecha_str = (request.form.get("fecha_pago") or "").strip()
+        monto_str = (request.form.get("monto_pagado") or "").strip()
+
+        if not metodo:
+            return {"error": "metodo requerido"}, 400
+        if not fecha_str:
+            return {"error": "fecha_pago requerida"}, 400
+        if not monto_str:
+            return {"error": "monto_pagado requerido"}, 400
+
+        try:
+            monto_pagado = float(monto_str)
+            if monto_pagado <= 0:
+                raise ValueError()
+        except ValueError:
+            return {"error": "monto_pagado inválido"}, 400
+
+        try:
+            fecha_pago = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+        except ValueError:
+            return {"error": "fecha_pago inválida"}, 400
+
+        cuotas = request.form.get("cuotas")
+        monto_cuota = request.form.get("monto_cuota")
+
+        pago = Pago(
+            pedido_id=pedido.id,
+            metodo=metodo,
+            monto_pagado=monto_pagado,
+            fecha_pago=fecha_pago
+        )
+
+        if metodo == "Tarjeta":
+            try:
+                c = int(cuotas or 0)
+                mc = float(monto_cuota or 0)
+                if c < 1 or mc <= 0:
+                    raise ValueError()
+            except ValueError:
+                return {"error": "cuotas/monto_cuota inválidos"}, 400
+
+            pago.cuotas = c
+            pago.monto_cuota = mc
+
+        db.session.add(pago)
+        db.session.flush()  # pago.id
+
+        # comprobante (opcional)
+        file = request.files.get("comprobante")
+        comprobante_url = None
+
+        if file and file.filename:
+            # validar tipo
+            allowed = {"application/pdf", "image/png", "image/jpeg"}
+            if file.mimetype not in allowed:
+                return {"error": "Tipo de archivo no permitido"}, 400
+
+            uploads_dir = app.config.get("UPLOADS_DIR")
+            if not uploads_dir:
+                return {"error": "Uploads no configurado"}, 500
+
+            original = file.filename
+            safe = secure_filename(original)
+            unique = f"pago_{pago.id}_{int(datetime.utcnow().timestamp())}_{safe}"
+            path = os.path.join(uploads_dir, unique)
+            file.save(path)
+
+            comp = PagoComprobante(
+                pago_id=pago.id,
+                filename=unique,
+                original_name=original,
+                mimetype=file.mimetype,
+                size_bytes=getattr(file, "content_length", None)
+            )
+            db.session.add(comp)
+
+            comprobante_url = url_for("ver_comprobante", filename=unique)
+
+        db.session.commit()
+
+        return {
+            "ok": True,
+            "pago_id": pago.id,
+            "comprobante_url": comprobante_url
+        }, 201
+    
+    @app.get("/uploads/comprobantes/<path:filename>")
+    @login_required
+    def ver_comprobante(filename):
+        uploads_dir = app.config.get("UPLOADS_DIR")
+        if not uploads_dir:
+            return "Uploads no configurado", 500
+        full = os.path.join(uploads_dir, filename)
+        if not os.path.exists(full):
+            return "No encontrado", 404
+        return send_file(full)

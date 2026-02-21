@@ -17,6 +17,10 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+    # uploads (comprobantes)
+    uploads_dir = Path(app.instance_path) / "uploads" / "comprobantes"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    app.config["UPLOADS_DIR"] = str(uploads_dir)
 
     db.init_app(app)
     migrate = Migrate(app, db)

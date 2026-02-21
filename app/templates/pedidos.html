@@ -228,9 +228,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("click", (e) => {
-    if (e.target.closest("input, select, textarea, a, button")) return;
+    const toggle = e.target.closest(".pedido-toggle");
+    if (!toggle) return;
 
-    const card = e.target.closest(".pedido-nueva");
+    e.preventDefault();
+    e.stopPropagation();
+
+    const card = toggle.closest(".pedido-nueva");
     if (!card) return;
 
     const body = card.querySelector(".pedido-body");
