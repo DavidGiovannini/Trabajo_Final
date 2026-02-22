@@ -100,11 +100,32 @@ def register_routes(app):
         telefono = request.form.get("telefono", "").strip()
         email = request.form.get("email", "").strip()
         direccion = request.form.get("direccion", "").strip()
-        forma_pago = request.form.get("forma_pago")
-        monto_sena = request.form.get("monto_sena")
+        entrega_sena = request.form.get("entrega_sena") == "1"
+        forma_pago = (request.form.get("forma_pago") or "").strip()
+        monto_sena_str = (request.form.get("monto_sena") or "").strip()
         observaciones = request.form.get("observaciones", "").strip() or None
 
-        monto_sena = float(monto_sena) if monto_sena else None
+        monto_sena = None
+
+        if entrega_sena:
+            if not forma_pago:
+                flash("Seleccioná la forma de pago de la seña.", "warning")
+                return redirect(url_for("presupuestador"))
+
+            if not monto_sena_str:
+                flash("Ingresá el monto de la seña.", "warning")
+                return redirect(url_for("presupuestador"))
+
+            try:
+                monto_sena = float(monto_sena_str)
+                if monto_sena <= 0:
+                    raise ValueError()
+            except ValueError:
+                flash("Monto de seña inválido.", "danger")
+                return redirect(url_for("presupuestador"))
+        else:
+            forma_pago = None
+            monto_sena = None
 
         if not cliente or not telefono:
             flash("Completá Cliente y Teléfono.", "warning")
@@ -122,7 +143,16 @@ def register_routes(app):
 
         precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
 
-        pedido = Pedido(cliente=cliente, telefono=telefono, email=email, direccion=direccion, observaciones=observaciones, total=0.0, forma_pago_preferida=forma_pago, monto_sena=monto_sena)
+        pedido = Pedido(
+            cliente=cliente,
+            telefono=telefono,
+            email=email,
+            direccion=direccion,
+            observaciones=observaciones,
+            total=0.0,
+            forma_pago_preferida=forma_pago,
+            monto_sena=monto_sena
+        )
         db.session.add(pedido)
         db.session.flush()  # para obtener pedido.id
 
@@ -202,6 +232,7 @@ def register_routes(app):
             total_pagado += float(pay.monto_pagado or 0.0)
             pagos.append({
                 "id": pay.id,
+                "pedido_id": pay.id,
                 "metodo": pay.metodo,
                 "monto_pagado": float(pay.monto_pagado or 0.0),
                 "cuotas": pay.cuotas,
@@ -433,16 +464,18 @@ def register_routes(app):
 
         nuevo_estado = (data.get("estado") or "").upper()
         if nuevo_estado not in ["PENDIENTE", "EN_CURSO", "FINALIZADO"]:
-            return "Estado inválido", 400
+            return {"error": "Estado inválido"}, 400
 
         if pedido.estado == nuevo_estado:
-            return "", 204
+            return {"ok": True}, 200
 
         ahora = datetime.utcnow()
 
-        # setear fechas automáticas la primera vez que entra a cada estado
         if nuevo_estado == "PENDIENTE":
-            pedido.pendiente_at = ahora
+            if hasattr(pedido, "pendiente_at"):
+                pedido.pendiente_at = ahora
+            else:
+                pedido.created_at = ahora
 
         elif nuevo_estado == "EN_CURSO":
             pedido.en_curso_at = ahora
@@ -452,7 +485,19 @@ def register_routes(app):
 
         pedido.estado = nuevo_estado
         db.session.commit()
-        return "", 204
+
+        if nuevo_estado == "PENDIENTE":
+            fecha = (pedido.pendiente_at if hasattr(pedido, "pendiente_at") else pedido.created_at)
+        elif nuevo_estado == "EN_CURSO":
+            fecha = pedido.en_curso_at
+        else:
+            fecha = pedido.finalizado_at
+
+        return {
+            "ok": True,
+            "estado": nuevo_estado,
+            "fecha_estado": fecha.strftime("%d/%m/%Y") if fecha else "-"
+        }, 200
     
     @app.post("/pedidos/eliminar/<int:id>")
     @login_required
@@ -577,3 +622,16 @@ def register_routes(app):
         if not os.path.exists(full):
             return "No encontrado", 404
         return send_file(full)
+    
+    @app.delete("/api/pagos/<int:pay_id>")
+    @login_required
+    def api_eliminar_pago(pay_id):
+        pago = Pago.query.get_or_404(pay_id)
+
+        # (opcional) si querés, podés validar que el pedido esté activo
+        pedido = Pedido.query.get_or_404(pago.pedido_id)
+
+        db.session.delete(pago)
+        db.session.commit()
+
+        return {"ok": True}, 200

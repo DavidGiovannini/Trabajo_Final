@@ -15,11 +15,9 @@ if __name__ == "__main__":
 #git pull origin main
 
 # BUGS
-#1- Fecha de actualización en los pedidos.
-#2- El desplegar/contraer de las cards en pedidos, no funciona al tocar toda la card.
-#3- La sección de Monto Pagado que esté y no que se desplegue al seleccionar el tipo.
-#4- El botón "Adjuntar Comprobante", que esté debajo de el campo de "Monto Pagado" y que su carga, asi como tambien el archivo adjunto que se vea al lado.
-#5- Que en el título de este modal diga el numero del pago (ID).
-#6- Limpiar codigo repetido el styles.css
 
-#7- Hacer la grilla con los pagos en la parte de forma de pago haciendo que la seña aparezca como primer pago, en los casos que tenga.
+#1- Ver la fecha de nuevo no aparece en las cards de pedidos.
+#2- Arreglar el formulario al apretar el botón "Ver", que el cancelar este mas centrado y que el nombre sea el numero del pago.
+#3- Arreglar el funcionamiento cuando se elimina un pago, que no solo te actualice el lo que debe sino que te permita crear otro pago, hoy esto esta bugeado y te abre el formulario de "Ver".
+
+#4- Ver de Arreglar el formulario para agregar mas formas de pago en el presupuestador y ver lo de tarjeta para agregar las cuotas.

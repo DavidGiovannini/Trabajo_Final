@@ -214,7 +214,16 @@ document.addEventListener("DOMContentLoaded", () => {
             evt.from.appendChild(card);
             refreshEmptyColumns();
             alert("Error al mover el pedido");
+            return;
           }
+
+          const data = await res.json();
+
+          const fechaEl = card.querySelector(".pedido-fecha");
+          if (fechaEl && data.fecha_estado) {
+            fechaEl.textContent = data.fecha_estado;
+          }
+
         } catch (e) {
           evt.from.appendChild(card);
           refreshEmptyColumns();
@@ -227,6 +236,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  //Desplegar/Contraer en la card
+  document.addEventListener("click", (e) => {
+    const card = e.target.closest(".pedido-nueva");
+    if (!card) return;
+
+    if (e.target.closest("button, a, input, select, textarea, [data-pedido-open]")) return;
+
+    const body = card.querySelector(".pedido-body");
+    if (!body) return;
+
+    body.classList.toggle("pedido-collapsed");
+    card.classList.toggle("is-open");
+
+    const icon = card.querySelector(".pedido-toggle i");
+    if (icon) {
+      icon.classList.toggle("bi-chevron-down");
+      icon.classList.toggle("bi-chevron-up");
+    }
+  });
+
+  //Desplegar/Contraer en la flechita
   document.addEventListener("click", (e) => {
     const toggle = e.target.closest(".pedido-toggle");
     if (!toggle) return;

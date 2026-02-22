@@ -1,14 +1,12 @@
-/* =========================
+/* =========================================================
    KPI Cards
-========================= */
+========================================================= */
 .kpi-card{
   border-radius: 10px;
   min-height: 110px;
-  transition: all .25s ease;
   cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease;
 }
-.kpi-card h2{ transition: transform .25s ease; }
-.kpi-card:hover h2{ transform: scale(1.05); }
 .kpi-card:hover{
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 28px rgba(0,0,0,.15);
@@ -19,38 +17,33 @@
 .kpi-gris{ --bs-card-bg:#4a4a4a; color:#fff !important; }
 .kpi-blanco{ --bs-card-bg:#ffffff; color:#000 !important; }
 
-/* =========================
-   Dashboard Cards
-========================= */
+/* =========================================================
+   Dashboard Cards + Charts
+========================================================= */
 .dashboard-card{
   background: rgba(255,255,255,.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.4);
   border-radius: 14px;
   box-shadow: 0 8px 25px rgba(0,0,0,.08);
-  border: 1px solid rgba(255,255,255,.4);
-}
-
-.chart-box{ position: relative; height: 360px; width: 100%; }
-.chart-box canvas{ width: 100% !important; height: 100% !important; display:block; }
-
-/* =========================
-   Charts Slider (Dashboard) 
-========================= */
-.charts-shell{
-  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .chart-box{
   position: relative;
-  height: 260px;          
   width: 100%;
+  height: 260px;
 }
 .chart-box canvas{
+  display: block;
   width: 100% !important;
   height: 100% !important;
-  display: block;
 }
+
+/* =========================================================
+   Charts Slider (Dashboard)
+========================================================= */
+.charts-shell{ position: relative; }
 
 .charts-track{
   display: flex;
@@ -58,22 +51,21 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  padding: 6px 54px;      
+  padding: 6px 54px;
 }
-
 .charts-slide{
-  flex: 0 0 440px;        
+  flex: 0 0 440px;
   scroll-snap-align: start;
 }
 
 .charts-nav{
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);  
+  transform: translateY(-50%);
   width: 38px;
   height: 38px;
-  border: 1px solid rgba(0,0,0,.15);
   border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.15);
   background: rgba(255,255,255,.92);
   box-shadow: 0 6px 16px rgba(0,0,0,.12);
   font-size: 20px;
@@ -82,21 +74,18 @@
   cursor: pointer;
   z-index: 5;
 }
-
 .charts-nav.left{ left: 10px; }
 .charts-nav.right{ right: 10px; }
-
 .charts-track::-webkit-scrollbar{ height: 10px; }
 
-/* =========================
+/* =========================================================
    Kanban Columns
-========================= */
+========================================================= */
 .kanban-column{
   padding: 12px;
   border-radius: 10px;
   background: rgba(255,255,255,.55);
   border: 2px solid rgba(11,42,74,.20);
-  min-height: 0;
   height: auto;
   transition: background .15s ease, border-color .15s ease, min-height .15s ease;
 }
@@ -105,7 +94,6 @@
   min-height: 320px;
   background: rgba(255,255,255,.75);
   border: 2px dashed rgba(11,42,74,.35);
-  display: block;
   position: relative;
   padding-top: 18px;
 }
@@ -119,9 +107,9 @@
   margin-bottom: 10px;
 }
 
-/* =========================
+/* =========================================================
    Pedido Cards (Kanban)
-========================= */
+========================================================= */
 .pedido-card{
   background: #fff;
   border-radius: 10px;
@@ -213,7 +201,6 @@
   margin-bottom: 6px;
 }
 
-/* Items dentro del kanban */
 .pedido-items{
   background: rgba(255,255,255,.55);
   border: 1px solid rgba(0,0,0,.08);
@@ -252,18 +239,17 @@
 }
 .btn-vermas:hover{ filter: brightness(1.06); }
 
-/* Drag shadows */
 .sortable-chosen,
 .sortable-fallback{ box-shadow: 0 12px 26px rgba(0,0,0,.14) !important; }
 .sortable-drag{ opacity: .95 !important; }
 
-/* =========================
+/* =========================================================
    Modal Pedido (Ver Más)
-========================= */
+========================================================= */
 .modal-custom{ max-width: 760px; }
 
 #modalPedido .modal-content{
-  border: 0 !important;                 /* ✅ SACA LA RAYITA (borde bootstrap) */
+  border: 0 !important;
   box-shadow: 0 10px 28px rgba(0,0,0,.18);
 }
 
@@ -278,14 +264,12 @@
 #modalPedido .modal-header{ border-bottom: 0 !important; }
 #modalPedido .modal-body{ border-top: 0 !important; }
 
-/* Header azul centrado */
 .pedido-modal-header{
   background: #0b2a4a;
   color: #fff;
   border: 0;
   position: relative;
 }
-
 .pedido-modal-header .btn-close{
   position: absolute;
   right: 14px;
@@ -296,16 +280,14 @@
 .mp-header-wrap{
   width: 100%;
   text-align: center;
-  padding-right: 34px; /* compensa la X */
+  padding-right: 34px;
 }
-
 .mp-header-title{
   text-transform: uppercase;
   font-weight: 900;
   letter-spacing: .8px;
   line-height: 1.1;
 }
-
 .mp-header-sub{
   margin-top: 4px;
   font-weight: 700;
@@ -313,7 +295,6 @@
   opacity: .95;
 }
 
-/* Sección datos cliente */
 .pedido-modal-body{ padding: 16px; background: #f6f3ee; }
 
 .pedido-datos{
@@ -328,10 +309,8 @@
 }
 .pedido-datos .dato:last-child{ border-bottom: 0; }
 
-/* Hr no lo usamos */
 .pedido-sep{ display:none !important; }
 
-/* Contenedor pedido (naranja pastel) */
 .pedido-box{
   margin-top: 14px;
   background: rgba(196,98,0,.08);
@@ -341,19 +320,23 @@
 }
 
 .seccion-titulo{
-  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 8px 12px;
   border-radius: 10px;
   font-weight: 800;
   margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  color: #fff;
 }
 .pedido-titulo{ background: #c46200; }
+.pedido-titulo-text{ min-width: 0; }
 
-/* Badge estado */
 #mp-estado-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   font-size: .8rem;
   padding: 6px 10px;
   border-radius: 999px;
@@ -362,7 +345,6 @@
 .mp-badge-curso{ background: #6c757d; color: #fff; }
 .mp-badge-finalizado{ background: #198754; color: #fff; }
 
-/* Items en modal: sin negrita + puntos */
 .pedido-box #mp-items.pedido-items{
   background: transparent;
   border: 0;
@@ -380,7 +362,6 @@
   gap: 10px;
   padding: 4px 2px;
 }
-
 .pedido-item-desc{
   flex: 0 1 auto;
   font-weight: 400;
@@ -388,13 +369,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .pedido-item-dots{
   flex: 1;
   border-bottom: 2px dotted rgba(0,0,0,0.25);
   transform: translateY(-2px);
 }
-
 .pedido-item-sub{
   min-width: 110px;
   text-align: right;
@@ -402,7 +381,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Total en negrita completo */
 .pedido-total{
   display: flex;
   justify-content: space-between;
@@ -415,7 +393,6 @@
   font-weight: 900;
 }
 
-/* Forma de pago verde pastel */
 .forma-pago-box{
   margin-top: 14px;
   background: rgba(34,120,70,.08);
@@ -428,11 +405,9 @@
   margin-top: 0;
 }
 
-/* Debe rojo/verde */
 .debe-bad{ color:#b02a37; font-weight: 900; }
 .debe-ok{ color:#1e7e34; font-weight: 900; }
 
-/* Agregar pago: centrado, chico, + */
 .mp-addpago-wrap{
   display:flex;
   justify-content:center;
@@ -454,7 +429,6 @@
   transform: translateY(1px);
 }
 
-/* Acciones: Imprimir / Eliminar prolijo */
 .pedido-acciones{
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -468,36 +442,9 @@
   font-weight: 700;
 }
 
-/* Barra naranja: título + badge a la derecha */
-.pedido-titulo{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-/* Para que el texto no empuje raro */
-.pedido-titulo-text{
-  min-width: 0;
-}
-
-/* Badge estado: mismo estilo que venís usando */
-#mp-estado-badge{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  font-size: .8rem;
-  padding: 6px 10px;
-  border-radius: 999px;
-}
-
-/* mismos colores que dashboard */
-.mp-badge-pendiente{ background: #ffc107; color: #212529; } /* warning + text-dark */
-.mp-badge-curso{ background: #6c757d; color: #fff; }        /* secondary */
-.mp-badge-finalizado{ background: #198754; color: #fff; }   /* success */
-
-/* logo */
+/* =========================================================
+   Sidebar Brand (Logo)
+========================================================= */
 aside .sidebar-brand{
   display:flex !important;
   align-items:center !important;
@@ -507,46 +454,60 @@ aside .sidebar-brand{
   text-decoration:none !important;
   color:#fff !important;
 }
-
 aside .sidebar-brand .brand-logo{
-  width: 52px;          
+  width: 52px;
   height: 52px;
   object-fit: contain;
-  background: transparent;  
-  padding: 0;               
-  border-radius: 0;         
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
   display: block;
 }
-
 aside .sidebar-brand .brand-text{
   font-weight: 800;
   letter-spacing: .2px;
   line-height: 1;
 }
 
-/* ===== Modal Pago ===== */
+/* =========================================================
+   Modal Pago
+========================================================= */
 .pago-modal{
   border-radius: 16px;
   overflow: hidden;
   border: 0;
 }
-
 .pago-modal-header{
   background: #0b2a4a;
   color: #fff;
   border-bottom: 0;
-  padding: 18px 18px;
-}
-
-.pago-modal-body{
-  background: #f7f7fb;
   padding: 18px;
 }
 
+/* sin scroll interno */
+.pago-modal-body{
+  background: #f7f7fb;
+  padding: 14px !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Títulos del modal pago: sin barra */
+.pago-modal-body .seccion-titulo{
+  color:#000 !important;
+  font-weight: 800;
+  font-size: 1rem;
+  margin: 0 0 10px 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* Métodos */
 .pay-methods{
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
 }
 
 @media (max-width: 576px){
@@ -561,21 +522,20 @@ aside .sidebar-brand .brand-text{
   border: 1px solid rgba(11,42,74,.25);
   background: #fff;
   border-radius: 10px;
-  padding: 10px 10px;
+  padding: 7px 10px;
   font-weight: 700;
+  font-size: .93rem;
   color: #2c2c2c;
   box-shadow: 0 6px 14px rgba(0,0,0,.06);
   transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
-
-.pay-method i{ font-size: 18px; }
+.pay-method i{ font-size: 16px; }
 
 .pay-method:hover{
   transform: translateY(-1px);
   box-shadow: 0 10px 18px rgba(0,0,0,.10);
   border-color: rgba(11,42,74,.45);
 }
-
 .pay-method.active{
   outline: 2px solid rgba(11,42,74,.25);
   border-color: #0b2a4a;
@@ -583,142 +543,26 @@ aside .sidebar-brand .brand-text{
   color: #0b2a4a;
 }
 
-#pay-total-label{
-  color: #0b2a4a;
-}
+.pay-swap{ min-height: 92px; }
 
-.pago-modal-body .seccion-titulo{
-  color:#000;
-  font-weight:700;
-}
-
-.pay-methods{
-  display:grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.pay-method{
-  padding: 8px 10px;
-  font-size: 0.95rem;
-  border-radius: 10px;
-}
-.pay-method i{ font-size: 16px; }
-
-.pay-swap{
-  min-height: 92px;        
-}
-
-/* Modal Pago SIN scroll interno */
-.pago-modal-body{
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-@media (max-width: 576px){
-  .pay-methods{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-/* ===== Ajuste prolijo secciones en Modal Pago ===== */
-.pago-modal-body .seccion-titulo{
-  color:#000 !important;
-  font-weight:800;
-  margin: 0 0 10px 0;
-  padding: 0;               /* en pago no queremos la barra */
-  background: transparent;  /* en pago no queremos fondo */
-  border-radius: 0;
-}
-
-/* Separación uniforme entre secciones */
-.pago-modal-body .pay-section{
-  margin-bottom: 14px;
-}
-
-/* Que inputs no se estiren visualmente si el col-md-6 queda grande */
-.pago-modal-body .col-md-6 .form-control{
-  max-width: 420px;   /* ajustá a gusto (más chico si querés) */
-}
-
-/* ===== Modal Pago - Corporativo Clásico ===== */
-
-/* Secciones del modal */
-.pago-modal-body .pay-methods,
-#pay-normal,
-#pay-tarjeta,
-.pago-modal-body .mt-2{
-  padding-top: 20px;
-  padding-bottom: 20px;
-  margin-bottom: 0;
-  border-top: 1px solid #d6d6d6;   /* línea más corporativa */
-}
-
-/* Primera sección sin línea arriba */
-.pago-modal-body .pay-methods{
-  border-top: none;
-  padding-top: 0;
-}
-
-/* Títulos bien definidos */
-.pago-modal-body .seccion-titulo{
-  font-size: 1rem;
-  font-weight: 800;
-  color: #1c1c1c;
-  margin-bottom: 14px;
-}
-
-/* Inputs más clásicos */
+/* Inputs */
 .pago-modal-body .form-control{
   border-radius: 6px;
   border: 1px solid #c8c8c8;
   box-shadow: none;
 }
-
-/* Hover clásico */
 .pago-modal-body .form-control:focus{
   border-color: #0b2a4a;
   box-shadow: 0 0 0 2px rgba(11,42,74,.10);
 }
 
-/* Botones finales bien alineados */
-.pago-modal-body .row.g-2.mt-4{
-  padding-top: 20px;
-  border-top: 1px solid #d6d6d6;
-}
+/* Ajuste para que no quede gigante visualmente */
+.pago-modal-body .col-md-6 .form-control{ max-width: 420px; }
 
-/* Quitar línea antes de los botones */
-.pago-modal-body .row.g-2.mt-4{
-  border-top: none !important;
-  padding-top: 0 !important;
-}
-/* Fecha de Pago en negrita */
-.pago-modal-body label[for="pay-fecha"],
-.pago-modal-body label{
-  font-weight: 700;
-}
+/* Labels más firmes */
+.pago-modal-body label{ font-weight: 700; }
 
-/* Ajuste fino para que entre todo sin scroll */
-.pago-modal-body{
-  padding: 14px !important;
-}
-
-.pago-modal-body .pay-methods,
-#pay-normal,
-#pay-tarjeta,
-.pago-modal-body .mt-2{
-  padding-top: 14px;
-  padding-bottom: 14px;
-}
-
-.pay-methods{ gap: 8px; }
-.pay-method{ padding: 7px 10px; font-size: 0.93rem; }
-
-/* ===== Comprobante (Modal Pago) ===== */
-#btn-comprobante{
-  border-radius: 8px;
-  font-weight: 700;
-  padding: 10px 14px;
-}
-
+/* Comprobante + progreso */
 #pay-file-preview{
   border: 1px solid #d6d6d6;
   background: #fff;
@@ -727,21 +571,61 @@ aside .sidebar-brand .brand-text{
   font-weight: 600;
   color: #1c1c1c;
 }
-
 #pay-file-preview a{
   text-decoration: none;
   font-weight: 800;
 }
 
-#pay-upload-bar{
-  background: #0b2a4a; /* azul corporativo */
-}
+#pay-upload-bar{ background: #0b2a4a; }
 
-.pay-attach-btn{
-  height: 38px;              /* misma altura que form-control */
-  padding: 0 18px;
-  border-radius: 10px;
-  font-weight: 700;
+.pay-clip-solid{
+  width: 46px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  background: #dc3545;
+  border: 0;
+  border-radius: .375rem;
+  padding: 0;
+}
+.pay-clip-solid i{
+  color: #fff;
+  font-size: 1.1rem;
+}
+.pay-clip-solid:hover{ filter: brightness(.95); }
+
+/* Historial de pagos dentro del modal */
+.mp-pagos-list{
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.mp-pago-row{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  align-items: center;
+}
+.mp-pago-row:last-child{ border-bottom: 0; }
+
+.mp-pago-left{
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+}
+.mp-pago-fecha{ font-weight: 800; color:#1f2937; }
+.mp-pago-monto{ font-weight: 900; }
+.mp-pago-metodo{ color:#374151; font-weight: 700; }
+
+.mp-pago-actions{
+  display: inline-flex;
+  gap: 8px;
+  justify-content: flex-end;
 }

@@ -41,12 +41,20 @@
         </div>
 
         <div class="forma-pago-box">
-          <div class="seccion-titulo">Forma de Pago</div>
+          <div class="seccion-titulo">Estado de Pago</div>
+
           <div class="dato"><strong>Debe:</strong> <span id="mp-debe"></span></div>
+
+          <div class="mt-3">
+            <div class="fw-bold mb-2">Historial de Pagos</div>
+            <div id="mp-pagos" class="mp-pagos-list">
+              <div class="text-muted">Sin pagos</div>
+            </div>
+          </div>
 
           <div class="mp-addpago-wrap">
             <button type="button" class="btn btn-success" id="mp-add-pago">
-              <span class="mp-plus">+</span> Agregar Pago
+              <span class="mp-plus">+</span> Registrar Pago
             </button>
           </div>
         </div>
@@ -73,8 +81,7 @@
 
       <div class="modal-header pago-modal-header">
         <div class="w-100">
-          <div class="mp-header-title">Registrar Pago</div>
-          <div class="mp-header-sub" id="pay-orden">Nro de Orden: #-</div>
+          <div class="mp-header-title">Cargar Nuevo Pago</div>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
@@ -111,20 +118,28 @@
         <!-- BLOQUE TARJETA -->
         <div id="pay-tarjeta" class="d-none pay-swap">
           <div class="seccion-titulo mb-2">Tarjeta</div>
+
           <div class="row g-2 align-items-end">
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
               <label class="form-label mb-1">Cantidad de Cuotas</label>
-              <input type="number" min="1" value="1" class="form-control" id="pay-cuotas" name="cuotas">
+              <input type="number" min="1" value="1"
+                    class="form-control" id="pay-cuotas" name="cuotas">
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-7">
               <label class="form-label mb-1">Monto de la cuota</label>
-              <input type="number" step="0.01" class="form-control" id="pay-monto-cuota" name="monto_cuota" placeholder="0,00">
+              <input type="number" step="0.01"
+                    class="form-control" id="pay-monto-cuota" name="monto_cuota"
+                    placeholder="0,00">
             </div>
 
-            <div class="col-md-4">
-              <label class="form-label mb-1">Total calculado</label>
-              <input type="text" class="form-control" id="pay-total-label" value="$0" readonly>
+            <div class="col-12 col-md-1 d-flex">
+              <button type="button"
+                      class="pay-clip-solid"
+                      id="btn-comprobante-tarjeta"
+                      aria-label="Adjuntar comprobante">
+                <i class="bi bi-paperclip"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -133,60 +148,52 @@
         <div id="pay-normal" class="pay-swap">
           <div class="seccion-titulo mb-2">Monto Pagado</div>
 
-          <div class="row g-2">
-            <div class="col-12 col-md-6">
-              <input type="number" step="0.01" class="form-control" id="pay-monto" name="monto_normal" placeholder="0,00">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-7">
+              <input type="number" step="0.01"
+                    class="form-control" id="pay-monto" name="monto_normal"
+                    placeholder="0,00">
+            </div>
+
+            <div class="col-12 col-md-1 d-flex">
+              <button type="button"
+                      class="pay-clip-solid"
+                      id="btn-comprobante"
+                      aria-label="Adjuntar comprobante">
+                <i class="bi bi-paperclip"></i>
+              </button>
+
+              <!-- input file ÚNICO -->
+              <input
+                type="file"
+                id="pay-comprobante"
+                class="d-none"
+                accept="application/pdf,image/png,image/jpeg"
+              />
             </div>
           </div>
         </div>
 
+        <!-- Preview + progreso (debajo de Monto Pagado) -->
+        <div class="mt-2 d-none" id="pay-upload-wrap" style="height:6px;">
+          <div class="progress" style="height:6px;">
+            <div class="progress-bar bg-danger" id="pay-upload-bar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="mt-2 d-none" id="pay-file-preview"></div>
+
         <hr class="pedido-sep">
 
-        <!-- FECHA Y COMPROBANTE-->
+        <!-- FECHA -->
         <div class="mt-3">
-        <div class="seccion-titulo mb-3">Fecha de Pago</div>
-
-        <div class="row align-items-end g-3">
-          <!-- Fecha -->
-          <div class="col-md-6">
-            <input
-              type="date"
-              class="form-control"
-              id="pay-fecha"
-              name="fecha_pago"
-              required
-            >
-          </div>
-
-          <!-- Botón adjuntar -->
-          <div class="col-md-6 d-flex align-items-end justify-content-md-end">
-            <!-- input file oculto -->
-            <input
-              type="file"
-              id="pay-comprobante"
-              class="d-none"
-              accept="application/pdf,image/png,image/jpeg"
-            >
-
-            <button
-              type="button"
-              class="btn btn-outline-danger pay-attach-btn"
-              id="btn-comprobante"
-            >
-              <i class="bi bi-paperclip me-2"></i>
-              Adjuntar Comprobante
-            </button>
+          <div class="seccion-titulo mb-3">Fecha de Pago</div>
+          <div class="row g-2">
+            <div class="col-12 col-md-6">
+              <input type="date" class="form-control" id="pay-fecha" name="fecha_pago" required>
+            </div>
           </div>
         </div>
-
-        <!-- Barra progreso -->
-        <div class="progress mt-3 d-none" id="pay-upload-wrap" style="height:8px;">
-          <div class="progress-bar bg-danger" id="pay-upload-bar" style="width:0%"></div>
-        </div>
-
-        <!-- Preview -->
-        <div class="mt-2 d-none" id="pay-file-preview"></div>
-      </div>
 
         <div class="row g-2 mt-4">
           <div class="col-6">
@@ -238,6 +245,194 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function refrescarDetallePedido(){
+      if (!pedidoActualId) return;
+      try{
+        const res = await fetch(`/api/pedidos/${pedidoActualId}`);
+        if (!res.ok) return;
+        const p = await res.json();
+
+        // Actualizar badge
+        setBadge(p.estado);
+
+        // Actualizar debe
+        const elDebe = document.getElementById("mp-debe");
+        const debeNum = Number(p.debe || 0);
+
+        elDebe.classList.remove("debe-ok","debe-bad");
+        if (debeNum > 0){
+          elDebe.textContent = fmtMoney(debeNum);
+          elDebe.classList.add("debe-bad");
+        } else {
+          elDebe.textContent = "No hay Deudas";
+          elDebe.classList.add("debe-ok");
+        }
+
+        // Actualizar historial
+        renderPagos(p.pagos || []);
+
+      }catch(e){
+        // silencioso
+      }
+    }
+
+    document.addEventListener("click", async (e) => {
+      const btnVer = e.target.closest("[data-pay-view]");
+      if (btnVer){
+        e.preventDefault();
+        const payId = Number(btnVer.getAttribute("data-pay-view"));
+        if (!payId) return;
+
+        // buscamos el pago dentro del pedido actual (ya lo tenemos en la última respuesta)
+        // solución rápida: pedir el pedido y encontrarlo
+        const res = await fetch(`/api/pedidos/${pedidoActualId}`);
+        const p = await res.json();
+        const pago = (p.pagos || []).find(x => Number(x.id) === payId);
+        if (!pago) return;
+
+        abrirPagoReadonly(pago);
+        return;
+      }
+
+      const btnDel = e.target.closest("[data-pay-del]");
+      if (btnDel){
+        e.preventDefault();
+        const payId = Number(btnDel.getAttribute("data-pay-del"));
+        if (!payId) return;
+
+        if (!confirm("¿Eliminar este pago?")) return;
+
+        const res = await fetch(`/api/pagos/${payId}`, { method: "DELETE" });
+        if (!res.ok){
+          alert("No se pudo eliminar el pago.");
+          return;
+        }
+
+        await refrescarDetallePedido();
+        return;
+      }
+    });
+
+  function fmtFechaISOtoAR(iso){
+    // iso viene "YYYY-MM-DD"
+    if (!iso) return "-";
+    const [y,m,d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function fmtMoney(n){
+    return `$${Number(n || 0).toLocaleString("es-AR")}`;
+  }
+
+  function renderPagos(pagos){
+    const cont = document.getElementById("mp-pagos");
+    if (!cont) return;
+
+    cont.innerHTML = "";
+
+    if (!pagos || !pagos.length){
+      cont.innerHTML = `<div class="text-muted">Sin pagos</div>`;
+      return;
+    }
+
+    pagos.forEach(pay => {
+      const row = document.createElement("div");
+      row.className = "mp-pago-row";
+
+      row.innerHTML = `
+        <div class="mp-pago-left">
+          <span class="mp-pago-fecha">${fmtFechaISOtoAR(pay.fecha_pago)}</span>
+          <span class="mp-pago-monto">${fmtMoney(pay.monto_pagado)}</span>
+          <span class="mp-pago-metodo">${pay.metodo || "-"}</span>
+        </div>
+        <div class="mp-pago-actions">
+          <button type="button"
+                  class="btn btn-success btn-sm"
+                  data-pay-view="${pay.id}">
+            Ver
+          </button>
+          <button type="button"
+                  class="btn btn-danger btn-sm"
+                  data-pay-del="${pay.id}">
+            Eliminar
+          </button>
+        </div>
+      `;
+
+      cont.appendChild(row);
+    });
+  }
+
+  function abrirPagoReadonly(pago){
+    const modalPagoEl = document.getElementById("modalPago");
+    const modalPago = bootstrap.Modal.getOrCreateInstance(modalPagoEl);
+
+    const payPedidoId = document.getElementById("pay-pedido-id");
+    const payMetodo   = document.getElementById("pay-metodo");
+    const payFecha    = document.getElementById("pay-fecha");
+
+    const payMonto    = document.getElementById("pay-monto");
+    const payCuotas   = document.getElementById("pay-cuotas");
+    const payMontoCuota = document.getElementById("pay-monto-cuota");
+
+    // esconder/mostrar bloques tarjeta vs normal
+    const payTarjeta = document.getElementById("pay-tarjeta");
+    const payNormal  = document.getElementById("pay-normal");
+
+    // botón submit y botones método
+    const formPago = document.getElementById("formPago");
+    const btnSubmit = formPago?.querySelector('button[type="submit"]');
+    const btnCancelar = document.getElementById("pay-cancelar");
+
+    // 1) cargar datos
+    payPedidoId.value = pago.pedido_id || ""; // si no lo tenés, no pasa nada
+    payMetodo.value = pago.metodo || "";
+    payFecha.value = pago.fecha_pago || "";
+
+    const isTarjeta = (pago.metodo === "Tarjeta");
+
+    // mostrar bloque correcto
+    payTarjeta.classList.toggle("d-none", !isTarjeta);
+    payNormal.classList.toggle("d-none", isTarjeta);
+
+    if (isTarjeta){
+      payCuotas.value = pago.cuotas ?? 1;
+      payMontoCuota.value = pago.monto_cuota ?? "";
+      payMonto.value = "";
+    } else {
+      payMonto.value = pago.monto_pagado ?? "";
+      payCuotas.value = 1;
+      payMontoCuota.value = "";
+    }
+
+    // 2) deshabilitar todo (read-only)
+    document.querySelectorAll(".pay-method").forEach(b => b.disabled = true);
+    payFecha.disabled = true;
+    payMonto.disabled = true;
+    payCuotas.disabled = true;
+    payMontoCuota.disabled = true;
+
+    // ocultar adjuntar comprobante
+    document.getElementById("btn-comprobante")?.classList.add("d-none");
+    document.getElementById("btn-comprobante-tarjeta")?.classList.add("d-none");
+
+    // deshabilitar submit
+    if (btnSubmit){
+      btnSubmit.disabled = true;
+      btnSubmit.classList.add("d-none"); // opcional: directamente ocultarlo
+    }
+
+    // cancelar vuelve al modal pedido
+    btnCancelar?.addEventListener("click", () => {
+      modalPago.hide();
+      modal.show();
+    }, { once: true });
+
+    // mostrar
+    modal.hide();
+    modalPago.show();
+  }
+
   window.abrirDetallePedido = async function(id) {
     pedidoActualId = id;
 
@@ -266,6 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`/api/pedidos/${id}`);
       if (!res.ok) throw new Error("HTTP " + res.status);
       p = await res.json();
+      renderPagos(p.pagos || []);
     } catch (err) {
       document.getElementById("mp-items").innerHTML =
         "<div class='text-danger'>Error cargando el pedido</div>";
@@ -366,9 +562,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnAddPago = document.getElementById("mp-add-pago");
 
   if (modalPagoEl && btnAddPago) {
-    const modalPago = new bootstrap.Modal(modalPagoEl);
+    const modalPago = bootstrap.Modal.getOrCreateInstance(modalPagoEl);
 
-    const payOrden = document.getElementById("pay-orden");
     const payPedidoId = document.getElementById("pay-pedido-id");
     const payMetodo = document.getElementById("pay-metodo");
 
@@ -380,7 +575,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const payCuotas = document.getElementById("pay-cuotas");
     const payMontoCuota = document.getElementById("pay-monto-cuota");
     const payTotalHidden = document.getElementById("pay-total");
-    const payTotalLabel = document.getElementById("pay-total-label");
 
     const payFecha = document.getElementById("pay-fecha");
 
@@ -404,36 +598,58 @@ document.addEventListener("DOMContentLoaded", () => {
     let archivoSeleccionado = null; // File o null
 
     btnComprobante?.addEventListener("click", () => payFileInput?.click());
+    document.getElementById("btn-comprobante-tarjeta")
+      ?.addEventListener("click", () => payFileInput?.click());
 
     payFileInput?.addEventListener("change", () => {
       const f = payFileInput.files && payFileInput.files[0] ? payFileInput.files[0] : null;
       archivoSeleccionado = f;
 
+      // reset UI
+      uploadWrap.classList.add("d-none");
+      uploadBar.style.width = "0%";
+
       if (!f) {
         filePreview.classList.add("d-none");
-        uploadWrap.classList.add("d-none");
-        uploadBar.style.width = "0%";
+        filePreview.innerHTML = "";
         return;
       }
 
-      // Mostrar barra “cargando” (simulada acá; el progreso real lo manejamos en XHR al enviar)
-      uploadWrap.classList.remove("d-none");
-      uploadBar.style.width = "0%";
-
-      // Preview (nombre + tipo)
       filePreview.classList.remove("d-none");
       filePreview.innerHTML = `
-        <div><i class="bi bi-file-earmark me-1"></i> ${f.name}</div>
-        <div class="small text-muted">${Math.round(f.size/1024)} KB</div>
+        <div class="d-inline-flex align-items-center gap-2 border rounded-3 px-2 py-1"
+            style="max-width: 520px;">
+          <div class="d-flex align-items-center gap-2" style="min-width:0;">
+            <i class="bi bi-file-earmark"></i>
+
+            <div style="min-width:0;">
+              <div class="small fw-semibold text-truncate" style="max-width: 380px;">
+                ${f.name}
+              </div>
+              <div class="small text-muted" style="font-size:.75rem;">
+                ${Math.round(f.size/1024)} KB
+              </div>
+            </div>
+          </div>
+
+          <button type="button"
+                  class="btn btn-sm btn-outline-secondary p-0 d-flex align-items-center justify-content-center"
+                  id="pay-file-remove"
+                  aria-label="Eliminar archivo"
+                  style="width:28px;height:28px;">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
       `;
 
-      // Simulación suave hasta 90% (cuando se envía de verdad, XHR lo lleva al 100)
-      let p = 0;
-      const t = setInterval(() => {
-        p = Math.min(90, p + 10);
-        uploadBar.style.width = p + "%";
-        if (p >= 90) clearInterval(t);
-      }, 80);
+      document.getElementById("pay-file-remove")?.addEventListener("click", () => {
+        archivoSeleccionado = null;
+        payFileInput.value = "";
+        uploadWrap.classList.add("d-none");
+        uploadBar.style.width = "0%";
+        filePreview.classList.add("d-none");
+        filePreview.innerHTML = "";
+      });
     });
 
     function hoyISO() {
@@ -447,9 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const cuotas = Number(payCuotas.value || 0);
       const cuota  = Number(payMontoCuota.value || 0);
       const total = Math.max(0, cuotas) * Math.max(0, cuota);
-
       payTotalHidden.value = total ? total.toFixed(2) : "";
-      payTotalLabel.value = "$" + total.toLocaleString("es-AR");
     }
 
     function setMetodo(m) {
@@ -459,23 +673,27 @@ document.addEventListener("DOMContentLoaded", () => {
         b.classList.toggle("active", b.dataset.metodo === m);
       });
 
-      if (m === "Tarjeta") {
-        payTarjeta.classList.remove("d-none");
-        payNormal.classList.add("d-none");
-        payMonto.value = "";
+      const isTarjeta = (m === "Tarjeta");
 
-        // default
+      payTarjeta.classList.toggle("d-none", !isTarjeta);
+      payNormal.classList.toggle("d-none", isTarjeta);
+
+      if (isTarjeta) {
+        payMonto.required = false;
+        payCuotas.required = true;
+        payMontoCuota.required = true;
+
+        payMonto.value = ""; 
         if (!payCuotas.value) payCuotas.value = 1;
         calcTotalTarjeta();
       } else {
-        payTarjeta.classList.add("d-none");
-        payNormal.classList.remove("d-none");
+        payMonto.required = true;
+        payCuotas.required = false;
+        payMontoCuota.required = false;
 
-        // reset tarjeta
         payCuotas.value = 1;
         payMontoCuota.value = "";
         payTotalHidden.value = "";
-        payTotalLabel.value = "$0";
       }
     }
 
@@ -489,42 +707,44 @@ document.addEventListener("DOMContentLoaded", () => {
     payMontoCuota?.addEventListener("input", calcTotalTarjeta);
 
     // Abrir modalPago
-    btnAddPago.addEventListener("click", () => {
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("#mp-add-pago");
+      if (!btn) return;
       if (!pedidoActualId) {
         alert("Primero abrí un pedido para registrar el pago.");
         return;
       }
 
       payPedidoId.value = pedidoActualId;
-      payOrden.textContent = `Nro de Orden: #${pedidoActualId}`;
 
-      // defaults + reset
       payFecha.value = hoyISO();
+
+      payMetodo.value = "";
+      document.querySelectorAll(".pay-method").forEach(b => b.classList.remove("active"));
+
+      payNormal.classList.remove("d-none");
+      payTarjeta.classList.add("d-none");
+
       payMonto.value = "";
+      payMonto.required = true;
+
       payCuotas.value = 1;
       payMontoCuota.value = "";
+      payCuotas.required = false;
+      payMontoCuota.required = false;
+
       payTotalHidden.value = "";
-      payTotalLabel.value = "$0";
 
-      setMetodo("Efectivo");
-
-      // cerrar el modal grande y abrir el de pago (se ve más prolijo)
       modal.hide();
       modalPago.show();
 
-      // reset método: ninguno seleccionado
-      document.querySelectorAll(".pay-method").forEach(b => b.classList.remove("active"));
-      payMetodo.value = "";  // ahora es obligatorio elegir
-      payTarjeta.classList.add("d-none");
-      payNormal.classList.add("d-none"); // oculto hasta elegir método
-
-      // reset comprobante
       archivoSeleccionado = null;
       payFileInput.value = "";
       filePreview.classList.add("d-none");
       filePreview.innerHTML = "";
       uploadWrap.classList.add("d-none");
       uploadBar.style.width = "0%";
+
     });
 
     // Cancelar (vuelve al modal anterior)
@@ -583,12 +803,21 @@ document.addEventListener("DOMContentLoaded", () => {
       xhr.open("POST", `/api/pedidos/${payPedidoId.value}/pagos`, true);
 
       xhr.upload.onprogress = (evt) => {
-        if (!evt.lengthComputable) return;
+        // si el browser no puede computar, igual mostramos actividad
+        uploadWrap.classList.remove("d-none");
+
+        if (!evt.lengthComputable) {
+          // “indeterminado” fake: lo dejamos en 50% y al finalizar pasa a 100%
+          uploadBar.style.width = "50%";
+          return;
+        }
         const pct = Math.round((evt.loaded / evt.total) * 100);
         uploadBar.style.width = pct + "%";
       };
 
-      xhr.onload = () => {
+      xhr.onload = async () => {
+        uploadWrap.classList.remove("d-none");
+        uploadBar.style.width = "100%"; 
         if (xhr.status >= 200 && xhr.status < 300) {
           uploadBar.style.width = "100%";
 
@@ -607,8 +836,8 @@ document.addEventListener("DOMContentLoaded", () => {
           } catch {}
 
           modalPago.hide();
-          modal.show();             // volver al modal pedido
-          window.location.reload(); // por ahora refrescamos para ver cambios
+          modal.show();             
+          await refrescarDetallePedido();
           return;
         }
 
