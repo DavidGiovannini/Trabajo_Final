@@ -17,7 +17,12 @@
 
         <div class="pedido-datos">
           <div class="dato"><strong>Domicilio:</strong> <span id="mp-domicilio"></span></div>
-          <div class="dato"><strong>Teléfono:</strong> <span id="mp-telefono"></span></div>
+          <div class="dato"><strong>Teléfono:</strong> 
+            <span id="mp-telefono"></span>
+            <a href="#" id="mp-wpp" class="ms-2 text-success d-none" target="_blank">
+              <i class="bi bi-whatsapp" style="font-size: 1.2rem;"></i>
+            </a>
+          </div>
           <div class="dato"><strong>E-mail:</strong> <span id="mp-email"></span></div>
           <div class="dato"><strong>Observaciones:</strong> <span id="mp-obs"></span></div>
         </div>
@@ -47,8 +52,11 @@
 
           <div class="mt-3">
             <div class="fw-bold mb-2">Historial de Pagos</div>
-            <div id="mp-pagos" class="mp-pagos-list">
-              <div class="text-muted">Sin pagos</div>
+
+            <div class="mp-pagos-scroll">
+              <div id="mp-pagos" class="mp-pagos-list">
+                <div class="text-muted">Sin pagos</div>
+              </div>
             </div>
           </div>
 
@@ -195,17 +203,14 @@
           </div>
         </div>
 
-        <div class="row g-2 mt-4">
-          <div class="col-6">
-            <button type="submit" class="btn btn-success w-100">
-              <i class="bi bi-check2-circle me-1"></i> Registrar pago
-            </button>
-          </div>
-          <div class="col-6">
-            <button type="button" class="btn btn-outline-secondary w-100" id="pay-cancelar">
-              Cancelar
-            </button>
-          </div>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+          <button type="submit" class="btn btn-success px-4">
+            <i class="bi bi-check2-circle me-1"></i> Registrar pago
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary px-4" id="pay-cancelar">
+            Cancelar
+          </button>
         </div>
 
       </form>
@@ -340,10 +345,13 @@ document.addEventListener("DOMContentLoaded", () => {
       row.className = "mp-pago-row";
 
       row.innerHTML = `
-        <div class="mp-pago-left">
-          <span class="mp-pago-fecha">${fmtFechaISOtoAR(pay.fecha_pago)}</span>
-          <span class="mp-pago-monto">${fmtMoney(pay.monto_pagado)}</span>
-          <span class="mp-pago-metodo">${pay.metodo || "-"}</span>
+         <div class="mp-pago-left">
+          <span>
+            <strong>${pay.numero_pago || pay.id}</strong> -
+            ${fmtFechaISOtoAR(pay.fecha_pago)} -
+            ${fmtMoney(pay.monto_pagado)} -
+            ${pay.metodo || "-"}
+          </span>
         </div>
         <div class="mp-pago-actions">
           <button type="button"
@@ -364,8 +372,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function abrirPagoReadonly(pago){
+
     const modalPagoEl = document.getElementById("modalPago");
     const modalPago = bootstrap.Modal.getOrCreateInstance(modalPagoEl);
+
+    const titulo = modalPagoEl.querySelector(".mp-header-title");
+    if (titulo){
+      titulo.textContent = `Pago #${pago.numero_pago || pago.id}`;
+    }
 
     const payPedidoId = document.getElementById("pay-pedido-id");
     const payMetodo   = document.getElementById("pay-metodo");
@@ -385,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnCancelar = document.getElementById("pay-cancelar");
 
     // 1) cargar datos
-    payPedidoId.value = pago.pedido_id || ""; // si no lo tenés, no pasa nada
+    payPedidoId.value = pago.pedido_id || ""; 
     payMetodo.value = pago.metodo || "";
     payFecha.value = pago.fecha_pago || "";
 
@@ -416,6 +430,30 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-comprobante")?.classList.add("d-none");
     document.getElementById("btn-comprobante-tarjeta")?.classList.add("d-none");
 
+    const uploadWrap = document.getElementById("pay-upload-wrap");
+    const uploadBar = document.getElementById("pay-upload-bar");
+    const filePreview = document.getElementById("pay-file-preview");
+
+    uploadBar.style.width = "0%";
+
+    uploadWrap.classList.add("d-none");
+
+    if (!pago.comprobantes || !pago.comprobantes.length) {
+      filePreview.classList.add("d-none");
+      filePreview.innerHTML = "";
+    } else {
+      filePreview.classList.remove("d-none");
+      filePreview.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class="bi bi-file-earmark-text"></i>
+            ${pago.comprobantes[0].original_name}
+          </div>
+          <a href="${pago.comprobantes[0].url}" target="_blank">Ver</a>
+        </div>
+      `;
+    }
+
     // deshabilitar submit
     if (btnSubmit){
       btnSubmit.disabled = true;
@@ -431,6 +469,41 @@ document.addEventListener("DOMContentLoaded", () => {
     // mostrar
     modal.hide();
     modalPago.show();
+  }
+
+  function normalizarTelefonoAR(telefono) {
+    if (!telefono) return null;
+
+    // limpiar todo lo que no sea número
+    let num = telefono.replace(/\D/g, "");
+
+    if (!num) return null;
+
+    // Si empieza con 0 (ej 011...), lo quitamos
+    if (num.startsWith("0")) {
+      num = num.substring(1);
+    }
+
+    // Si empieza con 54 y tiene 12 o 13 dígitos, ya tiene país
+    if (num.startsWith("54")) {
+      num = num.substring(2);
+    }
+
+    // Ahora debería quedar código área + número
+    // Ej: 11xxxxxxxx
+
+    // Si tiene 10 dígitos (formato fijo sin 9)
+    if (num.length === 10) {
+      // Agregamos 9 después del código de área
+      num = "9" + num;
+    }
+
+    // Validación mínima celular argentino: 11 dígitos luego del 9
+    if (num.length !== 11) {
+      return null;
+    }
+
+    return "54" + num;
   }
 
   window.abrirDetallePedido = async function(id) {
@@ -472,7 +545,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("mp-cliente").textContent = (p.cliente || "-").toString();
     document.getElementById("mp-domicilio").textContent = p.direccion || "-";
-    document.getElementById("mp-telefono").textContent = p.telefono || "-";
+
+    const telEl = document.getElementById("mp-telefono");
+    const wppEl = document.getElementById("mp-wpp");
+
+    const telefonoRaw = (p.telefono || "").trim();
+
+    telEl.textContent = telefonoRaw || "-";
+
+    const numeroNormalizado = normalizarTelefonoAR(telefonoRaw);
+
+    if (numeroNormalizado) {
+      const mensaje = encodeURIComponent("Hola, nos comunicamos de S. Valvo y Cía");
+
+      // Detectar mobile
+      const esMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      const url = esMobile
+        ? `https://api.whatsapp.com/send?phone=${numeroNormalizado}&text=${mensaje}`
+        : `https://web.whatsapp.com/send?phone=${numeroNormalizado}&text=${mensaje}`;
+
+      wppEl.href = url;
+      wppEl.classList.remove("d-none");
+    } else {
+      wppEl.classList.add("d-none");
+    }
+
     document.getElementById("mp-email").textContent = p.email || "-";
     document.getElementById("mp-obs").textContent = p.observaciones || "-";
     document.getElementById("mp-orden").textContent = `Nro de Orden: #${p.id ?? id}`;
@@ -513,6 +611,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   };
+
+  document.getElementById("mp-wpp")?.addEventListener("click", function(e){
+    if (this.classList.contains("d-none") || !this.href || this.href === "#") {
+      e.preventDefault();
+      alert("No existe dicho contacto.");
+    }
+  });
 
   // Click global: data-pedido-open
   document.addEventListener("click", (e) => {
@@ -555,9 +660,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.reload();
   });
 
-  // =========================
-  //  MODAL REGISTRAR PAGO
-  // =========================
   const modalPagoEl = document.getElementById("modalPago");
   const btnAddPago = document.getElementById("mp-add-pago");
 
@@ -596,6 +698,58 @@ document.addEventListener("DOMContentLoaded", () => {
     const filePreview = document.getElementById("pay-file-preview");
 
     let archivoSeleccionado = null; // File o null
+
+    function resetModalPago(){
+
+      const titulo = modalPagoEl.querySelector(".mp-header-title");
+      if (titulo){
+        titulo.textContent = "Cargar Nuevo Pago";
+      }
+
+      // habilitar botones método
+      document.querySelectorAll(".pay-method").forEach(b => {
+        b.disabled = false;
+        b.classList.remove("active");
+      });
+
+      // habilitar inputs
+      payFecha.disabled = false;
+      payMonto.disabled = false;
+      payCuotas.disabled = false;
+      payMontoCuota.disabled = false;
+
+      // mostrar submit
+      const btnSubmit = formPago?.querySelector('button[type="submit"]');
+      if (btnSubmit){
+        btnSubmit.disabled = false;
+        btnSubmit.classList.remove("d-none");
+      }
+
+      // volver a mostrar botones de adjuntar
+      document.getElementById("btn-comprobante")?.classList.remove("d-none");
+      document.getElementById("btn-comprobante-tarjeta")?.classList.remove("d-none");
+
+      // reset archivo
+      archivoSeleccionado = null;
+      payFileInput.value = "";
+      filePreview.classList.add("d-none");
+      filePreview.innerHTML = "";
+      uploadWrap.classList.add("d-none");
+      uploadBar.style.width = "0%";
+
+      // limpiar valores
+      payMetodo.value = "";
+      payMonto.value = "";
+      payCuotas.value = 1;
+      payMontoCuota.value = "";
+      payTotalHidden.value = "";
+
+      payPedidoId.value = "";
+
+      // mostrar bloque normal por defecto
+      payNormal.classList.remove("d-none");
+      payTarjeta.classList.add("d-none");
+    }
 
     btnComprobante?.addEventListener("click", () => payFileInput?.click());
     document.getElementById("btn-comprobante-tarjeta")
@@ -715,35 +869,14 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      payPedidoId.value = pedidoActualId;
+      resetModalPago();
 
+      payPedidoId.value = pedidoActualId;
       payFecha.value = hoyISO();
 
-      payMetodo.value = "";
-      document.querySelectorAll(".pay-method").forEach(b => b.classList.remove("active"));
-
-      payNormal.classList.remove("d-none");
-      payTarjeta.classList.add("d-none");
-
-      payMonto.value = "";
-      payMonto.required = true;
-
-      payCuotas.value = 1;
-      payMontoCuota.value = "";
-      payCuotas.required = false;
-      payMontoCuota.required = false;
-
-      payTotalHidden.value = "";
 
       modal.hide();
       modalPago.show();
-
-      archivoSeleccionado = null;
-      payFileInput.value = "";
-      filePreview.classList.add("d-none");
-      filePreview.innerHTML = "";
-      uploadWrap.classList.add("d-none");
-      uploadBar.style.width = "0%";
 
     });
 
@@ -778,6 +911,24 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         montoFinal = Number(payMonto.value || 0);
         if (!montoFinal || montoFinal <= 0) return alert("Ingresá el monto pagado.");
+      }
+
+      // ===== VALIDAR QUE NO SUPERE EL DEBE =====
+      const elDebe = document.getElementById("mp-debe");
+      let debeActual = 0;
+
+      // Intentamos extraer número del texto "$6.000"
+      if (elDebe && elDebe.textContent) {
+        const limpio = elDebe.textContent
+          .replace(/[^\d,-]/g, "")
+          .replace(/\./g, "")
+          .replace(",", ".");
+        debeActual = Number(limpio) || 0;
+      }
+
+      if (montoFinal > debeActual) {
+        alert("El monto ingresado supera el saldo pendiente.");
+        return;
       }
 
       // ===== ARMAR FORMDATA =====

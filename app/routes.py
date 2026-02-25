@@ -143,6 +143,8 @@ def register_routes(app):
 
         precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
 
+        ahora = datetime.utcnow()
+
         pedido = Pedido(
             cliente=cliente,
             telefono=telefono,
@@ -151,8 +153,12 @@ def register_routes(app):
             observaciones=observaciones,
             total=0.0,
             forma_pago_preferida=forma_pago,
-            monto_sena=monto_sena
+            monto_sena=monto_sena,
+            estado="PENDIENTE",
+            created_at=ahora,
+            pendiente_at=ahora
         )
+        
         db.session.add(pedido)
         db.session.flush()  # para obtener pedido.id
 
@@ -224,15 +230,21 @@ def register_routes(app):
                 "subtotal": float(it.subtotal or 0.0),
             })
 
-        # pagos (opcional para mostrar historial)
         pagos = []
         total_pagado = 0.0
 
-        for pay in getattr(p, "pagos", []) or []:
+        pagos_ordenados = sorted(
+            getattr(p, "pagos", []) or [],
+            key=lambda x: x.created_at or x.fecha_pago
+        )
+
+        for idx, pay in enumerate(pagos_ordenados, start=1):
             total_pagado += float(pay.monto_pagado or 0.0)
+
             pagos.append({
                 "id": pay.id,
-                "pedido_id": pay.id,
+                "numero_pago": idx,        
+                "pedido_id": p.id,        
                 "metodo": pay.metodo,
                 "monto_pagado": float(pay.monto_pagado or 0.0),
                 "cuotas": pay.cuotas,
@@ -257,10 +269,10 @@ def register_routes(app):
             "email": p.email or "-",
             "direccion": p.direccion or "-",
             "observaciones": p.observaciones or "-",
-            "forma_pago": p.forma_pago_preferida or "-",   
+            "forma_pago": p.forma_pago_preferida or "-",
             "monto_sena": float(p.monto_sena) if p.monto_sena else None,
             "total_pagado": float(total_pagado),
-            "debe": float(debe),
+            "debe": float(debe),                 # 👈 sigue igual
             "total": float(p.total or 0.0),
             "estado": p.estado,
             "items": items,
