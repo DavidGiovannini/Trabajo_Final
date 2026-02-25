@@ -16,6 +16,9 @@ if __name__ == "__main__":
 
 # BUGS
 
+#
+#
+#
 #1- Función de Editar, ver de editar datos del cliente, el pedido se edita? poner los lapicitos para editar info.
 #2- Agregar un botón de eliminar (Basurerito), en las cards de pedidos para poder eliminar directamente el pedido.
 #3- Arreglar botonera de menú (dejar los que mas utilizaría).
