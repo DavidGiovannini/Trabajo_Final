@@ -649,3 +649,70 @@ aside .sidebar-brand .brand-text{
 .mp-pagos-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.pedido-title{
+  font-weight:600;
+  font-size:0.9rem;
+}
+
+.pedido-header{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-align:center;
+}
+
+.pedido-title-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  font-weight:600;
+}
+
+.estado-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  display:inline-block;
+  animation: estadoPulse 1.6s infinite;
+}
+
+.estado-pendiente .estado-dot{
+  background:#ff9800;
+}
+
+.estado-en_curso .estado-dot{
+  background:#6c757d;
+}
+
+.estado-finalizado .estado-dot{
+  background:#4caf50;
+}
+
+@keyframes estadoPulse{
+  0%{ transform:scale(1); opacity:1;}
+  50%{ transform:scale(1.35); opacity:.7;}
+  100%{ transform:scale(1); opacity:1;}
+}
+
+.pedido-creado{
+  text-align:center;
+  color:#6c757d;
+  font-size:13px;
+  margin:16px 0;
+  padding-top:8px;
+  border-top:1px solid rgba(0,0,0,0.08);
+}
+
+.text-success{
+  color:#28a745 !important;
+  font-weight:600;
+}
+
+.text-danger{
+  color:#dc3545 !important;
+  font-weight:600;
+}

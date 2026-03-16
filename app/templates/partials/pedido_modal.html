@@ -250,6 +250,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function actualizarDeudaCard(pedidoId, debe){
+    const el = document.getElementById(`pedido-debe-${pedidoId}`);
+    if (!el) return;
+
+    if (debe > 0){
+      el.textContent = `$${Number(debe).toLocaleString("es-AR")}`;
+      el.classList.remove("text-success");
+      el.classList.add("text-danger");
+    } else {
+      el.textContent = "No hay Deuda";
+      el.classList.remove("text-danger");
+      el.classList.add("text-success");
+    }
+  }
+
   async function refrescarDetallePedido(){
       if (!pedidoActualId) return;
       try{
@@ -272,6 +287,8 @@ document.addEventListener("DOMContentLoaded", () => {
           elDebe.textContent = "No hay Deudas";
           elDebe.classList.add("debe-ok");
         }
+
+        actualizarDeudaCard(p.id, debeNum);
 
         // Actualizar historial
         renderPagos(p.pagos || []);

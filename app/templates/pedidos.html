@@ -22,10 +22,14 @@
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
           {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-          <div class="pedido-card pedido-nueva" data-id="{{ p.id }}">
+          <div class="pedido-card pedido-nueva" 
+               data-id="{{ p.id }}"
+               data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
             <div class="pedido-header">
-              <div class="pedido-title">{{ (p.cliente or '-')|upper }}</div>
-              <div class="pedido-fecha">{{fecha_estado}}</div>
+              <div class="pedido-title-wrap estado-{{ p.estado|lower }}">
+                <span class="estado-dot"></span>
+                <span class="pedido-title">{{ (p.cliente or '-')|upper }}</span>
+              </div>
 
               <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
                 <i class="bi bi-chevron-down"></i>
@@ -44,10 +48,14 @@
               </div>
 
               <div class="pedido-debe">
-                <div class="pedido-debe-label">Debe:</div>
-                <div class="pedido-debe-valor {{ deb_clase }}">
-                  ${{ '%.2f'|format(deb) }}
-                </div>
+                <strong>Debe:</strong>
+                <span class="debe-monto" id="pedido-debe-{{ p.id }}">
+                  ${{ "%.2f"|format(p.total) }}
+                </span>
+              </div>
+
+              <div class="pedido-creado">
+                Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>
 
               <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-pedido-open="{{ p.id }}">
@@ -76,10 +84,14 @@
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
           {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-          <div class="pedido-card pedido-nueva" data-id="{{ p.id }}">
+          <div class="pedido-card pedido-nueva" 
+               data-id="{{ p.id }}"
+               data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
             <div class="pedido-header">
-              <div class="pedido-title">{{ (p.cliente or '-')|upper }}</div>
-              <div class="pedido-fecha">{{fecha_estado}}</div>
+              <div class="pedido-title-wrap estado-{{ p.estado|lower }}">
+                <span class="estado-dot"></span>
+                <span class="pedido-title">{{ (p.cliente or '-')|upper }}</span>
+              </div>
 
               <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
                 <i class="bi bi-chevron-down"></i>
@@ -98,10 +110,14 @@
               </div>
 
               <div class="pedido-debe">
-                <div class="pedido-debe-label">Debe:</div>
-                <div class="pedido-debe-valor {{ deb_clase }}">
-                  ${{ '%.2f'|format(deb) }}
-                </div>
+                <strong>Debe:</strong>
+                <span class="debe-monto" id="pedido-debe-{{ p.id }}">
+                  ${{ "%.2f"|format(p.total) }}
+                </span>
+              </div>
+
+              <div class="pedido-creado">
+                Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>
 
               <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-pedido-open="{{ p.id }}">
@@ -130,16 +146,19 @@
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
           {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-          <div class="pedido-card pedido-nueva" data-id="{{ p.id }}">
+          <div class="pedido-card pedido-nueva" 
+               data-id="{{ p.id }}"
+               data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
             <div class="pedido-header">
-              <div class="pedido-title">{{ (p.cliente or '-')|upper }}</div>
-              <div class="pedido-fecha">{{fecha_estado}}</div>
+              <div class="pedido-title-wrap estado-{{ p.estado|lower }}">
+                <span class="estado-dot"></span>
+                <span class="pedido-title">{{ (p.cliente or '-')|upper }}</span>
+              </div>
 
               <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
                 <i class="bi bi-chevron-down"></i>
               </button>
             </div>
-
             <div class="pedido-body pedido-collapsed">
               <div class="pedido-label">Pedido: <span class="text-muted">#{{ p.id }}</span></div>
 
@@ -152,10 +171,14 @@
               </div>
 
               <div class="pedido-debe">
-                <div class="pedido-debe-label">Debe:</div>
-                <div class="pedido-debe-valor {{ deb_clase }}">
-                  ${{ '%.2f'|format(deb) }}
-                </div>
+                <strong>Debe:</strong>
+                <span class="debe-monto" id="pedido-debe-{{ p.id }}">
+                  ${{ "%.2f"|format(p.total) }}
+                </span>
+              </div>
+
+              <div class="pedido-creado">
+                Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>
 
               <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-pedido-open="{{ p.id }}">
@@ -176,11 +199,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const columns = document.querySelectorAll(".kanban-column");
 
   function refreshEmptyColumns(){
-    columns.forEach(col => {
-      const hasCard = !!col.querySelector(".pedido-nueva");
-      col.classList.toggle("is-empty", !hasCard);
+    columns.forEach(col=>{
+      col.classList.toggle("is-empty", !col.querySelector(".pedido-nueva"));
     });
   }
+
+  function actualizarDeudaCard(pedidoId, debe){
+    const el = document.getElementById(`pedido-debe-${pedidoId}`);
+    if (!el) return;
+
+    if (debe > 0){
+      el.textContent = `$${Number(debe).toLocaleString("es-AR")}`;
+      el.classList.remove("text-success");
+      el.classList.add("text-danger");
+    } else {
+      el.textContent = "No hay Deuda";
+      el.classList.remove("text-danger");
+      el.classList.add("text-success");
+    }
+  }
+
+  document.querySelectorAll(".pedido-card").forEach(card=>{
+    const fecha = card.dataset.created
+    const el = card.querySelector(".pedido-creado-fecha")
+    if(el) el.textContent = fecha
+  })
 
   refreshEmptyColumns();
 
@@ -203,6 +246,13 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshEmptyColumns();
         if (evt.from === evt.to) return;
 
+        const titleWrap = card.querySelector(".pedido-title-wrap");
+
+        if (titleWrap){
+          titleWrap.classList.remove("estado-pendiente","estado-en_curso","estado-finalizado");
+          titleWrap.classList.add("estado-" + newEstado.toLowerCase());
+        }
+
         try {
           const res = await fetch(`/pedidos/mover/${pedidoId}`, {
             method: "POST",
@@ -219,25 +269,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const data = await res.json();
 
-          const fechaEl = card.querySelector(".pedido-fecha");
-          if (fechaEl && data.fecha_estado) {
-            fechaEl.textContent = data.fecha_estado;
-          }
-
         } catch (e) {
           evt.from.appendChild(card);
           refreshEmptyColumns();
           alert("Error al mover el pedido");
         }
       },
-
-      onAdd: refreshEmptyColumns,
-      onRemove: refreshEmptyColumns
     });
   });
 
   //Desplegar/Contraer en la card
   document.addEventListener("click", (e) => {
+
     const card = e.target.closest(".pedido-nueva");
     if (!card) return;
 
@@ -250,28 +293,11 @@ document.addEventListener("DOMContentLoaded", () => {
     card.classList.toggle("is-open");
 
     const icon = card.querySelector(".pedido-toggle i");
-    if (icon) {
+    if (icon){
       icon.classList.toggle("bi-chevron-down");
       icon.classList.toggle("bi-chevron-up");
     }
-  });
 
-  //Desplegar/Contraer en la flechita
-  document.addEventListener("click", (e) => {
-    const toggle = e.target.closest(".pedido-toggle");
-    if (!toggle) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const card = toggle.closest(".pedido-nueva");
-    if (!card) return;
-
-    const body = card.querySelector(".pedido-body");
-    if (!body) return;
-
-    body.classList.toggle("pedido-collapsed");
-    card.classList.toggle("is-open");
   });
 });
 </script>
