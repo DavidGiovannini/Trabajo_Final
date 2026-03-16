@@ -204,21 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function actualizarDeudaCard(pedidoId, debe){
-    const el = document.getElementById(`pedido-debe-${pedidoId}`);
-    if (!el) return;
-
-    if (debe > 0){
-      el.textContent = `$${Number(debe).toLocaleString("es-AR")}`;
-      el.classList.remove("text-success");
-      el.classList.add("text-danger");
-    } else {
-      el.textContent = "No hay Deuda";
-      el.classList.remove("text-danger");
-      el.classList.add("text-success");
-    }
-  }
-
   document.querySelectorAll(".pedido-card").forEach(card=>{
     const fecha = card.dataset.created
     const el = card.querySelector(".pedido-creado-fecha")
