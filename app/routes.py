@@ -232,19 +232,40 @@ def register_routes(app):
 
         pagos = []
         total_pagado = 0.0
+        numero_pago = 1
 
+        # ===== Seña como primer registro del historial =====
+        monto_sena_val = float(p.monto_sena or 0.0)
+
+        if monto_sena_val > 0:
+            pagos.append({
+                "id": "sena",
+                "tipo": "SENA",
+                "numero_pago": numero_pago,
+                "pedido_id": p.id,
+                "metodo": p.forma_pago_preferida or "-",
+                "monto_pagado": monto_sena_val,
+                "cuotas": None,
+                "monto_cuota": None,
+                "fecha_pago": p.created_at.strftime("%Y-%m-%d") if p.created_at else None,
+                "comprobantes": []
+            })
+            numero_pago += 1
+
+        # ===== Pagos reales =====
         pagos_ordenados = sorted(
             getattr(p, "pagos", []) or [],
             key=lambda x: x.created_at or x.fecha_pago
         )
 
-        for idx, pay in enumerate(pagos_ordenados, start=1):
+        for pay in pagos_ordenados:
             total_pagado += float(pay.monto_pagado or 0.0)
 
             pagos.append({
                 "id": pay.id,
-                "numero_pago": idx,        
-                "pedido_id": p.id,        
+                "tipo": "PAGO",
+                "numero_pago": numero_pago,
+                "pedido_id": p.id,
                 "metodo": pay.metodo,
                 "monto_pagado": float(pay.monto_pagado or 0.0),
                 "cuotas": pay.cuotas,
@@ -258,8 +279,8 @@ def register_routes(app):
                     } for c in (pay.comprobantes or [])
                 ]
             })
+            numero_pago += 1
 
-        monto_sena_val = float(p.monto_sena or 0.0)
         debe = float(p.total or 0.0) - monto_sena_val - total_pagado
 
         return {
@@ -278,6 +299,46 @@ def register_routes(app):
             "items": items,
             "pagos": pagos
         }
+    
+    @app.patch("/api/pedidos/<int:pid>")
+    @login_required
+    def api_actualizar_pedido(pid):
+        pedido = Pedido.query.get_or_404(pid)
+
+        data = request.get_json() or {}
+
+        pedido.direccion = (data.get("direccion") or "").strip()
+        pedido.telefono = (data.get("telefono") or "").strip()
+        pedido.email = (data.get("email") or "").strip()
+        pedido.observaciones = (data.get("observaciones") or "").strip() or None
+
+        if not pedido.direccion:
+            return {"error": "La dirección no puede estar vacía."}, 400
+
+        if not pedido.telefono:
+            return {"error": "El teléfono no puede estar vacío."}, 400
+
+        db.session.commit()
+
+        return {
+            "ok": True,
+            "direccion": pedido.direccion,
+            "telefono": pedido.telefono,
+            "email": pedido.email or "-",
+            "observaciones": pedido.observaciones or "-"
+        }, 200
+    
+    @app.delete("/api/pedidos/<int:pid>/sena")
+    @login_required
+    def api_eliminar_sena(pid):
+        pedido = Pedido.query.get_or_404(pid)
+
+        pedido.monto_sena = None
+        pedido.forma_pago_preferida = None
+
+        db.session.commit()
+
+        return {"ok": True}, 200
     
     @app.get("/dashboard")
     @login_required

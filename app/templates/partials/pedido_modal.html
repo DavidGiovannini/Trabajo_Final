@@ -16,17 +16,97 @@
       <div class="modal-body pedido-modal-body">
 
         <div class="pedido-datos">
-          <div class="dato"><strong>Domicilio:</strong> <span id="mp-domicilio"></span></div>
-          <div class="dato"><strong>Teléfono:</strong> 
-            <span id="mp-telefono"></span>
-            <a href="#" id="mp-wpp" class="ms-2 text-success d-none" target="_blank">
-              <i class="bi bi-whatsapp" style="font-size: 1.2rem;"></i>
-            </a>
-          </div>
-          <div class="dato"><strong>E-mail:</strong> <span id="mp-email"></span></div>
-          <div class="dato"><strong>Observaciones:</strong> <span id="mp-obs"></span></div>
-        </div>
 
+          <div class="dato dato-editable" data-field="direccion">
+            <div class="dato-label">
+              <strong>Domicilio:</strong>
+            </div>
+
+            <div class="dato-value dato-value-inline">
+              <span id="mp-domicilio-view"></span>
+              <input id="mp-domicilio-input" class="form-control d-none">
+
+              <a href="#" id="mp-maps" class="text-danger d-none" target="_blank">
+                <i class="bi bi-geo-alt-fill"></i>
+              </a>
+            </div>
+
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="direccion">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="direccion">
+                Guardar
+              </button>
+            </div>
+          </div>
+
+          <div class="dato dato-editable" data-field="telefono">
+            <div class="dato-label">
+              <strong>Teléfono:</strong>
+            </div>
+
+            <div class="dato-value dato-value-inline">
+              <span id="mp-telefono-view"></span>
+              <input id="mp-telefono-input" class="form-control d-none">
+              <a href="#" id="mp-wpp" class="text-success d-none" target="_blank">
+                <i class="bi bi-whatsapp"></i>
+              </a>
+            </div>
+
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="telefono">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="telefono">
+                Guardar
+              </button>
+            </div>
+          </div>
+
+          <div class="dato dato-editable" data-field="email">
+            <div class="dato-label">
+              <strong>E-mail:</strong>
+            </div>
+
+            <div class="dato-value dato-value-inline">
+              <span id="mp-email-view"></span>
+              <input id="mp-email-input" class="form-control d-none">
+              <a href="#" id="mp-gmail" class="text-danger d-none" target="_blank">
+                <i class="bi bi-envelope-fill"></i>
+              </a>
+            </div>
+
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="email">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="email">
+                Guardar
+              </button>
+            </div>
+          </div>
+
+          <div class="dato dato-editable" data-field="observaciones">
+            <div class="dato-label">
+              <strong>Observaciones:</strong>
+            </div>
+
+            <div class="dato-value">
+              <span id="mp-obs-view"></span>
+              <textarea id="mp-obs-input" class="form-control d-none" rows="2"></textarea>
+            </div>
+
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="observaciones">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="observaciones">
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
         <hr class="pedido-sep">
 
         <div class="pedido-detalle">
@@ -231,6 +311,103 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const badge = document.getElementById("mp-estado-badge");
 
+  function setModoEdicionCampo(field, activo){
+    const map = {
+      direccion: ["mp-domicilio-view", "mp-domicilio-input"],
+      telefono: ["mp-telefono-view", "mp-telefono-input"],
+      email: ["mp-email-view", "mp-email-input"],
+      observaciones: ["mp-obs-view", "mp-obs-input"]
+    };
+
+    const ids = map[field];
+    if (!ids) return;
+
+    const [viewId, inputId] = ids;
+    const viewEl = document.getElementById(viewId);
+    const inputEl = document.getElementById(inputId);
+
+    viewEl?.classList.toggle("d-none", activo);
+    inputEl?.classList.toggle("d-none", !activo);
+
+    const editBtn = document.querySelector(`[data-edit-field="${field}"]`);
+    const saveBtn = document.querySelector(`[data-save-field="${field}"]`);
+
+    editBtn?.classList.toggle("d-none", activo);
+    saveBtn?.classList.toggle("d-none", !activo);
+  }
+
+  async function guardarCampoPedido(field){
+    if (!pedidoActualId) return;
+
+    const payload = {
+      direccion: document.getElementById("mp-domicilio-input").value.trim(),
+      telefono: document.getElementById("mp-telefono-input").value.trim(),
+      email: document.getElementById("mp-email-input").value.trim(),
+      observaciones: document.getElementById("mp-obs-input").value.trim()
+    };
+
+    const res = await fetch(`/api/pedidos/${pedidoActualId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok){
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || "No se pudieron guardar los cambios.");
+      return;
+    }
+
+    const data = await res.json();
+
+    document.getElementById("mp-domicilio-view").textContent = data.direccion || "-";
+    document.getElementById("mp-telefono-view").textContent = data.telefono || "-";
+    document.getElementById("mp-email-view").textContent = data.email || "-";
+    
+    document.getElementById("mp-obs-view").textContent = data.observaciones || "-";
+    document.getElementById("mp-obs-input").value = data.observaciones || "";
+
+    actualizarAccesosContacto({
+      telefono: data.telefono || "",
+      email: data.email || "",
+      direccion: data.direccion || "",
+      pedidoId: data.id || pedidoActualId
+    });
+
+    setModoEdicionCampo(field, false);
+    await refrescarDetallePedido();
+  }
+
+  document.querySelectorAll(".mp-edit-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const field = btn.getAttribute("data-edit-field");
+      if (!field) return;
+
+      setModoEdicionCampo(field, true);
+    });
+  });
+
+  document.querySelectorAll(".mp-save-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const field = btn.getAttribute("data-save-field");
+      if (!field) return;
+
+      await guardarCampoPedido(field);
+    });
+  });
+
+  document.getElementById("mp-domicilio-input")?.addEventListener("input", (e) => {
+    actualizarLinkMaps(e.target.value);
+  });
+
+  document.getElementById("mp-telefono-input")?.addEventListener("input", (e) => {
+    actualizarLinkWhatsApp(e.target.value);
+  });
+
+  document.getElementById("mp-email-input")?.addEventListener("input", (e) => {
+    actualizarLinkMail(e.target.value, pedidoActualId);
+  });
+
   function setBadge(estado) {
     badge.textContent = "";
     badge.className = "badge";
@@ -266,50 +443,68 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function refrescarDetallePedido(){
-      if (!pedidoActualId) return;
-      try{
-        const res = await fetch(`/api/pedidos/${pedidoActualId}`);
-        if (!res.ok) return;
-        const p = await res.json();
+    if (!pedidoActualId) return;
+    try{
+      const res = await fetch(`/api/pedidos/${pedidoActualId}`);
+      if (!res.ok) return;
+      const p = await res.json();
 
-        // Actualizar badge
-        setBadge(p.estado);
+      document.getElementById("mp-domicilio-view").textContent = p.direccion || "-";
+      document.getElementById("mp-telefono-view").textContent = p.telefono || "-";
+      document.getElementById("mp-email-view").textContent = p.email || "-";
+      document.getElementById("mp-obs-view").textContent = p.observaciones || "-";
 
-        // Actualizar debe
-        const elDebe = document.getElementById("mp-debe");
-        const debeNum = Number(p.debe || 0);
+      document.getElementById("mp-domicilio-input").value = p.direccion || "";
+      document.getElementById("mp-telefono-input").value = p.telefono || "";
+      document.getElementById("mp-email-input").value = p.email || "";
+      document.getElementById("mp-obs-input").value = p.observaciones || "";
 
-        elDebe.classList.remove("debe-ok","debe-bad");
-        if (debeNum > 0){
-          elDebe.textContent = fmtMoney(debeNum);
-          elDebe.classList.add("debe-bad");
-        } else {
-          elDebe.textContent = "No hay Deudas";
-          elDebe.classList.add("debe-ok");
-        }
+      actualizarAccesosContacto({
+        telefono: p.telefono || "",
+        email: p.email || "",
+        direccion: p.direccion || "",
+        pedidoId: p.id || pedidoActualId
+      });
 
-        actualizarDeudaCard(p.id, debeNum);
+      // Actualizar badge
+      setBadge(p.estado);
 
-        // Actualizar historial
-        renderPagos(p.pagos || []);
+      // Actualizar debe
+      const elDebe = document.getElementById("mp-debe");
+      const debeNum = Number(p.debe || 0);
 
-      }catch(e){
-        // silencioso
+      elDebe.classList.remove("debe-ok","debe-bad");
+      if (debeNum > 0){
+        elDebe.textContent = fmtMoney(debeNum);
+        elDebe.classList.add("debe-bad");
+      } else {
+        elDebe.textContent = "No hay Deudas";
+        elDebe.classList.add("debe-ok");
       }
+
+      actualizarDeudaCard(p.id, debeNum);
+
+      // Actualizar historial
+      renderPagos(p.pagos || []);
+
+    }catch(e){
+      // silencioso
     }
+  }
 
     document.addEventListener("click", async (e) => {
       const btnVer = e.target.closest("[data-pay-view]");
       if (btnVer){
         e.preventDefault();
-        const payId = Number(btnVer.getAttribute("data-pay-view"));
-        if (!payId) return;
 
-        // buscamos el pago dentro del pedido actual (ya lo tenemos en la última respuesta)
-        // solución rápida: pedir el pedido y encontrarlo
+        const rawId = btnVer.getAttribute("data-pay-view");
+        if (!rawId) return;
+
         const res = await fetch(`/api/pedidos/${pedidoActualId}`);
+        if (!res.ok) return;
+
         const p = await res.json();
-        const pago = (p.pagos || []).find(x => Number(x.id) === payId);
+        const pago = (p.pagos || []).find(x => String(x.id) === String(rawId));
         if (!pago) return;
 
         abrirPagoReadonly(pago);
@@ -319,12 +514,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const btnDel = e.target.closest("[data-pay-del]");
       if (btnDel){
         e.preventDefault();
-        const payId = Number(btnDel.getAttribute("data-pay-del"));
+        const payId = btnDel.getAttribute("data-pay-del");
         if (!payId) return;
 
-        if (!confirm("¿Eliminar este pago?")) return;
+        if (!confirm("¿Eliminar este registro?")) return;
 
-        const res = await fetch(`/api/pagos/${payId}`, { method: "DELETE" });
+        let res;
+        if (String(payId) === "sena") {
+          res = await fetch(`/api/pedidos/${pedidoActualId}/sena`, { method: "DELETE" });
+        } else {
+          res = await fetch(`/api/pagos/${payId}`, { method: "DELETE" });
+        }
         if (!res.ok){
           alert("No se pudo eliminar el pago.");
           return;
@@ -362,9 +562,9 @@ document.addEventListener("DOMContentLoaded", () => {
       row.className = "mp-pago-row";
 
       row.innerHTML = `
-         <div class="mp-pago-left">
+        <div class="mp-pago-left">
           <span>
-            <strong>${pay.numero_pago || pay.id}</strong> -
+            <strong>${pay.tipo === "SENA" ? "Seña" : "Pago " + (pay.numero_pago || pay.id)}</strong> -
             ${fmtFechaISOtoAR(pay.fecha_pago)} -
             ${fmtMoney(pay.monto_pagado)} -
             ${pay.metodo || "-"}
@@ -395,7 +595,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const titulo = modalPagoEl.querySelector(".mp-header-title");
     if (titulo){
-      titulo.textContent = `Pago #${pago.numero_pago || pago.id}`;
+      titulo.textContent = pago.tipo === "SENA"
+        ? "Seña"
+        : `Pago #${pago.numero_pago || pago.id}`;
     }
 
     const payPedidoId = document.getElementById("pay-pedido-id");
@@ -523,15 +725,102 @@ document.addEventListener("DOMContentLoaded", () => {
     return "54" + num;
   }
 
+  function actualizarLinkMaps(direccion){
+    const mapsEl = document.getElementById("mp-maps");
+    if (!mapsEl) return;
+
+    const direccionRaw = (direccion || "").trim();
+
+    if (!direccionRaw) {
+      mapsEl.href = "#";
+      mapsEl.classList.add("d-none");
+      return;
+    }
+
+    const query = encodeURIComponent(`${direccionRaw}, Argentina`);
+    mapsEl.href = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    mapsEl.classList.remove("d-none");
+  }
+
+  function actualizarLinkWhatsApp(telefono, pedidoId = null) {
+    const wppEl = document.getElementById("mp-wpp");
+    if (!wppEl) return;
+
+    const telefonoRaw = (telefono || "").trim();
+    const numeroNormalizado = normalizarTelefonoAR(telefonoRaw);
+
+    if (!numeroNormalizado || !pedidoId) {
+      wppEl.href = "#";
+      wppEl.classList.add("d-none");
+      return;
+    }
+
+    const pdfUrl = `${window.location.origin}/pedidos/${pedidoId}/pdf`;
+    const mensaje = encodeURIComponent(
+      `Hola, nos comunicamos de S. Valvo y Cía.\nTe compartimos el presupuesto:\n${pdfUrl}`
+    );
+
+    const esMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    const url = esMobile
+      ? `https://api.whatsapp.com/send?phone=${numeroNormalizado}&text=${mensaje}`
+      : `https://web.whatsapp.com/send?phone=${numeroNormalizado}&text=${mensaje}`;
+
+    wppEl.href = url;
+    wppEl.classList.remove("d-none");
+  }
+
+  function actualizarLinkMail(email, pedidoId = null) {
+    const mailEl = document.getElementById("mp-gmail");
+    if (!mailEl) return;
+
+    const emailRaw = (email || "").trim();
+
+    if (!emailRaw || !pedidoId) {
+      mailEl.href = "#";
+      mailEl.classList.add("d-none");
+      return;
+    }
+
+    const asunto = encodeURIComponent(`Presupuesto Pedido #${pedidoId}`);
+    const pdfUrl = `${window.location.origin}/pedidos/${pedidoId}/pdf`;
+    const cuerpo = encodeURIComponent(
+      `Hola, nos comunicamos de S. Valvo y Cía.\n\nTe compartimos el presupuesto:\n${pdfUrl}`
+    );
+
+    mailEl.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailRaw)}&su=${asunto}&body=${cuerpo}`;
+    mailEl.classList.remove("d-none");
+  }
+
+  function actualizarAccesosContacto({ telefono = "", email = "", direccion = "", pedidoId = null }) {
+    actualizarLinkWhatsApp(telefono, pedidoId);
+    actualizarLinkMail(email, pedidoId);
+    actualizarLinkMaps(direccion);
+  }
+
   window.abrirDetallePedido = async function(id) {
     pedidoActualId = id;
 
     document.getElementById("mp-orden").textContent = `Nro de Orden: #${id}`;
     document.getElementById("mp-cliente").textContent = "Cargando...";
-    document.getElementById("mp-domicilio").textContent = "-";
-    document.getElementById("mp-telefono").textContent = "-";
-    document.getElementById("mp-email").textContent = "-";
-    document.getElementById("mp-obs").textContent = "-";
+
+    document.getElementById("mp-domicilio-view").textContent = "-";
+    document.getElementById("mp-telefono-view").textContent = "-";
+    document.getElementById("mp-email-view").textContent = "-";
+    document.getElementById("mp-obs-view").textContent = "-";
+
+    document.getElementById("mp-domicilio-input").value = "";
+    document.getElementById("mp-telefono-input").value = "";
+    document.getElementById("mp-email-input").value = "";
+    document.getElementById("mp-obs-input").value = "";
+
+    actualizarAccesosContacto({
+      telefono: "",
+      email: "",
+      direccion: "",
+      pedidoId: id
+    });
+
     document.getElementById("mp-items").innerHTML = "<div class='text-muted'>Cargando...</div>";
     document.getElementById("mp-total").textContent = "-";
 
@@ -551,58 +840,46 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`/api/pedidos/${id}`);
       if (!res.ok) throw new Error("HTTP " + res.status);
       p = await res.json();
-      renderPagos(p.pagos || []);
     } catch (err) {
       document.getElementById("mp-items").innerHTML =
         "<div class='text-danger'>Error cargando el pedido</div>";
       return;
     }
 
+    renderPagos(p.pagos || []);
     setBadge(p.estado);
 
     document.getElementById("mp-cliente").textContent = (p.cliente || "-").toString();
-    document.getElementById("mp-domicilio").textContent = p.direccion || "-";
 
-    const telEl = document.getElementById("mp-telefono");
-    const wppEl = document.getElementById("mp-wpp");
+    document.getElementById("mp-domicilio-view").textContent = p.direccion || "-";
+    document.getElementById("mp-telefono-view").textContent = p.telefono || "-";
+    document.getElementById("mp-email-view").textContent = p.email || "-";
+    document.getElementById("mp-obs-view").textContent = p.observaciones || "-";
 
-    const telefonoRaw = (p.telefono || "").trim();
+    document.getElementById("mp-domicilio-input").value = p.direccion || "";
+    document.getElementById("mp-telefono-input").value = p.telefono || "";
+    document.getElementById("mp-email-input").value = p.email || "";
+    document.getElementById("mp-obs-input").value = p.observaciones || "";
 
-    telEl.textContent = telefonoRaw || "-";
+    actualizarAccesosContacto({
+      telefono: p.telefono || "",
+      email: p.email || "",
+      direccion: p.direccion || "",
+      pedidoId: p.id ?? id
+    });
 
-    const numeroNormalizado = normalizarTelefonoAR(telefonoRaw);
-
-    if (numeroNormalizado) {
-      const mensaje = encodeURIComponent("Hola, nos comunicamos de S. Valvo y Cía");
-
-      // Detectar mobile
-      const esMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      const url = esMobile
-        ? `https://api.whatsapp.com/send?phone=${numeroNormalizado}&text=${mensaje}`
-        : `https://web.whatsapp.com/send?phone=${numeroNormalizado}&text=${mensaje}`;
-
-      wppEl.href = url;
-      wppEl.classList.remove("d-none");
-    } else {
-      wppEl.classList.add("d-none");
-    }
-
-    document.getElementById("mp-email").textContent = p.email || "-";
-    document.getElementById("mp-obs").textContent = p.observaciones || "-";
     document.getElementById("mp-orden").textContent = `Nro de Orden: #${p.id ?? id}`;
 
-    const totalTxt = `$${Number(p.total || 0).toLocaleString('es-AR')}`;
+    const totalTxt = `$${Number(p.total || 0).toLocaleString("es-AR")}`;
     document.getElementById("mp-total").textContent = totalTxt;
 
-    // ✅ si tu API ya devuelve p.debe, mejor usarlo
     const debeNum = (p.debe !== undefined && p.debe !== null)
       ? Number(p.debe)
       : (Number(p.total || 0) - Number(p.monto_sena || 0));
 
     elDebe.classList.remove("debe-ok", "debe-bad");
     if (debeNum > 0) {
-      elDebe.textContent = `$${debeNum.toLocaleString('es-AR')}`;
+      elDebe.textContent = `$${debeNum.toLocaleString("es-AR")}`;
       elDebe.classList.add("debe-bad");
     } else {
       elDebe.textContent = "No hay Deudas";
@@ -618,7 +895,7 @@ document.addEventListener("DOMContentLoaded", () => {
       p.items.forEach(it => {
         const row = document.createElement("div");
         row.className = "pedido-item-row";
-        const subtotal = `$${Number(it.subtotal || 0).toLocaleString('es-AR')}`;
+        const subtotal = `$${Number(it.subtotal || 0).toLocaleString("es-AR")}`;
         row.innerHTML = `
           <div class="pedido-item-desc">${it.descripcion || "-"}</div>
           <div class="pedido-item-dots"></div>
@@ -664,17 +941,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Eliminar pedido
   document.getElementById("mp-eliminar")?.addEventListener("click", async () => {
+
     if (!pedidoActualId) return;
     if (!confirm("¿Eliminar pedido?")) return;
 
-    const res = await fetch(`/pedidos/eliminar/${pedidoActualId}`, { method: "POST" });
-    if (!res.ok) {
+    const res = await fetch(`/pedidos/eliminar/${pedidoActualId}`, {
+      method: "POST"
+    });
+
+    if (!res.ok){
       alert("No se pudo eliminar.");
       return;
     }
 
+    // eliminar la card del tablero
+    const card = document.querySelector(`.pedido-card[data-id="${pedidoActualId}"]`);
+    if(card){
+      card.remove();
+    }
+
     modal.hide();
-    window.location.reload();
   });
 
   const modalPagoEl = document.getElementById("modalPago");

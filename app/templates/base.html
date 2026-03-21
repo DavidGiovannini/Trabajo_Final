@@ -13,32 +13,60 @@
 <div class="d-flex" style="min-height:100vh;">
 
   <!-- Sidebar -->
-  <aside class="text-white p-3" style="width:260px; flex: 0 0 260px; background-color:#0b2a4a;">
+  <aside class="sidebar">
+
     <a class="sidebar-brand" href="{{ url_for('dashboard') }}">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="brand-logo">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" class="brand-logo">
       <span class="brand-text">S. Valvo y Cía</span>
     </a>
 
-    <div class="small text-white-50 mb-2">Atajos</div>
-    <div class="list-group list-group-flush">
-      <a class="list-group-item list-group-item-action text-white"
-         style="background:transparent;border:0;" href="/dashboard">🏠 Dashboard</a>
-      <a class="list-group-item list-group-item-action text-white"
-         style="background:transparent;border:0;" href="/presupuestador">🧾 Presupuestador</a>
-      <a class="list-group-item list-group-item-action text-white"
-         style="background:transparent;border:0;" href="/pedidos">📦 Pedidos</a>
-      <a class="list-group-item list-group-item-action text-white"
-         style="background:transparent;border:0;" href="/productos">🪵 Productos</a>
-      <a class="list-group-item list-group-item-action text-white"
-         style="background:transparent;border:0;" href="/configuracion">⚙️ Configuración</a>
+    <!-- OPERACIÓN -->
+    <div class="sidebar-section">Operación</div>
+
+    <a class="sidebar-link" href="/dashboard">
+      <i class="bi bi-speedometer2"></i>
+      <span>Dashboard</span>
+    </a>
+
+    <a class="sidebar-link sidebar-primary" href="/presupuestador">
+      <i class="bi bi-receipt"></i>
+      <span>Nuevo presupuesto</span>
+    </a>
+
+    <a class="sidebar-link" href="/pedidos">
+      <i class="bi bi-box-seam"></i>
+      <span>Pedidos</span>
+    </a>
+
+    <!-- GESTIÓN -->
+    <div class="sidebar-section mt-4">Gestión</div>
+
+    <a class="sidebar-link" href="/productos">
+      <i class="bi bi-grid"></i>
+      <span>Productos</span>
+    </a>
+
+    <!-- SISTEMA -->
+    <div class="sidebar-section mt-4">Sistema</div>
+
+    <a class="sidebar-link" href="/configuracion">
+      <i class="bi bi-gear"></i>
+      <span>Configuración</span>
+    </a>
+
+    <div class="sidebar-bottom">
+
+      <a class="btn btn-outline-light w-100" href="/logout">
+        <i class="bi bi-box-arrow-right"></i>
+        Salir
+      </a>
+
+      <div class="sidebar-status">
+        LAN interna • 1 usuario
+      </div>
+
     </div>
 
-    <hr class="border-white border-opacity-25">
-
-    <a class="btn btn-outline-light w-100" href="/logout">Salir</a>
-    <div class="small text-white-50 mt-3">
-      LAN interna • 1 usuario
-    </div>
   </aside>
 
   <!-- Main -->
@@ -74,6 +102,25 @@ document.addEventListener("DOMContentLoaded", function () {
             bsAlert.close();
         });
     }, 3000);
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const links = document.querySelectorAll(".sidebar-link");
+  const path = window.location.pathname;
+
+  links.forEach(link => {
+
+    const href = link.getAttribute("href");
+
+    if(path.startsWith(href)){
+      link.classList.add("active");
+    }
+
+  });
+
 });
 </script>
 

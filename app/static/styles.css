@@ -716,3 +716,300 @@ aside .sidebar-brand .brand-text{
   color:#dc3545 !important;
   font-weight:600;
 }
+
+.kanban-trash{
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) scale(.9);
+
+  background: #ffffff;
+  color: #6c757d;
+
+  border: 2px dashed #ced4da;
+  border-radius: 16px;
+
+  padding: 16px 28px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  font-size: 17px;
+  font-weight: 600;
+
+  box-shadow: 0 10px 28px rgba(0,0,0,.15);
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: all .25s ease;
+
+  z-index: 9999;
+}
+
+.kanban-trash i{
+  font-size: 22px;
+}
+
+.kanban-trash.active{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) scale(1);
+}
+
+.kanban-trash.hover{
+  background: #f8f9fa;
+  border-color: #dc3545;
+  color: #dc3545;
+  transform: translateX(-50%) scale(1.08);
+}
+
+.pedidos-board hr{
+  border: none;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:260px;
+flex:0 0 260px;
+background:linear-gradient(180deg,#0b2a4a,#081f36);
+color:white;
+padding:20px 18px;
+display:flex;
+flex-direction:column;
+box-shadow:2px 0 10px rgba(0,0,0,.1);
+}
+
+/* logo */
+
+.sidebar-brand{
+display:flex;
+align-items:center;
+gap:10px;
+text-decoration:none;
+color:white;
+margin-bottom:30px;
+}
+
+.brand-logo{
+height:32px;
+}
+
+.brand-text{
+font-weight:600;
+font-size:16px;
+letter-spacing:.3px;
+}
+
+/* secciones */
+
+.sidebar-section{
+font-size:11px;
+text-transform:uppercase;
+letter-spacing:.08em;
+color:rgba(255,255,255,.45);
+margin-bottom:8px;
+padding-left:6px;
+}
+
+/* links */
+
+.sidebar-link{
+display:flex;
+align-items:center;
+gap:12px;
+padding:10px 12px;
+border-radius:8px;
+color:white;
+text-decoration:none;
+font-size:14px;
+margin-bottom:4px;
+transition:all .18s ease;
+opacity:.9;
+}
+
+.sidebar-link i{
+font-size:17px;
+width:20px;
+text-align:center;
+}
+
+/* hover */
+
+.sidebar-link:hover{
+background:#4dabf7;
+color:white;
+opacity:1;
+transform:translateX(2px);
+}
+
+/* item activo */
+
+.sidebar-link.active{
+background:#163e6c;
+box-shadow:inset 3px 0 0 #4dabf7;
+}
+
+/* botón principal (solo peso visual) */
+
+.sidebar-primary{
+font-weight:500;
+}
+
+/* footer */
+
+.sidebar-bottom{
+margin-top:auto;
+padding-top:20px;
+}
+
+.sidebar-status{
+font-size:12px;
+color:rgba(255,255,255,.5);
+margin-top:10px;
+text-align:center;
+}
+
+.pedido-datos .dato{
+  display:grid;
+  grid-template-columns: auto 1fr 58px;
+  align-items:center;
+  column-gap:10px;
+  row-gap:8px;
+  padding:10px 0;
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+
+.pedido-datos .dato:last-child{
+  border-bottom:0;
+}
+
+.dato-label{
+  display:flex;
+  align-items:center;
+  white-space:nowrap;
+}
+
+.dato-label strong{
+  margin:0;
+}
+
+.dato-value{
+  min-width:0;
+  width:100%;
+  display:flex;
+  align-items:center;
+}
+.dato-value-inline{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+
+.dato-value > span,
+.dato-value-inline > span{
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  line-height:1.35;
+}
+
+.dato-value input,
+.dato-value textarea,
+.dato-value-inline input{
+  width:100%;
+  margin:0 !important;
+}
+
+.dato-value textarea{
+  width:100%;
+}
+
+.dato-action{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding-left:6px;
+}
+
+.mp-edit-btn{
+  width:30px;
+  height:30px;
+  min-width:30px;
+  padding:0;
+  border-radius:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.mp-edit-btn i{
+  font-size:12px;
+}
+
+.mp-save-btn{
+  height:30px;
+  min-height:30px;
+  padding:0 8px;
+  font-size:.70rem;
+  font-weight:700;
+  border-radius:6px;
+  white-space:nowrap;
+  margin-left:6px;
+}
+
+#mp-wpp,
+#mp-gmail{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+}
+
+#mp-wpp i{
+  font-size:1.1rem !important;
+}
+
+#mp-gmail i{
+  font-size:1rem !important;
+}
+
+@media (max-width: 768px){
+  .pedido-datos .dato{
+    grid-template-columns: 1fr;
+    gap:8px;
+  }
+
+  .dato-action{
+    justify-content:flex-start;
+  }
+
+  .dato-value > span,
+  .dato-value-inline > span{
+    white-space:normal;
+  }
+}
+
+#mp-maps{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:6px;
+  text-decoration:none;
+}
+
+#mp-maps i{
+  font-size:1.1rem;
+}
+
+#mp-maps:hover{
+  transform: scale(1.15);
+  transition: .15s;
+}

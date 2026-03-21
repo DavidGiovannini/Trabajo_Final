@@ -190,13 +190,21 @@
       </div>
     </div>
   </div>
+  <div id="kanban-trash" class="kanban-trash">
+    <i class="bi bi-trash"></i>
+    <span>Eliminar pedido</span>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
   const columns = document.querySelectorAll(".kanban-column");
+
+  const trash = document.getElementById("kanban-trash");
+  let pedidoDragging = null;
 
   function refreshEmptyColumns(){
     columns.forEach(col=>{
@@ -220,10 +228,21 @@ document.addEventListener("DOMContentLoaded", () => {
       handle: ".pedido-header",
       filter: "button, .btn, a, input, select, textarea",
       preventOnFilter: true,
+
       chosenClass: "sortable-chosen",
       dragClass: "sortable-drag",
 
+      onStart: (evt) => {
+        pedidoDragging = evt.item;
+        trash.classList.add("active");
+      },
+
       onEnd: async (evt) => {
+
+        trash.classList.remove("active");
+        trash.classList.remove("hover");
+        pedidoDragging = null;
+
         const card = evt.item;
         const pedidoId = card.dataset.id;
         const newEstado = evt.to.id;
@@ -249,17 +268,14 @@ document.addEventListener("DOMContentLoaded", () => {
             evt.from.appendChild(card);
             refreshEmptyColumns();
             alert("Error al mover el pedido");
-            return;
           }
-
-          const data = await res.json();
 
         } catch (e) {
           evt.from.appendChild(card);
           refreshEmptyColumns();
           alert("Error al mover el pedido");
         }
-      },
+      }
     });
   });
 
@@ -282,6 +298,51 @@ document.addEventListener("DOMContentLoaded", () => {
       icon.classList.toggle("bi-chevron-down");
       icon.classList.toggle("bi-chevron-up");
     }
+
+  });
+
+  trash.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    trash.classList.add("hover");
+  });
+
+  trash.addEventListener("dragleave", () => {
+    trash.classList.remove("hover");
+  });
+
+  trash.addEventListener("drop", async (e) => {
+    e.preventDefault();
+
+    trash.classList.remove("hover");
+    trash.classList.remove("active");
+
+    if (!pedidoDragging) return;
+
+    const card = pedidoDragging;
+    const id = card.dataset.id;
+
+    pedidoDragging = null;
+
+    if (!confirm("¿Eliminar este pedido?")) return;
+
+    const res = await fetch(`/pedidos/eliminar/${id}`, {
+      method: "POST"
+    });
+
+    if (!res.ok){
+      alert("No se pudo eliminar.");
+      return;
+    }
+
+    // animación antes de eliminar
+    card.style.transition = "all .2s ease";
+    card.style.opacity = "0";
+    card.style.transform = "scale(.9)";
+
+    setTimeout(()=>{
+      card.remove();
+      refreshEmptyColumns();
+    },200);
 
   });
 });

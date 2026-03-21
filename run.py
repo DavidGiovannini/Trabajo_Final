@@ -16,18 +16,12 @@ if __name__ == "__main__":
 
 # BUGS
 
-#1- Función de Editar, ver de editar datos del cliente, el pedido se edita? poner los lapicitos para editar info.
-#2- Agregar un botón de eliminar (Basurerito), en las cards de pedidos para poder eliminar directamente el pedido.
-#3- Arreglar botonera de menú (dejar los que mas utilizaría).
-#4- Agregar todas las formas de pago en el presupuestador.
-#- Que el presupuesto se cargue automaticamente en el whatsapp al apretar el boton y lo mismo para el gmail.
 #- Ver el tema de que al cambiar el precio de los productos tambien cambie en los presupuestos ya confeccionados.
-
 
 #5- Pestaña calendario, con posibilidad de agregar notas.
 #6- Seguir con modulo productos y parámetros (configuración), ver de unificar todo en un solo modulo control de stock, arreglar en el resto de pantallas.
-#7- Arreglar reporte PDF de presupuesto.
+#7- Arreglar reporte PDF de presupuesto. Ver tema de pdf hacerlo de acceso publico o reveer opciones para que lo puedan descargar.
 #8- Agregar nueva pestaña de históricos.
-#9- Ver tema de las cuotas.
+#9- Ver tema de las cuotas. Ver tema iva como funciona.
 #10- Login/logout/configuración.
 #11- chatbox con ia?
