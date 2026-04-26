@@ -1,29 +1,736 @@
 {% extends "base.html" %}
 {% block content %}
-<h3 class="mb-3">Configuración - Precios por metro</h3>
-<hr class="mb-3">
 
-<form method="post" action="/configuracion">
-  <div class="card border-0 shadow-sm">
-    <div class="card-body">
-      <table class="table align-middle">
-        <thead>
-          <tr>
-            <th>Material</th>
-            <th style="width:200px;">Precio por metro</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
-          <tr>
-            <td><input class="form-control" name="material[]" value="{{r.material}}"></td>
-            <td><input class="form-control" name="precio[]" value="{{r.precio}}"></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <button class="btn btn-success">Guardar cambios</button>
+<style>
+/* =========================================================
+   CONFIGURACIÓN - Estilos mejorados
+========================================================= */
+
+/* Header de cada card (azul oscuro) */
+.cfg-card-header {
+  background: #0b2a4a;
+  color: #fff;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: calc(.375rem - 1px) calc(.375rem - 1px) 0 0;
+  cursor: pointer;
+  user-select: none;
+}
+.cfg-card-header strong {
+  font-size: 1rem;
+  letter-spacing: .5px;
+  color: #fff;
+}
+.cfg-card-header .arrow {
+  color: rgba(255,255,255,.75);
+  transition: transform .2s ease;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+.cfg-card-header:hover {
+  background: #163e6c;
+}
+
+/* Badges de sección */
+.cfg-section-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: .82rem;
+  letter-spacing: .03em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.cfg-section-muebles {
+  background: rgba(11,42,74,.08);
+  color: #0b2a4a;
+  border-left: 3px solid #0b2a4a;
+}
+.cfg-section-adicionales {
+  background: rgba(196,98,0,.09);
+  color: #c46200;
+  border-left: 3px solid #c46200;
+}
+
+/* Grid filas — muebles (6 cols) */
+.cfg-row {
+  display: grid;
+  grid-template-columns: 32px 110px 1fr 1fr 1fr 40px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.07);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.04);
+  transition: box-shadow .15s;
+}
+.cfg-row:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,.09);
+}
+.cfg-row.is-new {
+  border-color: #ffc107;
+  background: #fffdf0;
+}
+
+/* Header de columnas */
+.cfg-row-header {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 4px 12px 2px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 4px;
+}
+.cfg-row-header:hover {
+  box-shadow: none;
+}
+
+/* Grid filas — adicionales (4 cols) */
+.cfg-row-add {
+  grid-template-columns: 32px 1fr 200px 40px;
+}
+
+/* Toolbar inferior */
+.cfg-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.07);
+}
+
+.cfg-toolbar .bloque-acciones {
+  margin-left: auto;
+}
+
+/* Separador visual entre secciones */
+.cfg-divider {
+  border: 0;
+  border-top: 1px dashed rgba(0,0,0,.10);
+  margin: 18px 0 16px;
+}
+</style>
+
+<h3 class="mb-2">Configuración de Muebles</h3>
+
+<!-- FECHA -->
+<div class="mb-4 d-flex align-items-center gap-3 flex-wrap">
+  <div id="fechaDisplay" class="fw-semibold fs-5">
+    Precios actualizados a la fecha -
+    <span id="fechaTexto">
+      {{ config_fecha.strftime("%d/%m/%Y") if config_fecha else "--/--/----" }}
+    </span>
+  </div>
+
+  <button type="button" id="btnEditarFecha" class="btn btn-sm btn-light border d-flex align-items-center gap-1">
+    <i class="bi bi-pencil"></i>
+  </button>
+
+  <input type="date"
+         id="fechaPrecioInput"
+         class="form-control form-control-sm d-none"
+         style="width:180px;">
+
+  <button type="button"
+          id="btnGuardarFecha"
+          class="btn btn-sm btn-success d-none">
+    <i class="bi bi-check-lg me-1"></i>Guardar
+  </button>
+</div>
+
+<!-- CONTROLES GLOBALES -->
+<div class="d-flex align-items-center gap-3 flex-wrap mb-4 px-3 py-2 rounded-3"
+     style="background:#f8f9fa;border:1px solid rgba(0,0,0,.07);">
+  <div class="d-flex align-items-center gap-2">
+    <input type="checkbox" id="selectAllGlobal" class="form-check-input" style="width:16px;height:16px;">
+    <label class="form-check-label fw-semibold small" for="selectAllGlobal">Seleccionar todo</label>
+  </div>
+  <div class="vr opacity-25 d-none d-sm-block"></div>
+  <div class="d-flex align-items-center gap-2">
+    <label class="form-label small fw-semibold mb-0 text-muted">Aumento global:</label>
+    <input type="number" step="0.1" id="porcentajeGlobal" class="form-control form-control-sm"
+           placeholder="%" style="width:90px;">
+    <button type="button" id="btnAplicarGlobal" class="btn btn-sm btn-success">
+      <i class="bi bi-percent me-1"></i>Aplicar a seleccionados
+    </button>
+  </div>
+  <div id="globalAcciones" class="d-none align-items-center gap-2 ms-auto">
+    <button type="button" id="btnCancelarGlobal" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-x-lg me-1"></i>Cancelar
+    </button>
+    <button type="button" id="btnGuardarGlobal" class="btn btn-sm btn-success">
+      <i class="bi bi-check-lg me-1"></i>Guardar cambios
+    </button>
+  </div>
+</div>
+
+<form method="post" action="/configuracion" id="formConfig">
+
+  {% for nombre, data in {
+    "STANDARD": (standard, adicionales_standard),
+    "ROBLE": (roble, adicionales_roble),
+    "LUJO": (lujo, adicionales_lujo),
+    "GLACIAR LAQUEADO": (glaciar, adicionales_glaciar)
+  }.items() %}
+
+  <div class="card shadow-sm mb-4">
+
+    <!-- HEADER AZUL -->
+    <div class="cfg-card-header d-flex justify-content-between align-items-center toggle-card">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+        <strong>{{ nombre }}</strong>
+      </div>
+      <span class="arrow"><i class="bi bi-chevron-down"></i></span>
+    </div>
+
+    <div class="card-body px-3 py-3 d-none">
+
+      <!-- ===== MUEBLES ===== -->
+      <div class="cfg-section-header cfg-section-muebles">
+        <i class="bi bi-box-seam"></i>
+        <span>Muebles</span>
+      </div>
+
+      <!-- Header columnas -->
+      <div class="cfg-row cfg-row-header">
+        <div></div>
+        <div>Medida</div>
+        <div>Mueble sin Mesada</div>
+        <div>Alacenas</div>
+        <div>Mesadas de Acero Inox</div>
+        <div></div>
+      </div>
+
+      <!-- Filas muebles -->
+      <div class="cfg-tbody cfg-tbody-muebles">
+        {% for m in data[0] %}
+        <div class="cfg-row">
+          <div><input type="checkbox" class="form-check-input chk-row"></div>
+          <div>
+            <input type="number" step="0.01" class="form-control form-control-sm editable" name="medida[]" value="{{ m.medida }}">
+            <input type="hidden" name="tipo[]" value="mueble">
+            <input type="hidden" name="linea[]" value="{{ m.linea }}">
+            <input type="hidden" name="ref[]" value="{{ m.id }}">
+          </div>
+          <div>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input class="form-control precio-input editable" name="base[]" value="{{ m.base }}">
+            </div>
+          </div>
+          <div>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input class="form-control precio-input editable" name="alacena[]" value="{{ m.alacena }}">
+            </div>
+          </div>
+          <div>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input class="form-control precio-input editable" name="inox[]" value="{{ m.inox }}">
+            </div>
+          </div>
+          <div class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="{{ m.id }}" data-tipo="mueble">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-sm btn-success mb-4 btn-add-mueble"
+        data-linea="{{ data[0][0].linea if data[0] else nombre|lower }}">
+        <i class="bi bi-plus-lg me-1"></i>Agregar mueble
+      </button>
+
+      <hr class="cfg-divider">
+
+      <!-- ===== ADICIONALES ===== -->
+      <div class="cfg-section-header cfg-section-adicionales">
+        <i class="bi bi-plus-circle"></i>
+        <span>Adicionales</span>
+      </div>
+
+      <!-- Header columnas adicionales -->
+      <div class="cfg-row cfg-row-header cfg-row-add">
+        <div></div>
+        <div>Nombre</div>
+        <div>Precio</div>
+        <div></div>
+      </div>
+
+      <!-- Filas adicionales -->
+      <div class="cfg-tbody cfg-tbody-adicionales">
+        {% for a in data[1] %}
+        <div class="cfg-row cfg-row-add">
+          <div><input type="checkbox" class="form-check-input chk-row"></div>
+          <div>
+            <input class="form-control form-control-sm editable" name="nombre_adicional[]" value="{{ a.nombre }}">
+            <input type="hidden" name="tipo[]" value="adicional">
+            <input type="hidden" name="linea[]" value="{{ a.linea }}">
+            <input type="hidden" name="ref[]" value="{{ a.id }}">
+          </div>
+          <div>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input class="form-control precio-input editable" name="precio_adicional[]" value="{{ a.precio }}">
+            </div>
+          </div>
+          <div class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="{{ a.id }}" data-tipo="adicional">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-sm btn-success btn-add-adicional mb-2"
+        data-linea="{{ data[0][0].linea if data[0] else nombre|lower }}">
+        <i class="bi bi-plus-lg me-1"></i>Agregar adicional
+      </button>
+
+      <!-- TOOLBAR: seleccionar + % + guardar -->
+      <div class="cfg-toolbar">
+
+        <div class="d-flex align-items-center gap-2">
+          <input type="checkbox" class="form-check-input select-all">
+          <label class="form-check-label small fw-semibold">Seleccionar Todo</label>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <input type="number" step="0.1"
+                 class="form-control form-control-sm porcentaje"
+                 placeholder="%"
+                 style="width:90px;">
+          <button type="button" class="btn btn-sm btn-outline-success btn-aplicar">
+            <i class="bi bi-percent me-1"></i>Aplicar
+          </button>
+        </div>
+
+        <div class="bloque-acciones d-none gap-2" style="margin-left:auto;">
+          <button type="button" class="btn btn-sm btn-outline-secondary btn-cancelar">
+            <i class="bi bi-x-lg me-1"></i>Cancelar
+          </button>
+          <button type="button" class="btn btn-sm btn-success btn-guardar-bloque">
+            <i class="bi bi-check-lg me-1"></i>Guardar cambios
+          </button>
+        </div>
+
+      </div>
+
     </div>
   </div>
+
+  {% endfor %}
 </form>
+
+<script>
+
+// =====================
+// COLAPSABLE
+// =====================
+document.addEventListener("click", e => {
+  const header = e.target.closest(".toggle-card");
+  if (!header) return;
+
+  const body = header.nextElementSibling;
+  const iconEl = header.querySelector(".arrow i");
+
+  body.classList.toggle("d-none");
+  iconEl?.classList.toggle("bi-chevron-down");
+  iconEl?.classList.toggle("bi-chevron-up");
+});
+
+// =====================
+// ESTADO ORIGINAL
+// =====================
+const fechaOriginal = document.getElementById("fechaTexto")?.innerText.trim() || "";
+document.querySelectorAll(".precio-input").forEach(inp => { inp.dataset.original = inp.value; });
+
+// =====================
+// ACTIVAR BOTONES GUARDAR/CANCELAR
+// =====================
+function activarBloque(el) {
+  const card = el.closest(".card");
+  if (!card) return;
+  const acciones = card.querySelector(".bloque-acciones");
+  if (acciones) {
+    acciones.classList.remove("d-none");
+    acciones.classList.add("d-flex");
+  }
+  const ga = document.getElementById("globalAcciones");
+  if (ga) { ga.classList.remove("d-none"); ga.classList.add("d-flex"); }
+}
+
+// =====================
+// AGREGAR MUEBLE
+// =====================
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".btn-add-mueble");
+  if (!btn) return;
+
+  const tbody = btn.previousElementSibling;
+
+  const row = document.createElement("div");
+  row.className = "cfg-row is-new";
+  row.innerHTML = `
+    <div><input type="checkbox" class="form-check-input chk-row"></div>
+    <div>
+      <input type="number" step="0.01" class="form-control form-control-sm" name="medida[]" value="0">
+      <input type="hidden" name="tipo[]" value="mueble">
+      <input type="hidden" name="linea[]" value="${btn.dataset.linea}">
+      <input type="hidden" name="ref[]" value="new">
+    </div>
+    <div>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">$</span>
+        <input class="form-control precio-input" name="base[]" value="0">
+      </div>
+    </div>
+    <div>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">$</span>
+        <input class="form-control precio-input" name="alacena[]" value="0">
+      </div>
+    </div>
+    <div>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">$</span>
+        <input class="form-control precio-input" name="inox[]" value="0">
+      </div>
+    </div>
+    <div class="text-center">
+      <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="new" data-tipo="mueble">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  `;
+
+  tbody.appendChild(row);
+  activarBloque(btn);
+});
+
+// =====================
+// AGREGAR ADICIONAL
+// =====================
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".btn-add-adicional");
+  if (!btn) return;
+
+  const tbody = btn.previousElementSibling;
+
+  const row = document.createElement("div");
+  row.className = "cfg-row cfg-row-add is-new";
+  row.innerHTML = `
+    <div><input type="checkbox" class="form-check-input chk-row"></div>
+    <div>
+      <input class="form-control form-control-sm" name="nombre_adicional[]" placeholder="Nombre">
+      <input type="hidden" name="tipo[]" value="adicional">
+      <input type="hidden" name="linea[]" value="${btn.dataset.linea}">
+      <input type="hidden" name="ref[]" value="new">
+    </div>
+    <div>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">$</span>
+        <input class="form-control precio-input" name="precio_adicional[]" value="0">
+      </div>
+    </div>
+    <div class="text-center">
+      <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="new" data-tipo="adicional">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  `;
+
+  tbody.appendChild(row);
+  activarBloque(btn);
+});
+
+// =====================
+// DELETE
+// =====================
+document.addEventListener("click", async e => {
+  const btn = e.target.closest(".btn-delete");
+  if (!btn) return;
+
+  if (!confirm("¿Eliminar definitivamente?")) return;
+
+  if (btn.dataset.id === "new") {
+    btn.closest(".cfg-row").remove();
+    return;
+  }
+
+  const res = await fetch(`/configuracion/${btn.dataset.tipo}/${btn.dataset.id}`, {
+    method: "DELETE"
+  });
+
+  if (res.ok) {
+    btn.closest(".cfg-row").remove();
+  } else {
+    alert("Error al eliminar");
+  }
+});
+
+// =====================
+// CANCELAR
+// =====================
+document.addEventListener("click", e => {
+  if (!e.target.classList.contains("btn-cancelar")) return;
+
+  const card = e.target.closest(".card");
+
+  card.querySelectorAll('input[name="ref[]"][value="new"]').forEach(i => {
+    i.closest(".cfg-row").remove();
+  });
+
+  const acciones = card.querySelector(".bloque-acciones");
+  acciones?.classList.add("d-none");
+  acciones?.classList.remove("d-flex");
+});
+
+// =====================
+// GUARDAR
+// =====================
+document.addEventListener("click", e => {
+  if (!e.target.classList.contains("btn-guardar-bloque")) return;
+  document.getElementById("formConfig").submit();
+});
+
+// =====================
+// SELECT ALL
+// =====================
+function sincronizarGlobal() {
+  const allChks    = document.querySelectorAll(".chk-row");
+  const allChecked = document.querySelectorAll(".chk-row:checked");
+  const g = document.getElementById("selectAllGlobal");
+  if (!g) return;
+  g.indeterminate = allChecked.length > 0 && allChecked.length < allChks.length;
+  g.checked       = allChks.length > 0 && allChks.length === allChecked.length;
+}
+
+document.addEventListener("change", e => {
+  if (e.target.classList.contains("select-all")) {
+    const card = e.target.closest(".card");
+    card.querySelectorAll(".chk-row").forEach(c => {
+      c.checked = e.target.checked;
+    });
+    sincronizarGlobal();
+  }
+
+  if (e.target.classList.contains("chk-row")) {
+    const card = e.target.closest(".card");
+    const all     = card.querySelectorAll(".chk-row");
+    const checked = card.querySelectorAll(".chk-row:checked");
+    const selectAll = card.querySelector(".select-all");
+    if (selectAll) selectAll.checked = all.length === checked.length;
+    sincronizarGlobal();
+  }
+});
+
+// =====================
+// BORRAR 0 AL EDITAR
+// =====================
+document.addEventListener("focusin", e => {
+  if (e.target.classList.contains("precio-input") || e.target.name === "medida[]") {
+    if (parseFloat(e.target.value) === 0) e.target.value = "";
+    activarBloque(e.target);
+  }
+});
+
+// =====================
+// FORMATEAR
+// =====================
+document.addEventListener("blur", e => {
+  if (e.target.classList.contains("precio-input")) {
+    const antes = e.target.defaultValue;
+    e.target.value = Number(e.target.value || 0).toFixed(2);
+    if (e.target.value !== antes) autoSetFecha();
+  }
+}, true);
+
+// =====================
+// APLICAR %
+// =====================
+document.addEventListener("click", e => {
+  if (!e.target.classList.contains("btn-aplicar")) return;
+
+  const card = e.target.closest(".card");
+  const porcentaje = Number(card.querySelector(".porcentaje").value);
+
+  if (!porcentaje) { alert("Ingresá un porcentaje"); return; }
+
+  const filas = card.querySelectorAll(".chk-row:checked");
+  if (!filas.length) { alert("Tenés que seleccionar al menos una fila"); return; }
+
+  filas.forEach(chk => {
+    const fila = chk.closest(".cfg-row");
+    fila.querySelectorAll(".precio-input").forEach(input => {
+      let val = Number(input.value || 0);
+      val += val * porcentaje / 100;
+      input.value = val.toFixed(2);
+    });
+  });
+
+  activarBloque(e.target);
+  autoSetFecha();
+});
+
+// =====================
+// FORMATEAR FECHA
+// =====================
+function formatearFecha(fechaISO) {
+  if (!fechaISO) return "--/--/----";
+  const [y, m, d] = fechaISO.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+// =====================
+// EVENTOS FECHA
+// =====================
+document.addEventListener("click", async e => {
+  if (e.target.closest("#btnEditarFecha")) {
+    document.getElementById("fechaPrecioInput").classList.remove("d-none");
+    document.getElementById("btnGuardarFecha").classList.remove("d-none");
+    document.getElementById("fechaPrecioInput").focus();
+  }
+
+  if (e.target.id === "btnGuardarFecha") {
+    const input = document.getElementById("fechaPrecioInput");
+    const fecha = input.value;
+
+    if (!fecha) { alert("Seleccioná una fecha"); return; }
+
+    const res = await fetch("/configuracion/fecha", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fecha })
+    });
+
+    if (res.ok) {
+      document.getElementById("fechaTexto").innerText = formatearFecha(fecha);
+      input.classList.add("d-none");
+      e.target.classList.add("d-none");
+    } else {
+      alert("Error al guardar la fecha");
+    }
+  }
+});
+
+// =====================
+// AUTO FECHA
+// =====================
+async function autoSetFecha() {
+  const hoy = new Date().toISOString().split("T")[0];
+  document.getElementById("fechaTexto").innerText = formatearFecha(hoy);
+  const inp = document.getElementById("fechaPrecioInput");
+  if (inp) inp.value = hoy;
+  try {
+    await fetch("/configuracion/fecha", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fecha: hoy })
+    });
+  } catch (_) {}
+}
+
+// =====================
+// SELECT ALL GLOBAL
+// =====================
+document.getElementById("selectAllGlobal")?.addEventListener("change", function () {
+  document.querySelectorAll(".chk-row").forEach(c => c.checked = this.checked);
+  document.querySelectorAll(".select-all").forEach(s => s.checked = this.checked);
+});
+
+// =====================
+// CANCELAR GLOBAL
+// =====================
+document.getElementById("btnCancelarGlobal")?.addEventListener("click", async function () {
+  // Revertir precios
+  document.querySelectorAll(".precio-input[data-original]").forEach(inp => {
+    inp.value = inp.dataset.original;
+  });
+
+  // Eliminar filas nuevas
+  document.querySelectorAll('input[name="ref[]"][value="new"]').forEach(i => {
+    i.closest(".cfg-row").remove();
+  });
+
+  // Revertir fecha en UI y servidor
+  const textoEl = document.getElementById("fechaTexto");
+  if (textoEl) textoEl.innerText = fechaOriginal || "--/--/----";
+  if (fechaOriginal && fechaOriginal !== "--/--/----") {
+    const [d, m, y] = fechaOriginal.split("/");
+    try {
+      await fetch("/configuracion/fecha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fecha: `${y}-${m}-${d}` })
+      });
+    } catch (_) {}
+  }
+
+  // Ocultar bloque-acciones de cada card
+  document.querySelectorAll(".bloque-acciones").forEach(b => {
+    b.classList.add("d-none");
+    b.classList.remove("d-flex");
+  });
+
+  // Ocultar acciones globales
+  const ga = document.getElementById("globalAcciones");
+  if (ga) { ga.classList.add("d-none"); ga.classList.remove("d-flex"); }
+
+  // Desmarcar checkboxes
+  document.querySelectorAll(".chk-row, .select-all").forEach(c => c.checked = false);
+  const g = document.getElementById("selectAllGlobal");
+  if (g) { g.checked = false; g.indeterminate = false; }
+});
+
+// =====================
+// GUARDAR GLOBAL
+// =====================
+document.getElementById("btnGuardarGlobal")?.addEventListener("click", function () {
+  document.getElementById("formConfig").submit();
+});
+
+// =====================
+// APLICAR % GLOBAL
+// =====================
+document.getElementById("btnAplicarGlobal")?.addEventListener("click", function () {
+  const porcentaje = Number(document.getElementById("porcentajeGlobal").value);
+  if (!porcentaje) { alert("Ingresá un porcentaje"); return; }
+
+  const filas = document.querySelectorAll(".chk-row:checked");
+  if (!filas.length) { alert("Seleccioná al menos una fila"); return; }
+
+  filas.forEach(chk => {
+    chk.closest(".cfg-row")?.querySelectorAll(".precio-input").forEach(input => {
+      let val = Number(input.value || 0);
+      val += val * porcentaje / 100;
+      input.value = val.toFixed(2);
+    });
+    activarBloque(chk);
+  });
+
+  autoSetFecha();
+});
+
+</script>
+
 {% endblock %}

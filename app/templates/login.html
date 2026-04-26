@@ -3,37 +3,184 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login</title>
+  <title>Ingresar — S. Valvo y Cía</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(150deg, #081f36 0%, #0b2a4a 50%, #163e6c 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-wrap {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* Marca arriba de la card */
+    .login-brand {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 22px;
+    }
+    .login-brand .brand-name {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: .4px;
+    }
+    .login-brand .brand-sub {
+      font-size: .82rem;
+      opacity: .65;
+      margin-top: 3px;
+    }
+
+    /* Card */
+    .login-card {
+      border: 0;
+      border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.4);
+      overflow: hidden;
+    }
+
+    /* Header azul de la card */
+    .login-card-header {
+      background: #0b2a4a;
+      padding: 20px 26px 18px;
+      text-align: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: .2px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* Body */
+    .login-card-body {
+      padding: 26px 26px 22px;
+      background: #fff;
+    }
+
+    /* Inputs */
+    .login-card-body .input-group-text {
+      background: #f8f9fa;
+      border-right: 0;
+      color: #6c757d;
+    }
+    .login-card-body .form-control {
+      border-left: 0;
+      background: #f8f9fa;
+      border-radius: 0 8px 8px 0 !important;
+      padding: 10px 14px;
+    }
+    .login-card-body .input-group-text {
+      border-radius: 8px 0 0 8px;
+    }
+    .login-card-body .form-control:focus {
+      border-color: #0b2a4a;
+      box-shadow: 0 0 0 3px rgba(11,42,74,.10);
+      background: #fff;
+    }
+    .login-card-body .form-control:focus + .input-group-text,
+    .login-card-body .input-group:focus-within .input-group-text {
+      border-color: #0b2a4a;
+      background: #fff;
+    }
+
+    /* Botón */
+    .btn-login {
+      background: #0b2a4a;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: .97rem;
+      letter-spacing: .3px;
+      color: #fff;
+      transition: filter .15s, transform .1s;
+    }
+    .btn-login:hover {
+      filter: brightness(1.2);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    /* Footer */
+    .login-footer {
+      text-align: center;
+      color: rgba(255,255,255,.4);
+      font-size: .75rem;
+      margin-top: 18px;
+    }
+  </style>
 </head>
-<body class="bg-light d-flex align-items-center" style="min-height:100vh;">
-  <div class="container" style="max-width:420px;">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h4 class="mb-3">Ingresar</h4>
+
+<body>
+  <div class="login-wrap">
+
+    <!-- Marca -->
+    <div class="login-brand">
+      <div class="brand-name">S. Valvo y Cía</div>
+      <div class="brand-sub">Muebles a medida · Panel de administración</div>
+    </div>
+
+    <!-- Card -->
+    <div class="card login-card">
+
+      <div class="login-card-header">
+        <i class="bi bi-shield-lock me-2"></i>Acceso interno
+      </div>
+
+      <div class="login-card-body">
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, msg in messages %}
-              <div class="alert alert-{{category}}">{{ msg }}</div>
+              <div class="alert alert-{{ category }} rounded-3 py-2 small mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-circle-fill flex-shrink-0"></i>
+                {{ msg }}
+              </div>
             {% endfor %}
           {% endif %}
         {% endwith %}
 
         <form method="post" action="/login">
+
           <div class="mb-3">
-            <label class="form-label">Usuario</label>
-            <input class="form-control" name="username" value="admin" />
+            <label class="form-label fw-semibold small mb-1">Usuario</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input class="form-control" name="username" placeholder="admin"
+                     autocomplete="username">
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Contraseña</label>
-            <input class="form-control" type="password" name="password" placeholder="admin123" />
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold small mb-1">Contraseña</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input class="form-control" type="password" name="password"
+                     placeholder="••••••••" autocomplete="current-password">
+            </div>
           </div>
-          <button class="btn btn-success w-100">Entrar</button>
-          <div class="text-muted small mt-2">Default: admin / admin123</div>
+
+          <button type="submit" class="btn btn-login w-100">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+          </button>
+
         </form>
+
       </div>
     </div>
+
+    <div class="login-footer">Red LAN interna &nbsp;·&nbsp; Solo usuarios autorizados</div>
+
   </div>
 </body>
 </html>

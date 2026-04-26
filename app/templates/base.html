@@ -41,18 +41,29 @@
     <!-- GESTIÓN -->
     <div class="sidebar-section mt-4">Gestión</div>
 
-    <a class="sidebar-link" href="/productos">
-      <i class="bi bi-grid"></i>
-      <span>Productos</span>
-    </a>
+    <div class="sidebar-group">
+      <button class="sidebar-link sidebar-group-toggle w-100 border-0 text-start"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#submenuProductos"
+              aria-expanded="false"
+              aria-controls="submenuProductos">
+        <i class="bi bi-grid"></i>
+        <span>Productos</span>
+        <i class="bi bi-chevron-down sidebar-chevron ms-auto"></i>
+      </button>
 
-    <!-- SISTEMA -->
-    <div class="sidebar-section mt-4">Sistema</div>
-
-    <a class="sidebar-link" href="/configuracion">
-      <i class="bi bi-gear"></i>
-      <span>Configuración</span>
-    </a>
+      <div class="collapse" id="submenuProductos">
+        <a class="sidebar-link sidebar-sublink" href="/productos">
+          <i class="bi bi-box"></i>
+          <span>Productos independientes</span>
+        </a>
+        <a class="sidebar-link sidebar-sublink" href="/configuracion">
+          <i class="bi bi-palette2"></i>
+          <span>Modelos</span>
+        </a>
+      </div>
+    </div>
 
     <div class="sidebar-bottom">
 
@@ -105,21 +116,56 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+<style>
+  .sidebar-group-toggle {
+    background: transparent;
+    cursor: pointer;
+  }
+  .sidebar-chevron {
+    font-size: 11px;
+    transition: transform .2s ease;
+  }
+  .sidebar-group-toggle[aria-expanded="true"] .sidebar-chevron {
+    transform: rotate(180deg);
+  }
+  .sidebar-sublink {
+    padding-left: 34px !important;
+    font-size: 13px;
+    opacity: .85;
+  }
+  .sidebar-sublink:hover {
+    opacity: 1;
+  }
+  .sidebar-group-toggle.active {
+    background: #163e6c;
+    box-shadow: inset 3px 0 0 #4dabf7;
+  }
+</style>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
   const links = document.querySelectorAll(".sidebar-link");
-  const path = window.location.pathname;
+  const path  = window.location.pathname;
 
   links.forEach(link => {
-
     const href = link.getAttribute("href");
-
-    if(path.startsWith(href)){
+    if (href && path.startsWith(href)) {
       link.classList.add("active");
     }
-
   });
+
+  // Si la ruta activa es un sub-link, expandir el menú padre y marcar el toggle
+  const subPaths = ["/productos", "/configuracion"];
+  const isSubActive = subPaths.some(p => path.startsWith(p));
+
+  if (isSubActive) {
+    const collapse = document.getElementById("submenuProductos");
+    const toggle   = document.querySelector('[data-bs-target="#submenuProductos"]');
+    if (collapse) collapse.classList.add("show");
+    if (toggle)   toggle.setAttribute("aria-expanded", "true");
+    if (toggle)   toggle.classList.add("active");
+  }
 
 });
 </script>

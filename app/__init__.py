@@ -26,7 +26,7 @@ def create_app():
     migrate = Migrate(app, db)
     login_manager.init_app(app)
 
-    from .models import User, Producto, PrecioPorMetro, Pedido, PedidoItem
+    from .models import User, Producto, Pedido, PedidoItem, PrecioMueble, AdicionalMueble
 
     with app.app_context():
         db.create_all()
@@ -35,12 +35,6 @@ def create_app():
         if not User.query.first():
             admin = User.create_default_admin()
             db.session.add(admin)
-
-        # Seed: precios por metro iniciales (como tu ConfiguracionView)
-        if PrecioPorMetro.query.count() == 0:
-            db.session.add(PrecioPorMetro(material="Melamina", precio=7000))
-            db.session.add(PrecioPorMetro(material="Chapa MDF", precio=6800))
-            db.session.add(PrecioPorMetro(material="Melamina premium", precio=8500))
 
         db.session.commit()
 

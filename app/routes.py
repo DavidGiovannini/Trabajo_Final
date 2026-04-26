@@ -1,14 +1,24 @@
-from flask import render_template, request, redirect, url_for, flash, send_file
+from flask import render_template, request, redirect, url_for, flash, send_file, jsonify
 from flask_login import login_required
 from . import db
-from .models import Producto, PrecioPorMetro, Pedido, PedidoItem, Pago, PagoComprobante
+from .models import Producto, Pedido, PedidoItem, Pago, PagoComprobante, PrecioMueble, AdicionalMueble, ConfiguracionPrecio, ConfiguracionGeneral
 from sqlalchemy import func
 from datetime import datetime, timedelta, date
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from sqlalchemy import text
 import os
 from werkzeug.utils import secure_filename
+import json
+
+def _decrementar_stock_pedido(pedido):
+    for item in pedido.items:
+        if item.producto_id:
+            prod = Producto.query.get(item.producto_id)
+            if prod is not None and prod.stock is not None:
+                prod.stock = max(0, prod.stock - item.cantidad)
+
 
 def register_routes(app):
     @app.get("/")
@@ -26,25 +36,43 @@ def register_routes(app):
     @login_required
     def productos_post():
         nombre = request.form.get("nombre", "").strip()
-        material = request.form.get("material", "").strip()
-        por_metro = request.form.get("por_metro") == "on"
+        tipo = request.form.get("tipo", "").strip()
         precio_str = request.form.get("precio", "0").strip()
+        tiene_stock = request.form.get("tiene_stock") == "on"
+        stock_str = request.form.get("stock", "").strip()
 
-        if not nombre or not material:
-            flash("Completá Tipo y Material.", "warning")
+        if not nombre or not tipo:
+            flash("Completá Nombre y Tipo de Producto.", "warning")
             return redirect(url_for("productos"))
 
         try:
-            precio = 0.0 if por_metro else float(precio_str)
+            precio = float(precio_str) if precio_str else 0.0
         except ValueError:
             flash("Precio inválido.", "danger")
             return redirect(url_for("productos"))
 
-        p = Producto(nombre=nombre, material=material, por_metro=por_metro, precio=precio)
+        stock = None
+        if tiene_stock and stock_str:
+            try:
+                stock = int(stock_str)
+            except ValueError:
+                stock = None
+
+        p = Producto(nombre=nombre, tipo=tipo, precio=precio, stock=stock)
         db.session.add(p)
         db.session.commit()
         flash("Producto agregado.", "success")
         return redirect(url_for("productos"))
+
+    @app.post("/productos/<int:pid>/stock")
+    @login_required
+    def actualizar_stock(pid):
+        p = Producto.query.get_or_404(pid)
+        data = request.get_json() or {}
+        nuevo = data.get("stock")
+        p.stock = int(nuevo) if nuevo is not None else None
+        db.session.commit()
+        return jsonify({"ok": True, "stock": p.stock})
 
     @app.post("/productos/<int:pid>/delete")
     @login_required
@@ -59,40 +87,218 @@ def register_routes(app):
     @app.get("/configuracion")
     @login_required
     def configuracion():
-        rows = PrecioPorMetro.query.order_by(PrecioPorMetro.material.asc()).all()
-        return render_template("configuracion.html", rows=rows)
+
+        standard = PrecioMueble.query.filter_by(linea="standard").order_by(PrecioMueble.medida).all()
+        roble = PrecioMueble.query.filter_by(linea="roble").order_by(PrecioMueble.medida).all()
+        lujo = PrecioMueble.query.filter_by(linea="lujo").order_by(PrecioMueble.medida).all()
+        glaciar = PrecioMueble.query.filter_by(linea="glaciar").order_by(PrecioMueble.medida).all()
+
+        adicionales_standard = AdicionalMueble.query.filter_by(linea="standard").all()
+        adicionales_roble = AdicionalMueble.query.filter_by(linea="roble").all()
+        adicionales_lujo = AdicionalMueble.query.filter_by(linea="lujo").all()
+        adicionales_glaciar = AdicionalMueble.query.filter_by(linea="glaciar").all()
+
+        config = ConfiguracionGeneral.query.first()
+
+        return render_template(
+            "configuracion.html",
+            standard=standard,
+            roble=roble,
+            lujo=lujo,
+            glaciar=glaciar,  
+            adicionales_standard=adicionales_standard,
+            adicionales_roble=adicionales_roble,
+            adicionales_lujo=adicionales_lujo,
+            adicionales_glaciar=adicionales_glaciar,
+            config_fecha = config.fecha_actualizacion if config else None
+        )
+    
+    @app.route("/configuracion/fecha", methods=["POST"])
+    @login_required
+    def guardar_fecha_config():
+        data = request.get_json()
+        fecha_str = data.get("fecha")
+
+        if not fecha_str:
+            return jsonify({"error": "Fecha vacía"}), 400
+
+        fecha = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+
+        config = ConfiguracionGeneral.query.first()
+
+        if not config:
+            config = ConfiguracionGeneral(fecha_actualizacion=fecha)
+            db.session.add(config)
+        else:
+            config.fecha_actualizacion = fecha
+
+        db.session.commit()
+
+        return jsonify({"ok": True})
+        
+    @app.delete("/configuracion/adicional/<int:id>")
+    @login_required
+    def eliminar_adicional(id):
+        a = AdicionalMueble.query.get_or_404(id)
+        db.session.delete(a)
+        db.session.commit()
+        return {"ok": True}
+    
+    @app.delete("/configuracion/mueble/<int:id>")
+    @login_required
+    def eliminar_mueble(id):
+        m = PrecioMueble.query.get_or_404(id)
+        db.session.delete(m)
+        db.session.commit()
+        return {"ok": True}
 
     @app.post("/configuracion")
     @login_required
     def configuracion_post():
-        # Recibimos arrays: material[] y precio[]
-        materiales = request.form.getlist("material[]")
-        precios = request.form.getlist("precio[]")
 
-        PrecioPorMetro.query.delete()
-        for m, p in zip(materiales, precios):
-            m = (m or "").strip()
-            if not m:
-                continue
-            try:
-                val = float((p or "0").strip())
-            except ValueError:
-                flash(f"Precio inválido para {m}.", "danger")
-                return redirect(url_for("configuracion"))
-            db.session.add(PrecioPorMetro(material=m, precio=val))
+        refs = request.form.getlist("ref[]")
+        tipos = request.form.getlist("tipo[]")
+        lineas = request.form.getlist("linea[]")
+
+        medidas = request.form.getlist("medida[]")
+        bases = request.form.getlist("base[]")
+        alacenas = request.form.getlist("alacena[]")
+        inoxs = request.form.getlist("inox[]")
+
+        nombres = request.form.getlist("nombre_adicional[]")
+        precios = request.form.getlist("precio_adicional[]")
+
+        idx_mueble = 0
+        idx_adicional = 0
+
+        for i in range(len(refs)):
+
+            tipo = tipos[i]
+            ref = refs[i]
+            linea = lineas[i]
+
+            # =====================
+            # MUEBLES
+            # =====================
+            if tipo == "mueble":
+
+                try:
+                    medida = float(medidas[idx_mueble] or 0)
+                except:
+                    medida = 0
+                base = float(bases[idx_mueble] or 0)
+                alacena = float(alacenas[idx_mueble] or 0)
+                inox = float(inoxs[idx_mueble] or 0)
+
+                if ref == "new":
+                    m = PrecioMueble(
+                        linea=linea,
+                        medida=medida,
+                        base=base,
+                        alacena=alacena,
+                        inox=inox
+                    )
+                    db.session.add(m)
+
+                else:
+                    m = PrecioMueble.query.get(int(ref))
+                    if m:
+                        m.medida = medida
+                        m.base = base
+                        m.alacena = alacena
+                        m.inox = inox
+
+                idx_mueble += 1
+
+            # =====================
+            # ADICIONALES
+            # =====================
+            elif tipo == "adicional":
+
+                nombre = nombres[idx_adicional]
+                precio = float(precios[idx_adicional] or 0)
+
+                if ref == "new":
+                    a = AdicionalMueble(
+                        linea=linea,
+                        nombre=nombre,
+                        precio=precio
+                    )
+                    db.session.add(a)
+
+                else:
+                    a = AdicionalMueble.query.get(int(ref))
+                    if a:
+                        a.nombre = nombre
+                        a.precio = precio
+
+                idx_adicional += 1
 
         db.session.commit()
-        flash("Precios actualizados.", "success")
+
+        flash("Configuración actualizada", "success")
         return redirect(url_for("configuracion"))
+    
+    @app.delete("/configuracion/delete")
+    @login_required
+    def configuracion_delete():
+
+        data = request.get_json() or {}
+        origen = data.get("origen")
+        ref = data.get("ref")
+
+        try:
+            # -------- MUEBLES --------
+            if origen == "mueble":
+                m = PrecioMueble.query.get_or_404(int(ref))
+                db.session.delete(m)
+
+            # -------- ADICIONALES --------
+            elif origen == "adicional":
+                a = AdicionalMueble.query.get_or_404(int(ref))
+                db.session.delete(a)
+
+            db.session.commit()
+            return {"ok": True}, 200
+
+        except Exception as e:
+            print("ERROR DELETE:", e)
+            return {"error": str(e)}, 500
 
     # ---------- PRESUPUESTADOR ----------
     @app.get("/presupuestador")
     @login_required
     def presupuestador():
-        productos = Producto.query.order_by(Producto.nombre.asc()).all()
-        precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
-        return render_template("presupuestador.html", productos=productos, precios_pm=precios_pm)
 
+        muebles = [
+            {
+                "id": m.id,
+                "linea": m.linea,
+                "medida": m.medida,
+                "base": m.base,
+                "alacena": m.alacena,
+                "inox": m.inox
+            }
+            for m in PrecioMueble.query.all()
+        ]
+        adicionales = [
+            {
+                "id": a.id,
+                "linea": a.linea,
+                "nombre": a.nombre,
+                "precio": a.precio
+            }
+            for a in AdicionalMueble.query.all()
+        ]
+        productos = Producto.query.all()
+
+        return render_template(
+            "presupuestador.html",
+            muebles=muebles,
+            adicionales=adicionales,
+            productos=productos
+        )
+    
     @app.post("/presupuestador/crear_pedido")
     @login_required
     def crear_pedido():
@@ -135,13 +341,19 @@ def register_routes(app):
             flash("Completá la Dirección.", "warning")
             return redirect(url_for("presupuestador"))
 
-        # items: ids seleccionados
-        ids = request.form.getlist("prod_id[]")
-        if not ids:
-            flash("Seleccioná al menos un producto.", "warning")
-            return redirect(url_for("presupuestador"))
+        # items manuales (productos + muebles + adicionales)
+        items_manual_json = request.form.get("items_manual_json", "").strip()
+        items_manual = []
 
-        precios_pm = {x.material: x.precio for x in PrecioPorMetro.query.all()}
+        if items_manual_json:
+            try:
+                items_manual = json.loads(items_manual_json)
+            except Exception:
+                items_manual = []
+
+        if not items_manual:
+            flash("Agregá al menos un ítem al presupuesto.", "warning")
+            return redirect(url_for("presupuestador"))
 
         ahora = datetime.utcnow()
 
@@ -163,26 +375,33 @@ def register_routes(app):
         db.session.flush()  # para obtener pedido.id
 
         total = 0.0
-        for pid in ids:
-            prod = Producto.query.get(int(pid))
-            if not prod:
+
+        for it in items_manual:
+            try:
+                desc = (it.get("descripcion") or "").strip()
+                cant = int(it.get("cantidad") or 1)
+                metros = it.get("metros", None)
+                subtotal = float(it.get("subtotal") or 0.0)
+                prod_id_raw = it.get("producto_id")
+                producto_id = int(prod_id_raw) if prod_id_raw else None
+
+                if not desc or subtotal <= 0:
+                    continue
+
+                item = PedidoItem(
+                    pedido_id=pedido.id,
+                    descripcion=desc,
+                    cantidad=cant,
+                    metros=float(metros) if metros not in [None, ""] else None,
+                    subtotal=subtotal,
+                    producto_id=producto_id
+                )
+
+                total += subtotal
+                db.session.add(item)
+
+            except Exception:
                 continue
-
-            if prod.por_metro:
-                metros = float(request.form.get(f"metros_{prod.id}", "1").strip() or 1)
-                cant = int(request.form.get(f"cant_{prod.id}", "1").strip() or 1)
-                precio_m = precios_pm.get(prod.material, 0.0)
-                subtotal = cant * metros * precio_m
-                desc = f"{prod.nombre} - {prod.material} ({metros}m x ${precio_m})"
-                item = PedidoItem(pedido_id=pedido.id, descripcion=desc, cantidad=cant, metros=metros, subtotal=subtotal)
-            else:
-                cant = int(request.form.get(f"cant_{prod.id}", "1").strip() or 1)
-                subtotal = cant * prod.precio
-                desc = f"{prod.nombre} - {prod.material} (${prod.precio})"
-                item = PedidoItem(pedido_id=pedido.id, descripcion=desc, cantidad=cant, metros=None, subtotal=subtotal)
-
-            total += subtotal
-            db.session.add(item)
 
         pedido.total = total
         db.session.commit()
@@ -211,6 +430,9 @@ def register_routes(app):
     @login_required
     def finalizar_pedido(pid):
         p = Pedido.query.get_or_404(pid)
+        if not p.stock_descontado:
+            _decrementar_stock_pedido(p)
+            p.stock_descontado = True
         p.estado = "FINALIZADO"
         db.session.commit()
         flash("Pedido finalizado.", "success")
@@ -555,6 +777,10 @@ def register_routes(app):
 
         elif nuevo_estado == "FINALIZADO":
             pedido.finalizado_at = ahora
+
+        if nuevo_estado == "FINALIZADO" and not pedido.stock_descontado:
+            _decrementar_stock_pedido(pedido)
+            pedido.stock_descontado = True
 
         pedido.estado = nuevo_estado
         db.session.commit()

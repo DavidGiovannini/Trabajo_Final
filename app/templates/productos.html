@@ -1,51 +1,302 @@
 {% extends "base.html" %}
 {% block content %}
+
+<style>
+  .module-toggle {
+    background: #f8f9fa;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: #0b2a4a;
+    font-weight: 700;
+    transition: background .15s, border-color .15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .module-toggle:hover { background: #eef3fb; }
+  .module-toggle[aria-expanded="true"] {
+    background: #eef3fb;
+    border-color: rgba(11,42,74,.2);
+  }
+  .module-chevron {
+    font-size: 11px;
+    margin-left: auto;
+    transition: transform .2s ease;
+  }
+  .module-toggle[aria-expanded="true"] .module-chevron {
+    transform: rotate(180deg);
+  }
+</style>
+
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h3 class="mb-0">Productos</h3>
+  <h3 class="mb-0 d-flex align-items-center gap-2">
+    Productos
+    <span class="badge bg-secondary fw-normal" style="font-size:.65rem;vertical-align:middle;">
+      {{ productos|length }}
+    </span>
+  </h3>
 </div>
 <hr class="mb-3">
-<div class="card mb-4 border-0 shadow-sm">
-  <div class="card-body">
-    <form method="post" action="/productos" class="row g-2">
+
+<!-- FORM AGREGAR -->
+<div class="card mb-4 border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+  <div style="background:#0b2a4a;color:#fff;padding:13px 18px;display:flex;align-items:center;gap:9px;font-weight:700;font-size:.95rem;">
+    <i class="bi bi-plus-circle-fill"></i>
+    Agregar nuevo producto
+  </div>
+  <div class="card-body py-3">
+    <form method="post" action="/productos" class="row g-2 align-items-end">
+
       <div class="col-md-3">
-        <input class="form-control" name="nombre" placeholder="Nombre" required>
+        <label class="form-label small fw-semibold mb-1">Nombre *</label>
+        <input class="form-control form-control-sm" name="nombre" placeholder="Ej: Horno eléctrico 60cm" required>
       </div>
+
       <div class="col-md-3">
-        <input class="form-control" name="material" placeholder="Material" required>
+        <label class="form-label small fw-semibold mb-1">Tipo de Producto *</label>
+        <input class="form-control form-control-sm" name="tipo" placeholder="Ej: Horno, Bandeja, Pileta..." required>
       </div>
+
       <div class="col-md-2">
-        <input class="form-control" name="precio" placeholder="Precio unitario">
-      </div>
-      <div class="col-md-2 d-flex align-items-center">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" name="por_metro" id="pm">
-          <label class="form-check-label" for="pm">Por metro</label>
+        <label class="form-label small fw-semibold mb-1">Precio unitario</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text">$</span>
+          <input class="form-control" name="precio" placeholder="0.00" type="number" step="0.01" min="0">
         </div>
       </div>
+
       <div class="col-md-2">
-        <button class="btn btn-success w-100">Agregar</button>
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" name="tiene_stock" id="checkStockForm">
+          <label class="form-check-label small fw-semibold" for="checkStockForm">Tiene stock</label>
+        </div>
+        <input class="form-control form-control-sm" type="number" name="stock" id="inputStockForm"
+               placeholder="Cantidad" min="0" disabled>
       </div>
+
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-success btn-sm w-100 fw-bold" style="border-radius:8px;">
+          <i class="bi bi-plus-lg me-1"></i>Agregar
+        </button>
+      </div>
+
     </form>
   </div>
 </div>
 
-<div class="row g-3">
-  {% for p in productos %}
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body">
-        <div class="fw-bold">{{p.nombre}} - {{p.material}}</div>
-        <div class="text-muted">
-          {% if p.por_metro %}Precio por metro (configuración){% else %}Precio: ${{"%.2f"|format(p.precio)}}{% endif %}
+{% if productos %}
+
+<!-- FILTRO -->
+<div class="mb-3" style="max-width:420px;">
+  <div class="input-group input-group-sm">
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+    <input type="text" id="filtroProd" class="form-control" placeholder="Buscar módulo o producto...">
+  </div>
+</div>
+
+<!-- MÓDULOS COLAPSABLES -->
+{% for tipo, grupo in productos | groupby('tipo') %}
+<div class="module-group mb-3" data-grupo="{{ tipo | lower }}">
+
+  <button class="btn w-100 text-start module-toggle mb-2" type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#module{{ loop.index }}"
+          aria-expanded="false"
+          aria-controls="module{{ loop.index }}">
+    <i class="bi bi-grid-3x3-gap-fill" style="font-size:.85rem;opacity:.65;"></i>
+    <span>{{ tipo }}</span>
+    <span class="badge bg-secondary fw-normal" style="font-size:.68rem;font-weight:600;">{{ grupo | length }}</span>
+    <i class="bi bi-chevron-down module-chevron"></i>
+  </button>
+
+  <div class="collapse" id="module{{ loop.index }}">
+    <div class="row g-3">
+      {% for p in grupo %}
+      <div class="col-md-4 producto-item"
+           data-nombre="{{ p.nombre | lower }}"
+           data-tipo="{{ p.tipo | lower }}">
+        <div class="card border-0 shadow-sm h-100"
+             style="border-radius:12px;overflow:hidden;transition:box-shadow .18s,transform .18s;"
+             onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 22px rgba(0,0,0,.10)'"
+             onmouseleave="this.style.transform='';this.style.boxShadow=''">
+
+          <div class="card-body d-flex gap-3 align-items-start">
+            <div style="width:46px;height:46px;border-radius:10px;background:rgba(11,42,74,.07);color:#0b2a4a;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex:0 0 46px;">
+              <i class="bi bi-box"></i>
+            </div>
+            <div class="flex-grow-1" style="min-width:0;">
+              <div class="fw-bold text-truncate">{{ p.nombre }}</div>
+              <span class="badge bg-light border text-secondary small mt-1">
+                <i class="bi bi-tag me-1" style="font-size:.7rem;"></i>{{ p.tipo }}
+              </span>
+              <div class="mt-2 d-flex align-items-center gap-2 flex-wrap">
+                <span class="fw-bold text-success">${{ "%.2f"|format(p.precio or 0) }}</span>
+                {% if p.stock is not none %}
+                <span class="badge small stock-badge"
+                      style="{% if p.stock > 0 %}background:rgba(25,135,84,.1);border:1px solid rgba(25,135,84,.3);color:#157347;{% else %}background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);color:#b02a37;{% endif %}">
+                  <i class="bi bi-boxes me-1"></i>Stock: <span class="stock-val">{{ p.stock }}</span>
+                </span>
+                {% else %}
+                <span class="badge small stock-badge d-none" style="background:rgba(25,135,84,.1);border:1px solid rgba(25,135,84,.3);color:#157347;">
+                  <i class="bi bi-boxes me-1"></i>Stock: <span class="stock-val">0</span>
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer bg-white border-top py-2"
+               style="border-color:rgba(0,0,0,.06)!important;">
+
+            <!-- inline edit stock form (hidden by default) -->
+            <div class="stock-edit-form d-none mb-2" id="stockForm{{ p.id }}">
+              <div class="input-group input-group-sm">
+                <input type="number" class="form-control stock-edit-input" min="0"
+                       value="{{ p.stock if p.stock is not none else 0 }}"
+                       style="border-radius:6px 0 0 6px;">
+                <button class="btn btn-success btn-sm stock-save-btn" data-pid="{{ p.id }}"
+                        style="border-radius:0;">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm stock-cancel-btn" data-pid="{{ p.id }}"
+                        style="border-radius:0 6px 6px 0;">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <button class="btn btn-outline-primary btn-sm stock-edit-btn"
+                      data-pid="{{ p.id }}" style="border-radius:8px;">
+                <i class="bi bi-pencil me-1"></i>Editar Stock
+              </button>
+              <form method="post" action="/productos/{{ p.id }}/delete"
+                    onsubmit="return confirm('¿Eliminar producto?');">
+                <button class="btn btn-outline-danger btn-sm" style="border-radius:8px;">
+                  <i class="bi bi-trash me-1"></i>Eliminar
+                </button>
+              </form>
+            </div>
+
+          </div>
+
         </div>
       </div>
-      <div class="card-footer bg-white border-0">
-        <form method="post" action="/productos/{{p.id}}/delete" onsubmit="return confirm('¿Eliminar producto?');">
-          <button class="btn btn-outline-danger btn-sm">Eliminar</button>
-        </form>
-      </div>
+      {% endfor %}
     </div>
   </div>
-  {% endfor %}
+
 </div>
+{% endfor %}
+
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="bi bi-box-seam" style="font-size:3rem;opacity:.2;display:block;margin-bottom:12px;"></i>
+  <div class="fw-semibold mb-1">No hay productos cargados todavía.</div>
+  <div class="small">Usá el formulario de arriba para agregar el primero.</div>
+</div>
+{% endif %}
+
+<script>
+document.getElementById("checkStockForm")?.addEventListener("change", function () {
+  const inp = document.getElementById("inputStockForm");
+  inp.disabled = !this.checked;
+  if (!this.checked) inp.value = "";
+});
+
+document.getElementById("filtroProd")?.addEventListener("input", function () {
+  const txt = this.value.toLowerCase().trim();
+  document.querySelectorAll(".module-group").forEach(grupo => {
+    const tipoGrupo = grupo.dataset.grupo || "";
+    const items = grupo.querySelectorAll(".producto-item");
+    let visible = 0;
+    items.forEach(item => {
+      const match = !txt ||
+        (item.dataset.nombre || "").includes(txt) ||
+        (item.dataset.tipo || "").includes(txt) ||
+        tipoGrupo.includes(txt);
+      item.style.display = match ? "" : "none";
+      if (match) visible++;
+    });
+    if (txt) {
+      grupo.style.display = visible > 0 ? "" : "none";
+      if (visible > 0) {
+        const body = grupo.querySelector(".collapse");
+        const btn  = grupo.querySelector(".module-toggle");
+        if (body) body.classList.add("show");
+        if (btn)  btn.setAttribute("aria-expanded", "true");
+      }
+    } else {
+      grupo.style.display = "";
+    }
+  });
+});
+
+// ── Edit Stock inline ──────────────────────────────────────────
+document.querySelectorAll(".stock-edit-btn").forEach(btn => {
+  btn.addEventListener("click", function () {
+    const pid = this.dataset.pid;
+    document.getElementById("stockForm" + pid).classList.remove("d-none");
+    this.closest(".d-flex").classList.add("d-none");
+  });
+});
+
+document.querySelectorAll(".stock-cancel-btn").forEach(btn => {
+  btn.addEventListener("click", function () {
+    const pid = this.dataset.pid;
+    document.getElementById("stockForm" + pid).classList.add("d-none");
+    this.closest(".card-footer").querySelector(".d-flex").classList.remove("d-none");
+  });
+});
+
+document.querySelectorAll(".stock-save-btn").forEach(btn => {
+  btn.addEventListener("click", async function () {
+    const pid = this.dataset.pid;
+    const form = document.getElementById("stockForm" + pid);
+    const nuevoStock = parseInt(form.querySelector(".stock-edit-input").value, 10);
+
+    if (isNaN(nuevoStock) || nuevoStock < 0) {
+      alert("Ingresá un número válido mayor o igual a 0.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/productos/${pid}/stock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stock: nuevoStock })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error();
+
+      // update badge in the card
+      const card = form.closest(".producto-item");
+      const badge = card.querySelector(".stock-badge");
+      const valEl = card.querySelector(".stock-val");
+      if (valEl) valEl.textContent = data.stock;
+      if (badge) {
+        badge.classList.remove("d-none");
+        if (data.stock > 0) {
+          badge.style.background = "rgba(25,135,84,.1)";
+          badge.style.border = "1px solid rgba(25,135,84,.3)";
+          badge.style.color = "#157347";
+        } else {
+          badge.style.background = "rgba(220,53,69,.1)";
+          badge.style.border = "1px solid rgba(220,53,69,.3)";
+          badge.style.color = "#b02a37";
+        }
+      }
+
+      // close form
+      form.classList.add("d-none");
+      form.closest(".card-footer").querySelector(".d-flex").classList.remove("d-none");
+    } catch {
+      alert("Error al guardar el stock.");
+    }
+  });
+});
+</script>
+
 {% endblock %}

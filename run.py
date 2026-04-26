@@ -16,12 +16,14 @@ if __name__ == "__main__":
 
 # BUGS
 
-#- Ver el tema de que al cambiar el precio de los productos tambien cambie en los presupuestos ya confeccionados.
-
+#2- Ver el tema de que al cambiar el precio de los productos tambien cambie en los presupuestos ya confeccionados.
+#3- corregir y optimizar codigo eliminar duplicados, hacer comentarios, dividir entre css, js, html y el back comentarlo.
+#4- Arreglar presupuestos para muebles a medida, ver como hacer la funcionalidad. Me gusta mucho la del constructor por defecto que te tire el mas cercano pero q tambien haya una forma de elegir o buscar manual, o de elejir el del constructor por defecto q ahora solo te lo muestra, o de particionar es decir agregar 2 bases con la misma medida, ver como hacer. 
 #5- Pestaña calendario, con posibilidad de agregar notas.
-#6- Seguir con modulo productos y parámetros (configuración), ver de unificar todo en un solo modulo control de stock, arreglar en el resto de pantallas.
+#6- Ver tema de descargar en pdf o excel productos, o cargar una planilla en excel.
 #7- Arreglar reporte PDF de presupuesto. Ver tema de pdf hacerlo de acceso publico o reveer opciones para que lo puedan descargar.
-#8- Agregar nueva pestaña de históricos.
-#9- Ver tema de las cuotas. Ver tema iva como funciona.
-#10- Login/logout/configuración.
+#8- Agregar nuevos indicadores en el dashboard, con posibilidad de agrandarlos, cant stock, ventas, productos mas vendidos, etc.
+#9- Ver tema iva como funciona.
+#10- Login Arreglarlo, ver tema de users, Cargar fotos.
 #11- chatbox con ia?
+# En la carga de presupuestos, que el boton limpiar todo, tambien limpie el resumen. 

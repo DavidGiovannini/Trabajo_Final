@@ -1,142 +1,1006 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+  /* =========================================================
+     LAYOUT
+  ========================================================= */
+  .presu-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 1200px) {
+    .presu-shell { grid-template-columns: 1fr; }
+  }
+
+  /* =========================================================
+     CARDS BASE
+  ========================================================= */
+  .presu-card {
+    border: 0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    overflow: hidden;
+  }
+  .presu-card-header {
+    background: #0b2a4a;
+    color: #fff;
+    padding: 13px 18px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 700;
+    font-size: .95rem;
+    letter-spacing: .3px;
+  }
+  .presu-card-body {
+    padding: 18px;
+  }
+
+  /* =========================================================
+     TABS
+  ========================================================= */
+  .presu-nav {
+    border-bottom: 0;
+    gap: 8px;
+  }
+  .presu-nav .nav-link {
+    border: 1px solid rgba(11,42,74,.15);
+    border-radius: 10px;
+    color: #0b2a4a;
+    font-weight: 700;
+    background: #fff;
+    padding: 9px 16px;
+    font-size: .92rem;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all .15s;
+  }
+  .presu-nav .nav-link:hover {
+    background: #f0f4fa;
+  }
+  .presu-nav .nav-link.active {
+    background: #0b2a4a;
+    color: #fff;
+    border-color: #0b2a4a;
+  }
+  .presu-section { margin-top: 18px; }
+
+  /* =========================================================
+     MINI LABEL
+  ========================================================= */
+  .mini-label {
+    font-size: .75rem;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 8px;
+  }
+
+  /* =========================================================
+     PRODUCTO CARDS
+  ========================================================= */
+  .producto-card {
+    border: 1px solid rgba(0,0,0,.07);
+    border-radius: 12px;
+    background: #fff;
+    height: 100%;
+    transition: box-shadow .18s, transform .18s;
+  }
+  .producto-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  }
+  .prod-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background: rgba(11,42,74,.07);
+    color: #0b2a4a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex: 0 0 52px;
+  }
+  .qty-inline  { width: 72px; }
+  .metro-inline { width: 88px; }
+
+  /* =========================================================
+     LINEA CARDS
+  ========================================================= */
+  .linea-card {
+    border: 2px solid rgba(0,0,0,.07);
+    border-radius: 12px;
+    background: #fff;
+    padding: 14px 10px 12px;
+    cursor: pointer;
+    transition: all .18s;
+    height: 100%;
+    text-align: center;
+  }
+  .linea-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0,0,0,.08);
+  }
+  .linea-card.active {
+    border-color: #0b2a4a;
+    background: #eef3fb;
+    box-shadow: 0 0 0 3px rgba(11,42,74,.10);
+  }
+  .linea-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin: 0 auto 10px;
+  }
+  .linea-standard .linea-icon { background: rgba(11,42,74,.08);  color: #0b2a4a; }
+  .linea-roble    .linea-icon { background: rgba(141,110,99,.12); color: #6d4c41; }
+  .linea-glaciar  .linea-icon { background: rgba(33,150,243,.10); color: #1565c0; }
+  .linea-lujo     .linea-icon { background: rgba(196,98,0,.10);   color: #c46200; }
+
+  .linea-card.active.linea-standard { border-color: #0b2a4a;  background: #eef3fb; }
+  .linea-card.active.linea-roble    { border-color: #6d4c41;  background: #fdf5f0; }
+  .linea-card.active.linea-glaciar  { border-color: #1565c0;  background: #e8f1fc; }
+  .linea-card.active.linea-lujo     { border-color: #c46200;  background: #fff5ec; }
+
+  /* =========================================================
+     BUILDER / SUGERENCIA
+  ========================================================= */
+  .sugerencia-box {
+    border-radius: 10px;
+    background: #eef3fb;
+    border-left: 4px solid #0b2a4a;
+    padding: 10px 14px;
+    font-size: .88rem;
+    color: #1f2937;
+  }
+  .builder-box {
+    border: 1px dashed rgba(11,42,74,.2);
+    border-radius: 12px;
+    padding: 14px;
+    background: #fbfcfe;
+  }
+  .builder-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(0,0,0,.07);
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+  .builder-row:last-child { margin-bottom: 0; }
+  .builder-price { font-weight: 800; white-space: nowrap; color: #0b2a4a; }
+
+  /* =========================================================
+     ADICIONALES
+  ========================================================= */
+  .add-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .add-card {
+    border: 1px solid rgba(0,0,0,.07);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: box-shadow .15s;
+  }
+  .add-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.07);
+  }
+
+  /* =========================================================
+     RESUMEN (sidebar)
+  ========================================================= */
+  .sticky-summary { position: sticky; top: 18px; }
+
+  .summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .summary-list::-webkit-scrollbar { width: 5px; }
+  .summary-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 10px; }
+
+  .summary-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,.8);
+    border: 1px solid rgba(0,0,0,.07);
+    border-radius: 10px;
+  }
+  .summary-item-desc {
+    font-weight: 600;
+    font-size: .88rem;
+    color: #1f2937;
+    min-width: 0;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .summary-item-dots {
+    flex: 1;
+    border-bottom: 2px dotted rgba(0,0,0,.18);
+    transform: translateY(-3px);
+    min-width: 12px;
+  }
+  .summary-item-price {
+    font-weight: 800;
+    font-size: .9rem;
+    white-space: nowrap;
+    color: #0b2a4a;
+  }
+  .summary-item-remove {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    color: #dc3545;
+    padding: 0 0 0 4px;
+    font-size: .8rem;
+    cursor: pointer;
+    opacity: .7;
+  }
+  .summary-item-remove:hover { opacity: 1; }
+
+  .summary-total {
+    border-top: 1px solid rgba(0,0,0,.08);
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+  .summary-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 7px;
+    font-size: .9rem;
+  }
+  .summary-grand {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #0b2a4a;
+    border-top: 1px solid rgba(0,0,0,.08);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+
+  /* seña deshabilitada */
+  #inputSena:disabled {
+    background-color: #e9ecef;
+    opacity: .85;
+  }
+
+  /* botón redondo */
+  .btn-soft { border-radius: 10px; font-weight: 700; }
+
+  /* grupo productos collapse */
+  .presu-grupo-toggle { transition: background .15s; }
+  .presu-grupo-toggle[aria-expanded="true"] { background: #eef3fb !important; border-color: rgba(11,42,74,.2) !important; }
+  .presu-grupo-toggle .bi-chevron-down { transition: transform .2s ease; }
+  .presu-grupo-toggle[aria-expanded="true"] .bi-chevron-down { transform: rotate(180deg); }
+</style>
+
 <h3 class="mb-3">Presupuestador</h3>
+<hr class="mb-3">
 
-<form method="post" action="/presupuestador/crear_pedido">
-  <hr class="mb-3">
-  <div class="card border-0 shadow-sm mb-3">
-    <div class="card-body">
-      <h4 class="text-dark mb-3">Datos del Cliente</h4>
-      <div class="row g-3">
-        <div class="col-md-4">
-          <input class="form-control" name="cliente" placeholder="Cliente" required>
-        </div>
-        <div class="col-md-4">
-          <input class="form-control" name="telefono" placeholder="Teléfono" required>
-        </div>
-        <div class="col-md-4">
-          <input class="form-control" name="email" placeholder="E-mail">
-        </div>
-        <div class="col-md-4">
-          <input class="form-control" name="direccion" placeholder="Dirección" required>
-        </div>
-        <div class="col-md-2 d-flex align-items-center">
-          <div class="form-check m-0">
-            <input class="form-check-input" type="checkbox" id="checkSena" name="entrega_sena" value="1">
-            <label class="form-check-label" for="checkSena">¿Entrega Seña?</label>
-          </div>
-        </div>
+<form method="post" action="/presupuestador/crear_pedido" id="formPresupuesto">
+  <div class="presu-shell">
 
-        <div class="col-md-6 d-none" id="wrapSena">
-          <div class="d-flex align-items-center gap-2">
-            <label class="mb-0 fw-semibold">Forma Pago:</label>
+    <!-- ==================== COLUMNA PRINCIPAL ==================== -->
+    <div>
 
-            <select name="forma_pago" id="selectPago" class="form-select" style="max-width: 160px;">
-              <option value="">Seleccionar...</option>
-              <option value="Efectivo">Efectivo</option>
-              <option value="Tarjeta">Tarjeta</option>
-            </select>
+      <!-- DATOS DEL CLIENTE -->
+      <div class="presu-card mb-3">
+        <div class="presu-card-header">
+          <i class="bi bi-person-fill"></i>
+          Datos del Cliente
+        </div>
+        <div class="presu-card-body">
+          <div class="row g-2">
 
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              name="monto_sena"
-              id="inputSena"
-              class="form-control"
-              placeholder="Monto"
-              style="max-width: 220px;"
-            >
+            <div class="col-md-4">
+              <label class="mini-label">Cliente *</label>
+              <input class="form-control form-control-sm" name="cliente" placeholder="Nombre y apellido" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="mini-label">Teléfono *</label>
+              <input class="form-control form-control-sm" name="telefono" placeholder="Ej: 1145678900" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="mini-label">E-mail</label>
+              <input class="form-control form-control-sm" name="email" placeholder="correo@ejemplo.com">
+            </div>
+
+            <div class="col-md-4">
+              <label class="mini-label">Dirección *</label>
+              <input class="form-control form-control-sm" name="direccion" placeholder="Calle, número, localidad" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="mini-label">Forma de Pago (seña)</label>
+              <select name="forma_pago" id="selectFormaPago" class="form-select form-select-sm" disabled>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Tarjeta">Tarjeta</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="mini-label">Seña</label>
+              <div class="d-flex align-items-center gap-2">
+                <div class="form-check mb-0 flex-shrink-0">
+                  <input class="form-check-input" type="checkbox" id="checkSena" name="entrega_sena" value="1">
+                  <label class="form-check-label small" for="checkSena">¿Entrega?</label>
+                </div>
+                <input type="number" step="0.01" name="monto_sena" id="inputSena"
+                       class="form-control form-control-sm" placeholder="Monto $" disabled>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="mini-label">Observaciones</label>
+              <textarea class="form-control form-control-sm" name="observaciones" rows="2"
+                        placeholder="Notas adicionales, detalles especiales..."></textarea>
+            </div>
+
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="card border-0 shadow-sm">
-    <div class="card-body">
-      <div class="row g-3">
-        <h4 class="text-dark">Productos</h4>
-        <div class="mb-3">
-          <input type="text" id="filtroProducto" class="form-control" placeholder="Buscar producto por nombre...">
-        </div>
-        {% for p in productos %}
-        <div class="col-md-6 producto-item">
-          <div class="border rounded p-3 bg-white">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="prod_id[]" value="{{p.id}}" id="p{{p.id}}">
-              <label class="form-check-label fw-bold" for="p{{p.id}}">
-                {{p.nombre}} - {{p.material}}
-              </label>
-            </div>
+      <!-- TABS: PRODUCTOS / MUEBLES -->
+      <div class="presu-card">
+        <div class="presu-card-body">
 
-            <div class="mt-2 d-flex gap-2 align-items-center">
-              <label class="small text-muted">Cant.</label>
-              <input class="form-control form-control-sm" style="width:90px;"
-                     name="cant_{{p.id}}" value="1">
+          <ul class="nav presu-nav mb-0" id="presuTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="productos-tab"
+                      data-bs-toggle="tab" data-bs-target="#productos-pane"
+                      type="button" role="tab">
+                <i class="bi bi-box-seam"></i> Productos independientes
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="muebles-tab"
+                      data-bs-toggle="tab" data-bs-target="#muebles-pane"
+                      type="button" role="tab">
+                <i class="bi bi-rulers"></i> Muebles a medida
+              </button>
+            </li>
+          </ul>
 
-              {% if p.por_metro %}
-                <label class="small text-muted">Metros</label>
-                <input class="form-control form-control-sm" style="width:110px;"
-                       name="metros_{{p.id}}" value="1.0">
-                <span class="small text-muted">
-                  x ${{ precios_pm.get(p.material, 0) }} / m
-                </span>
+          <div class="tab-content presu-section">
+
+            <!-- ===== TAB PRODUCTOS ===== -->
+            <div class="tab-pane fade show active" id="productos-pane" role="tabpanel">
+
+              <div class="mini-label mb-2">Buscar módulo o producto</div>
+              <div class="input-group input-group-sm mb-3" style="max-width:360px;">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="filtroProducto" class="form-control"
+                       placeholder="Nombre o tipo...">
+              </div>
+
+              {% if productos %}
+              <div id="productosGrid">
+                {% for tipo, grupo in productos | groupby('tipo') %}
+                <div class="presu-grupo mb-3" data-grupo-tipo="{{ tipo | lower }}">
+                  <button class="btn w-100 d-flex align-items-center gap-2 mb-2 presu-grupo-toggle"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#presuGrupo{{ loop.index }}"
+                          aria-expanded="false"
+                          style="background:#f8f9fa;border:1px solid rgba(0,0,0,.08);border-radius:10px;padding:9px 14px;color:#0b2a4a;font-weight:700;text-align:left;">
+                    <i class="bi bi-tag-fill" style="font-size:.8rem;opacity:.65;"></i>
+                    <span>{{ tipo }}</span>
+                    <span class="badge bg-secondary fw-normal ms-1" style="font-size:.65rem;">{{ grupo | length }}</span>
+                    <i class="bi bi-chevron-down ms-auto" style="font-size:.75rem;"></i>
+                  </button>
+
+                  <div class="collapse" id="presuGrupo{{ loop.index }}">
+                    <div class="row g-3">
+                      {% for p in grupo %}
+                      <div class="col-md-6 producto-item"
+                           data-nombre="{{ p.nombre | lower }}"
+                           data-tipo="{{ p.tipo | lower }}">
+                        <div class="producto-card p-3">
+                          <div class="d-flex gap-3">
+
+                            <div class="prod-icon">
+                              <i class="bi bi-box"></i>
+                            </div>
+
+                            <div class="flex-grow-1 min-width-0">
+                              <div class="fw-bold">{{ p.nombre }}</div>
+                              <div class="small text-muted mb-2">{{ p.tipo }}</div>
+
+                              <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <div class="d-flex align-items-center gap-1">
+                                  <label class="small text-muted mb-0">Cant.</label>
+                                  <input class="form-control form-control-sm qty-inline"
+                                         id="cant_{{p.id}}" value="1" min="1" type="number">
+                                </div>
+                                <span class="fw-bold text-success small">${{ "%.2f"|format(p.precio or 0) }}</span>
+                                {% if p.stock is not none %}
+                                <span class="badge small"
+                                      style="{% if p.stock > 0 %}background:rgba(25,135,84,.1);border:1px solid rgba(25,135,84,.25);color:#157347;{% else %}background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.25);color:#b02a37;{% endif %}">
+                                  <i class="bi bi-boxes me-1"></i>{{ p.stock }}
+                                </span>
+                                {% endif %}
+                              </div>
+
+                              <div class="d-none">
+                                <input type="checkbox" name="prod_id[]" value="{{p.id}}" id="p{{p.id}}">
+                              </div>
+
+                              <div class="mt-2">
+                                <button type="button"
+                                        class="btn btn-success btn-sm btn-soft btn-agregar-producto"
+                                        data-id="{{ p.id }}"
+                                        data-nombre="{{ p.nombre }}"
+                                        data-tipo="{{ p.tipo }}"
+                                        data-precio="{{ p.precio or 0 }}">
+                                  <i class="bi bi-plus-lg me-1"></i>Agregar
+                                </button>
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
               {% else %}
-                <span class="small text-muted">
-                  ${{"%.2f"|format(p.precio)}}
-                </span>
+                <div class="text-muted text-center py-4">
+                  <i class="bi bi-box-seam" style="font-size:2rem;opacity:.3;"></i>
+                  <div class="mt-2">No hay productos cargados aún.</div>
+                  <a href="/productos" class="btn btn-sm btn-outline-primary mt-2">Ir a Productos</a>
+                </div>
               {% endif %}
             </div>
+
+            <!-- ===== TAB MUEBLES ===== -->
+            <div class="tab-pane fade" id="muebles-pane" role="tabpanel">
+
+              <!-- LÍNEAS -->
+              <div class="mini-label">1. Elegí la línea</div>
+              <div class="row g-2 mb-4" id="lineasGrid">
+                <div class="col-6 col-md-3">
+                  <div class="linea-card linea-standard" data-linea="standard">
+                    <div class="linea-icon"><i class="bi bi-grid-3x3-gap"></i></div>
+                    <div class="fw-bold">Standard</div>
+                    <div class="small text-muted">Línea estándar</div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="linea-card linea-roble" data-linea="roble">
+                    <div class="linea-icon"><i class="bi bi-tree-fill"></i></div>
+                    <div class="fw-bold">Roble</div>
+                    <div class="small text-muted">Terminación roble</div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="linea-card linea-glaciar" data-linea="glaciar laqueado">
+                    <div class="linea-icon"><i class="bi bi-snow"></i></div>
+                    <div class="fw-bold">Glaciar</div>
+                    <div class="small text-muted">Laqueado</div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-3">
+                  <div class="linea-card linea-lujo" data-linea="lujo">
+                    <div class="linea-icon"><i class="bi bi-stars"></i></div>
+                    <div class="fw-bold">Lujo</div>
+                    <div class="small text-muted">Alta gama</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MEDIDA Y COMPOSICIÓN -->
+              <div class="mini-label">2. Medida y composición</div>
+              <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold mb-1">Medida total (cm)</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" id="mueble-medida-total" placeholder="Ej: 374">
+                    <span class="input-group-text">cm</span>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <label class="form-label small fw-semibold mb-1">Componentes</label>
+                  <div class="d-flex flex-wrap gap-3 pt-1">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="comp-base" checked>
+                      <label class="form-check-label small" for="comp-base">Mueble sin mesada</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="comp-alacena">
+                      <label class="form-check-label small" for="comp-alacena">Alacena</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="comp-inox">
+                      <label class="form-check-label small" for="comp-inox">Mesada acero inox</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SUGERENCIA -->
+              <div class="sugerencia-box mb-3" id="sugerenciaMueble">
+                <i class="bi bi-info-circle me-1"></i>
+                Ingresá una medida para ver la sugerencia de armado.
+              </div>
+
+              <!-- BUILDER -->
+              <div class="mini-label">3. Constructor</div>
+              <div class="builder-box mb-4">
+                <div id="builderDetalle">
+                  <div class="text-muted small">Todavía no hay componentes calculados.</div>
+                </div>
+              </div>
+
+              <!-- ADICIONALES -->
+              {% if adicionales %}
+              <div class="mini-label">4. Adicionales con cargo</div>
+              <div class="add-grid mb-4">
+                {% for a in adicionales %}
+                <div class="add-card">
+                  <div class="min-width-0">
+                    <div class="fw-bold small text-truncate">{{ a.nombre }}</div>
+                    <div class="small text-muted">${{ a.precio }}</div>
+                  </div>
+                  <button type="button"
+                          class="btn btn-outline-primary btn-sm btn-soft flex-shrink-0 btn-add-adicional"
+                          data-nombre="{{ a.nombre }}"
+                          data-precio="{{ a.precio or 0 }}"
+                          data-porcentaje="0">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- ACCIONES MUEBLE -->
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary btn-soft" id="btnAgregarMueble">
+                  <i class="bi bi-plus-lg me-1"></i>Agregar al resumen
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-soft" id="btnLimpiarMueble">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
-        {% endfor %}
       </div>
 
-      <div class="mt-3">
-        <button class="btn btn-success">Crear pedido</button>
+      <input type="hidden" name="items_manual_json" id="items_manual_json">
+    </div>
+
+    <!-- ==================== RESUMEN ==================== -->
+    <div class="sticky-summary">
+      <div class="presu-card">
+        <div class="presu-card-header">
+          <i class="bi bi-receipt"></i>
+          Resumen del presupuesto
+        </div>
+        <div class="presu-card-body">
+
+          <div class="summary-list" id="summaryList">
+            <div class="text-muted small text-center py-3">
+              <i class="bi bi-cart" style="font-size:1.4rem;opacity:.3;display:block;margin-bottom:6px;"></i>
+              Todavía no agregaste ítems.
+            </div>
+          </div>
+
+          <div class="summary-total">
+            <div class="summary-total-row text-muted">
+              <span>Subtotal</span>
+              <span id="resumenSubtotal">$0</span>
+            </div>
+            <div class="summary-total-row text-muted">
+              <span>Seña</span>
+              <span id="resumenSena">$0</span>
+            </div>
+            <div class="summary-total-row summary-grand">
+              <span>Total</span>
+              <span id="resumenTotal">$0</span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mt-3 btn-soft py-2">
+              <i class="bi bi-check2-circle me-1"></i>Crear pedido
+            </button>
+          </div>
+
+        </div>
       </div>
     </div>
+
   </div>
 </form>
 
-<!-- JS -->
-<!-- Filtros productos -->
 <script>
-document.getElementById("filtroProducto").addEventListener("input", function() {
-  const texto = this.value.toLowerCase();
-  const productos = document.querySelectorAll(".producto-item");
+  const PRECIOS_MUEBLES = {{ muebles | tojson }};
+  const ADICIONALES     = {{ adicionales | tojson }};
+</script>
 
-  productos.forEach(prod => {
-    const nombre = prod.querySelector("label").textContent.toLowerCase();
-    prod.style.display = nombre.includes(texto) ? "" : "none";
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  // ============================
+  // SEÑA
+  // ============================
+  const checkSena      = document.getElementById("checkSena");
+  const inputSena      = document.getElementById("inputSena");
+  const selectFormaPago = document.getElementById("selectFormaPago");
+
+  checkSena?.addEventListener("change", function () {
+    const activo = this.checked;
+    inputSena.disabled      = !activo;
+    selectFormaPago.disabled = !activo;
+    if (!activo) { inputSena.value = ""; selectFormaPago.value = "Efectivo"; }
+    actualizarResumen();
   });
+  inputSena?.addEventListener("input", actualizarResumen);
+
+  // ============================
+  // FILTRO PRODUCTOS
+  // ============================
+  document.getElementById("filtroProducto")?.addEventListener("input", function () {
+    const txt = this.value.toLowerCase().trim();
+    document.querySelectorAll(".presu-grupo").forEach(grupo => {
+      const tipoGrupo = grupo.dataset.grupoTipo || "";
+      const items = grupo.querySelectorAll(".producto-item");
+      let visible = 0;
+      items.forEach(item => {
+        const match = !txt ||
+          (item.dataset.nombre || "").includes(txt) ||
+          (item.dataset.tipo || "").includes(txt) ||
+          tipoGrupo.includes(txt);
+        item.style.display = match ? "" : "none";
+        if (match) visible++;
+      });
+      if (txt) {
+        grupo.style.display = visible > 0 ? "" : "none";
+        if (visible > 0) {
+          const body = grupo.querySelector(".collapse");
+          const btn  = grupo.querySelector(".presu-grupo-toggle");
+          if (body) body.classList.add("show");
+          if (btn)  btn.setAttribute("aria-expanded", "true");
+        }
+      } else {
+        grupo.style.display = "";
+      }
+    });
+  });
+
+  // ============================
+  // ESTADO
+  // ============================
+  const resumenItems  = [];
+  let   lineaSeleccionada = null;
+
+  const hiddenManual    = document.getElementById("items_manual_json");
+  const summaryList     = document.getElementById("summaryList");
+  const resumenSubtotal = document.getElementById("resumenSubtotal");
+  const resumenSena     = document.getElementById("resumenSena");
+  const resumenTotal    = document.getElementById("resumenTotal");
+
+  function money(n) {
+    return "$" + Number(n || 0).toLocaleString("es-AR");
+  }
+
+  // ============================
+  // HELPER: medida base (scope compartido)
+  // ============================
+  function getMedidaBase(linea, medidaReal) {
+    const medidas = PRECIOS_MUEBLES
+      .filter(x => x.linea === linea)
+      .map(x => x.medida)
+      .sort((a, b) => a - b);
+
+    if (!medidas.length) return null;
+
+    let base = medidas[0];
+    for (const m of medidas) {
+      if (m <= medidaReal) base = m;
+      if (m >  medidaReal) break;
+    }
+    return base;
+  }
+
+  // ============================
+  // RESUMEN
+  // ============================
+  function actualizarResumen() {
+    if (!summaryList) return;
+    summaryList.innerHTML = "";
+
+    if (!resumenItems.length) {
+      summaryList.innerHTML = `
+        <div class="text-muted small text-center py-3">
+          <i class="bi bi-cart" style="font-size:1.4rem;opacity:.3;display:block;margin-bottom:6px;"></i>
+          Todavía no agregaste ítems.
+        </div>`;
+    } else {
+      resumenItems.forEach((item, index) => {
+        const el = document.createElement("div");
+        el.className = "summary-item";
+        el.innerHTML = `
+          <span class="summary-item-desc" title="${item.descripcion}">${item.descripcion}</span>
+          <span class="summary-item-dots"></span>
+          <span class="summary-item-price">${money(item.subtotal)}</span>
+          <button type="button" class="summary-item-remove" data-remove-index="${index}" title="Quitar">
+            <i class="bi bi-x-lg"></i>
+          </button>`;
+        summaryList.appendChild(el);
+      });
+    }
+
+    const subtotal = resumenItems.reduce((acc, x) => acc + Number(x.subtotal || 0), 0);
+    const sena     = Number(inputSena?.value || 0);
+
+    resumenSubtotal.textContent = money(subtotal);
+    resumenSena.textContent     = sena > 0 ? money(sena) : "$0";
+    resumenTotal.textContent    = money(subtotal);
+
+    hiddenManual.value = JSON.stringify(resumenItems);
+    syncProductosBackend();
+  }
+
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("[data-remove-index]");
+    if (!btn) return;
+    const idx = Number(btn.getAttribute("data-remove-index"));
+    if (!Number.isNaN(idx)) { resumenItems.splice(idx, 1); actualizarResumen(); }
+  });
+
+  function syncProductosBackend() {
+    document.querySelectorAll('input[name="prod_id[]"]').forEach(ch => ch.checked = false);
+    resumenItems.forEach(item => {
+      if (item.tipo === "producto" && item.producto_id) {
+        const chk = document.querySelector(`input[name="prod_id[]"][value="${item.producto_id}"]`);
+        if (chk) chk.checked = true;
+      }
+    });
+  }
+
+  // ============================
+  // AGREGAR PRODUCTO
+  // ============================
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-agregar-producto");
+    if (!btn) return;
+
+    const id     = btn.dataset.id;
+    const nombre = btn.dataset.nombre;
+    const tipo   = btn.dataset.tipo;
+    const precio = Number(btn.dataset.precio || 0);
+
+    const cant     = Number(document.getElementById(`cant_${id}`)?.value || 1);
+    const subtotal = precio * cant;
+
+    resumenItems.push({
+      tipo: "producto",
+      producto_id: id,
+      descripcion: `${nombre}${tipo ? " (" + tipo + ")" : ""}`,
+      cantidad: cant,
+      metros: null,
+      subtotal: subtotal
+    });
+
+    actualizarResumen();
+
+    // feedback visual breve
+    btn.textContent = "✓ Agregado";
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.innerHTML = '<i class="bi bi-plus-lg me-1"></i>Agregar';
+      btn.disabled = false;
+    }, 1200);
+  });
+
+  // ============================
+  // SELECCIÓN DE LÍNEA
+  // ============================
+  document.querySelectorAll(".linea-card").forEach(card => {
+    card.addEventListener("click", function () {
+      document.querySelectorAll(".linea-card").forEach(x => x.classList.remove("active"));
+      this.classList.add("active");
+      lineaSeleccionada = this.dataset.linea;
+      calcularMueblePreview();
+    });
+  });
+
+  document.getElementById("mueble-medida-total")?.addEventListener("input", calcularMueblePreview);
+  document.getElementById("comp-base")?.addEventListener("change", calcularMueblePreview);
+  document.getElementById("comp-alacena")?.addEventListener("change", calcularMueblePreview);
+  document.getElementById("comp-inox")?.addEventListener("change", calcularMueblePreview);
+
+  // ============================
+  // PREVIEW MUEBLE
+  // ============================
+  function calcularMueblePreview() {
+    const sugerencia = document.getElementById("sugerenciaMueble");
+    const builder    = document.getElementById("builderDetalle");
+
+    if (!lineaSeleccionada) {
+      sugerencia.innerHTML = `<i class="bi bi-info-circle me-1"></i>Elegí primero una línea.`;
+      builder.innerHTML = `<div class="text-muted small">Todavía no hay componentes calculados.</div>`;
+      return;
+    }
+
+    const medidaTotal = Number(document.getElementById("mueble-medida-total")?.value || 0);
+    if (!medidaTotal) {
+      sugerencia.innerHTML = `<i class="bi bi-info-circle me-1"></i>Ingresá una medida para ver la sugerencia de armado.`;
+      builder.innerHTML = `<div class="text-muted small">Todavía no hay componentes calculados.</div>`;
+      return;
+    }
+
+    const base    = getMedidaBase(lineaSeleccionada, medidaTotal);
+    const precios = PRECIOS_MUEBLES.find(x => x.linea === lineaSeleccionada && x.medida === base);
+
+    if (!base || !precios) {
+      sugerencia.innerHTML = `<i class="bi bi-exclamation-triangle me-1"></i>No hay precios cargados para esa línea.`;
+      builder.innerHTML = `<div class="text-muted small">No se pudo calcular el mueble.</div>`;
+      return;
+    }
+
+    const diferencia = Math.max(0, medidaTotal - base);
+    sugerencia.innerHTML = `
+      <i class="bi bi-check-circle me-1"></i>
+      <strong>Línea:</strong> ${lineaSeleccionada} &nbsp;|&nbsp;
+      <strong>Medida solicitada:</strong> ${medidaTotal} cm &nbsp;|&nbsp;
+      <strong>Base sugerida:</strong> ${base} cm
+      ${diferencia > 0 ? `&nbsp;|&nbsp;<strong>Ajuste:</strong> ${diferencia} cm` : ""}
+    `;
+
+    let html = "";
+
+    if (document.getElementById("comp-base").checked) {
+      html += `<div class="builder-row">
+        <div><div class="fw-bold">Mueble sin mesada</div><div class="small text-muted">${base} cm</div></div>
+        <div class="builder-price">${money(precios.base)}</div>
+      </div>`;
+    }
+    if (document.getElementById("comp-alacena").checked) {
+      html += `<div class="builder-row">
+        <div><div class="fw-bold">Alacena</div><div class="small text-muted">${base} cm</div></div>
+        <div class="builder-price">${money(precios.alacena)}</div>
+      </div>`;
+    }
+    if (document.getElementById("comp-inox").checked) {
+      html += `<div class="builder-row">
+        <div><div class="fw-bold">Mesada de acero inox</div><div class="small text-muted">${base} cm</div></div>
+        <div class="builder-price">${money(precios.inox)}</div>
+      </div>`;
+    }
+    if (diferencia > 0) {
+      html += `<div class="builder-row">
+        <div><div class="fw-bold">Ajuste / repicero estimado</div><div class="small text-muted">${diferencia} cm</div></div>
+        <div class="builder-price">${money(diferencia * 1000)}</div>
+      </div>`;
+    }
+
+    builder.innerHTML = html || `<div class="text-muted small">Seleccioná al menos un componente.</div>`;
+  }
+
+  // ============================
+  // LIMPIAR MUEBLE
+  // ============================
+  document.getElementById("btnLimpiarMueble")?.addEventListener("click", function () {
+    document.getElementById("mueble-medida-total").value = "";
+    document.getElementById("comp-base").checked    = true;
+    document.getElementById("comp-alacena").checked = false;
+    document.getElementById("comp-inox").checked    = false;
+    lineaSeleccionada = null;
+    document.querySelectorAll(".linea-card").forEach(x => x.classList.remove("active"));
+    document.getElementById("sugerenciaMueble").innerHTML =
+      `<i class="bi bi-info-circle me-1"></i>Ingresá una medida para ver la sugerencia de armado.`;
+    document.getElementById("builderDetalle").innerHTML =
+      `<div class="text-muted small">Todavía no hay componentes calculados.</div>`;
+  });
+
+  // ============================
+  // AGREGAR MUEBLE AL RESUMEN
+  // ============================
+  document.getElementById("btnAgregarMueble")?.addEventListener("click", function () {
+    if (!lineaSeleccionada) { alert("Elegí una línea."); return; }
+
+    const medidaTotal = Number(document.getElementById("mueble-medida-total")?.value || 0);
+    if (!medidaTotal)       { alert("Ingresá la medida total."); return; }
+
+    const base    = getMedidaBase(lineaSeleccionada, medidaTotal);
+    const precios = PRECIOS_MUEBLES.find(x => x.linea === lineaSeleccionada && x.medida === base);
+    if (!base || !precios)  { alert("No se pudo calcular el mueble."); return; }
+
+    const diferencia = Math.max(0, medidaTotal - base);
+    let subtotalMueble = 0;
+    const partes = [];
+
+    if (document.getElementById("comp-base").checked) {
+      subtotalMueble += Number(precios.base || 0);
+      partes.push(`Mueble ${base} cm`);
+    }
+    if (document.getElementById("comp-alacena").checked) {
+      subtotalMueble += Number(precios.alacena || 0);
+      partes.push(`Alacena ${base} cm`);
+    }
+    if (document.getElementById("comp-inox").checked) {
+      subtotalMueble += Number(precios.inox || 0);
+      partes.push(`Mesada inox ${base} cm`);
+    }
+    if (diferencia > 0) {
+      subtotalMueble += diferencia * 1000;
+      partes.push(`Ajuste ${diferencia} cm`);
+    }
+
+    if (!partes.length) { alert("Seleccioná al menos un componente."); return; }
+
+    resumenItems.push({
+      tipo: "manual",
+      descripcion: `${lineaSeleccionada.charAt(0).toUpperCase() + lineaSeleccionada.slice(1)} - ${partes.join(" + ")}`,
+      cantidad: 1,
+      metros: null,
+      subtotal: subtotalMueble
+    });
+
+    actualizarResumen();
+  });
+
+  // ============================
+  // ADICIONALES
+  // ============================
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-add-adicional");
+    if (!btn) return;
+
+    const nombre     = btn.dataset.nombre;
+    const precio     = Number(btn.dataset.precio || 0);
+    const porcentaje = Number(btn.dataset.porcentaje || 0);
+
+    let subtotal = precio;
+    if (porcentaje > 0) {
+      const subtotalActual = resumenItems.reduce((acc, x) => acc + Number(x.subtotal || 0), 0);
+      subtotal = subtotalActual * (porcentaje / 100);
+    }
+
+    resumenItems.push({ tipo: "manual", descripcion: nombre, cantidad: 1, metros: null, subtotal });
+    actualizarResumen();
+  });
+
+  actualizarResumen();
 });
 </script>
 
-<!-- Mostrar/Ocultar campo seña -->
-<script>
-const check = document.getElementById("checkSena");
-const wrapSena = document.getElementById("wrapSena");
-const input = document.getElementById("inputSena");
-const selectPago = document.getElementById("selectPago");
-
-function toggleSena() {
-  const enabled = check.checked;
-
-  wrapSena.classList.toggle("d-none", !enabled);
-
-  input.required = enabled;
-  selectPago.required = enabled;
-
-  if (!enabled) {
-    input.value = "";
-    selectPago.value = "";
-  }
-}
-
-check.addEventListener("change", toggleSena);
-toggleSena();
-</script>
 {% endblock %}
