@@ -1,0 +1,186 @@
+/* =========================================================
+   dashboard.css — Estilos exclusivos de la vista Dashboard
+========================================================= */
+
+/* ── KPI Cards ──────────────────────────────────────────
+   Íconos y labels dentro de cada tarjeta de indicador.
+   Los colores de fondo (kpi-azul, etc.) están al final de este mismo archivo.
+─────────────────────────────────────────────────────── */
+.kpi-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex: 0 0 52px;
+}
+
+/* Variante para fondo blanco: ícono con tinte azul oscuro */
+.kpi-blanco .kpi-icon {
+  background: rgba(11, 42, 74, .07);
+  color: #0b2a4a;
+}
+
+.kpi-label {
+  font-size: .82rem;
+  opacity: .85;
+  margin-bottom: 2px;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* ── Títulos de gráficos ──────────────────────────────── */
+.chart-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  font-size: .85rem;
+  color: #0b2a4a;
+  padding: 5px 12px 5px 10px;
+  background: rgba(11, 42, 74, .06);
+  border-left: 3px solid #0b2a4a;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 14px;
+}
+
+/* ── Header de la tabla de últimos pedidos ────────────── */
+.tabla-header {
+  background: #0b2a4a;
+  color: #fff;
+  padding: 13px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: .95rem;
+}
+
+.tabla-header .btn-ver-mas {
+  background: rgba(255, 255, 255, .15);
+  border: 1px solid rgba(255, 255, 255, .25);
+  color: #fff;
+  border-radius: 8px;
+  font-size: .82rem;
+  padding: 5px 12px;
+  font-weight: 700;
+  transition: background .15s;
+}
+
+.tabla-header .btn-ver-mas:hover {
+  background: rgba(255, 255, 255, .25);
+}
+
+/* ── Barra de filtros del modal ───────────────────────── */
+.modal-filtros {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(0, 0, 0, .07);
+}
+
+
+/* ── KPI Cards — tarjetas de indicadores clave ────────── */
+
+/* Base: tamaño mínimo, cursor pointer, animación hover */
+.kpi-card {
+  border-radius: 10px;
+  min-height: 110px;
+  cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+/* Efecto de elevación al pasar el mouse */
+.kpi-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .15);
+}
+
+/* Variantes de color de fondo por estado */
+.kpi-azul    { --bs-card-bg: #0b2a4a; color: #fff !important; }   /* Finalizados */
+.kpi-naranja { --bs-card-bg: #c46200; color: #fff !important; }   /* En Curso    */
+.kpi-gris    { --bs-card-bg: #4a4a4a; color: #fff !important; }   /* Pendientes  */
+.kpi-blanco  { --bs-card-bg: #ffffff; color: #000 !important; }   /* Total       */
+
+
+/* ── Dashboard Card — glassmorphism leve ─────────────── */
+/* Fondo semi-transparente con blur para los gráficos */
+.dashboard-card {
+  background: rgba(255, 255, 255, .75);
+  border: 1px solid rgba(255, 255, 255, .4);
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, .08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+
+/* ── Chart Box — contenedor del canvas con altura fija ── */
+.chart-box {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}
+
+/* El canvas ocupa el 100% del contenedor */
+.chart-box canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+/* ── Charts Slider — carrusel de gráficos con flechas ─── */
+
+/* Wrapper relativo para posicionar los botones de nav */
+.charts-shell {
+  position: relative;
+}
+
+/* Track: scroll horizontal con snap */
+.charts-track {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 6px 54px;   /* espacio para las flechas laterales */
+}
+
+/* Cada slide ocupa un ancho fijo y se ancla al punto de snap */
+.charts-slide {
+  flex: 0 0 440px;
+  scroll-snap-align: start;
+}
+
+/* Botones de navegación ◀ / ▶ posicionados sobre el track */
+.charts-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, .15);
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+  font-size: 20px;
+  line-height: 36px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.charts-nav.left  { left: 10px; }
+.charts-nav.right { right: 10px; }
+
+/* Scrollbar fina del track */
+.charts-track::-webkit-scrollbar { height: 10px; }

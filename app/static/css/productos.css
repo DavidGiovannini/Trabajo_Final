@@ -1,0 +1,39 @@
+/* =========================================================
+   productos.css — Estilos exclusivos de la vista Productos
+========================================================= */
+
+/* ── Toggle de módulo (botón que colapsa/expande el grupo) */
+.module-toggle {
+  background: #f8f9fa;
+  border: 1px solid rgba(0, 0, 0, .08);
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: #0b2a4a;
+  font-weight: 700;
+  transition: background .15s, border-color .15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.module-toggle:hover {
+  background: #eef3fb;
+}
+
+/* Estado expandido: fondo y borde más marcados */
+.module-toggle[aria-expanded="true"] {
+  background: #eef3fb;
+  border-color: rgba(11, 42, 74, .2);
+}
+
+/* Flecha que rota 180° cuando el módulo está abierto */
+.module-chevron {
+  font-size: 11px;
+  margin-left: auto;
+  transition: transform .2s ease;
+}
+
+.module-toggle[aria-expanded="true"] .module-chevron {
+  transform: rotate(180deg);
+}

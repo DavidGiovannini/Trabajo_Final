@@ -1,0 +1,168 @@
+/* =========================================================
+   base.css — Estilos del layout global (sidebar + topbar)
+   Cargado en todas las páginas que extienden base.html
+   ========================================================= */
+
+
+/* =========================================================
+   SIDEBAR — Barra lateral de navegación
+   ========================================================= */
+
+/* Contenedor principal: gradiente azul, columna flex */
+.sidebar {
+  width: 260px;
+  flex: 0 0 260px;
+  background: linear-gradient(180deg, #0b2a4a, #081f36);
+  color: white;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, .1);
+}
+
+/* ---- Marca: logo + nombre de la empresa ---- */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+  margin-bottom: 30px;
+}
+
+/* Versión dentro de <aside>: padding y márgenes ajustados */
+aside .sidebar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 6px 14px !important;
+  margin-bottom: 6px !important;
+  text-decoration: none !important;
+  color: #fff !important;
+}
+
+/* Logo cuadrado sin recorte */
+aside .sidebar-brand .brand-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  display: block;
+}
+
+/* Nombre de la empresa en negrita */
+aside .sidebar-brand .brand-text {
+  font-weight: 800;
+  letter-spacing: .2px;
+  line-height: 1;
+}
+
+/* Logo genérico (fuera de aside) */
+.brand-logo {
+  height: 32px;
+}
+
+.brand-text {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: .3px;
+}
+
+/* ---- Etiquetas de sección (OPERACIÓN / GESTIÓN) ---- */
+.sidebar-section {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255, 255, 255, .45);
+  margin-bottom: 8px;
+  padding-left: 6px;
+}
+
+/* ---- Links de navegación ---- */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 4px;
+  transition: all .18s ease;
+  opacity: .9;
+}
+
+.sidebar-link i {
+  font-size: 17px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Hover: fondo azul claro y desplazamiento leve */
+.sidebar-link:hover {
+  background: #4dabf7;
+  color: white;
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* Link activo (ruta actual): borde izquierdo de acento */
+.sidebar-link.active {
+  background: #163e6c;
+  box-shadow: inset 3px 0 0 #4dabf7;
+}
+
+/* Variante "primario" (Nuevo Presupuesto) */
+.sidebar-primary { font-weight: 500; }
+
+/* Sub-links dentro del menú colapsable de Productos */
+.sidebar-sublink {
+  padding-left: 34px !important;
+  font-size: 13px;
+  opacity: .85;
+}
+
+.sidebar-sublink:hover { opacity: 1; }
+
+/* ---- Grupo colapsable (submenú Productos) ---- */
+
+/* Botón que expande/colapsa el grupo */
+.sidebar-group-toggle {
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Estado activo: mismo tratamiento que un link activo */
+.sidebar-group-toggle.active {
+  background: #163e6c;
+  box-shadow: inset 3px 0 0 #4dabf7;
+}
+
+/* Flecha del chevron: gira 180° cuando está expandido */
+.sidebar-chevron {
+  font-size: 11px;
+  transition: transform .2s ease;
+}
+
+.sidebar-group-toggle[aria-expanded="true"] .sidebar-chevron {
+  transform: rotate(180deg);
+}
+
+/* ---- Footer de la sidebar ---- */
+
+/* Empuja el botón Salir al fondo del flex container */
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+/* Texto de estado de red (LAN interna) */
+.sidebar-status {
+  font-size: 12px;
+  color: rgba(255, 255, 255, .5);
+  margin-top: 10px;
+  text-align: center;
+}

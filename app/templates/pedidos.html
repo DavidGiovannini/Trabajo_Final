@@ -1,44 +1,46 @@
 {% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pedidos.css') }}">
+{% endblock %}
+
 {% block content %}
 <h3 class="mb-3">Pedidos</h3>
 
+<!-- Tablero kanban: 3 columnas (Pendiente / En Curso / Finalizado) -->
 <div class="pedidos-board">
   <hr class="mb-3">
   <div class="row g-4">
-    <!-- PENDIENTES -->
+
+    <!-- ===== COLUMNA PENDIENTES ===== -->
     <div class="col-md-4">
       <h5 class="text-center mb-3">Pendientes</h5>
       <div class="kanban-column" id="PENDIENTE">
         {% for p in pedidos_pendientes %}
-          {% set fecha_estado = '-' %}
-          {% if p.estado == 'PENDIENTE' and p.pendiente_at %}
-            {% set fecha_estado = p.pendiente_at.strftime('%d/%m/%Y') %}
-          {% elif p.estado == 'EN_CURSO' and p.en_curso_at %}
-            {% set fecha_estado = p.en_curso_at.strftime('%d/%m/%Y') %}
-          {% elif p.estado == 'FINALIZADO' and p.finalizado_at %}
-            {% set fecha_estado = p.finalizado_at.strftime('%d/%m/%Y') %}
-          {% endif %}
 
+          {# Calcular saldo pendiente: total menos seña ya entregada #}
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
-          {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-          <div class="pedido-card pedido-nueva" 
+          <div class="pedido-card pedido-nueva"
                data-id="{{ p.id }}"
                data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
+
+            <!-- Header: estado coloreado + botón de despliegue -->
             <div class="pedido-header">
               <div class="pedido-title-wrap estado-{{ p.estado|lower }}">
                 <span class="estado-dot"></span>
                 <span class="pedido-title">{{ (p.cliente or '-')|upper }}</span>
               </div>
-
               <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
                 <i class="bi bi-chevron-down"></i>
               </button>
             </div>
 
+            <!-- Cuerpo colapsable con items y acciones -->
             <div class="pedido-body pedido-collapsed">
               <div class="pedido-label">Pedido: <span class="text-muted">#{{ p.id }}</span></div>
 
+              <!-- Lista de items del pedido -->
               <div class="pedido-items">
                 {% for it in p.items %}
                   <div class="pedido-item-line">{{ it.descripcion }}</div>
@@ -47,6 +49,7 @@
                 {% endfor %}
               </div>
 
+              <!-- Monto adeudado (se actualiza via JS al registrar pagos) -->
               <div class="pedido-debe">
                 <strong>Debe:</strong>
                 <span class="debe-monto" id="pedido-debe-{{ p.id }}">
@@ -58,7 +61,9 @@
                 Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>
 
-              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-pedido-open="{{ p.id }}">
+              <!-- Botón que abre el modal de detalle -->
+              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2"
+                      data-pedido-open="{{ p.id }}">
                 Ver Más
               </button>
             </div>
@@ -67,24 +72,14 @@
       </div>
     </div>
 
-    <!-- EN CURSO -->
+    <!-- ===== COLUMNA EN CURSO ===== -->
     <div class="col-md-4">
       <h5 class="text-center mb-3">En Curso</h5>
       <div class="kanban-column" id="EN_CURSO">
         {% for p in pedidos_en_curso %}
-          {% set fecha_estado = '-' %}
-          {% if p.estado == 'PENDIENTE' and p.pendiente_at %}
-            {% set fecha_estado = p.pendiente_at.strftime('%d/%m/%Y') %}
-          {% elif p.estado == 'EN_CURSO' and p.en_curso_at %}
-            {% set fecha_estado = p.en_curso_at.strftime('%d/%m/%Y') %}
-          {% elif p.estado == 'FINALIZADO' and p.finalizado_at %}
-            {% set fecha_estado = p.finalizado_at.strftime('%d/%m/%Y') %}
-          {% endif %}
-
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
-          {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-          <div class="pedido-card pedido-nueva" 
+          <div class="pedido-card pedido-nueva"
                data-id="{{ p.id }}"
                data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
             <div class="pedido-header">
@@ -92,7 +87,6 @@
                 <span class="estado-dot"></span>
                 <span class="pedido-title">{{ (p.cliente or '-')|upper }}</span>
               </div>
-
               <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
                 <i class="bi bi-chevron-down"></i>
               </button>
@@ -100,7 +94,6 @@
 
             <div class="pedido-body pedido-collapsed">
               <div class="pedido-label">Pedido: <span class="text-muted">#{{ p.id }}</span></div>
-
               <div class="pedido-items">
                 {% for it in p.items %}
                   <div class="pedido-item-line">{{ it.descripcion }}</div>
@@ -108,19 +101,17 @@
                   <div class="pedido-item-line text-muted">Sin items</div>
                 {% endfor %}
               </div>
-
               <div class="pedido-debe">
                 <strong>Debe:</strong>
                 <span class="debe-monto" id="pedido-debe-{{ p.id }}">
                   ${{ "%.2f"|format(p.total) }}
                 </span>
               </div>
-
               <div class="pedido-creado">
                 Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>
-
-              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-pedido-open="{{ p.id }}">
+              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2"
+                      data-pedido-open="{{ p.id }}">
                 Ver Más
               </button>
             </div>
@@ -129,24 +120,14 @@
       </div>
     </div>
 
-    <!-- FINALIZADOS -->
+    <!-- ===== COLUMNA FINALIZADOS ===== -->
     <div class="col-md-4">
       <h5 class="text-center mb-3">Finalizados</h5>
       <div class="kanban-column" id="FINALIZADO">
         {% for p in pedidos_finalizados %}
-          {% set fecha_estado = '-' %}
-          {% if p.estado == 'PENDIENTE' and p.pendiente_at %}
-            {% set fecha_estado = p.pendiente_at.strftime('%d/%m/%Y') %}
-          {% elif p.estado == 'EN_CURSO' and p.en_curso_at %}
-            {% set fecha_estado = p.en_curso_at.strftime('%d/%m/%Y') %}
-          {% elif p.estado == 'FINALIZADO' and p.finalizado_at %}
-            {% set fecha_estado = p.finalizado_at.strftime('%d/%m/%Y') %}
-          {% endif %}
-
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
-          {% set deb_clase = 'text-danger' if deb > 0 else 'text-success' %}
 
-          <div class="pedido-card pedido-nueva" 
+          <div class="pedido-card pedido-nueva"
                data-id="{{ p.id }}"
                data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
             <div class="pedido-header">
@@ -154,14 +135,12 @@
                 <span class="estado-dot"></span>
                 <span class="pedido-title">{{ (p.cliente or '-')|upper }}</span>
               </div>
-
               <button type="button" class="pedido-toggle" aria-label="Desplegar/ocultar">
                 <i class="bi bi-chevron-down"></i>
               </button>
             </div>
             <div class="pedido-body pedido-collapsed">
               <div class="pedido-label">Pedido: <span class="text-muted">#{{ p.id }}</span></div>
-
               <div class="pedido-items">
                 {% for it in p.items %}
                   <div class="pedido-item-line">{{ it.descripcion }}</div>
@@ -169,19 +148,17 @@
                   <div class="pedido-item-line text-muted">Sin items</div>
                 {% endfor %}
               </div>
-
               <div class="pedido-debe">
                 <strong>Debe:</strong>
                 <span class="debe-monto" id="pedido-debe-{{ p.id }}">
                   ${{ "%.2f"|format(p.total) }}
                 </span>
               </div>
-
               <div class="pedido-creado">
                 Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>
-
-              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2" data-pedido-open="{{ p.id }}">
+              <button type="button" class="btn btn-primary btn-vermas w-100 mt-2"
+                      data-pedido-open="{{ p.id }}">
                 Ver Más
               </button>
             </div>
@@ -189,164 +166,23 @@
         {% endfor %}
       </div>
     </div>
+
   </div>
+
+  <!-- Zona de papelera: se activa al arrastrar una card -->
   <div id="kanban-trash" class="kanban-trash">
     <i class="bi bi-trash"></i>
     <span>Eliminar pedido</span>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-  const columns = document.querySelectorAll(".kanban-column");
-
-  const trash = document.getElementById("kanban-trash");
-  let pedidoDragging = null;
-
-  function refreshEmptyColumns(){
-    columns.forEach(col=>{
-      col.classList.toggle("is-empty", !col.querySelector(".pedido-nueva"));
-    });
-  }
-
-  document.querySelectorAll(".pedido-card").forEach(card=>{
-    const fecha = card.dataset.created
-    const el = card.querySelector(".pedido-creado-fecha")
-    if(el) el.textContent = fecha
-  })
-
-  refreshEmptyColumns();
-
-  columns.forEach(col => {
-    new Sortable(col, {
-      group: "pedidos",
-      animation: 150,
-      draggable: ".pedido-nueva",
-      handle: ".pedido-header",
-      filter: "button, .btn, a, input, select, textarea",
-      preventOnFilter: true,
-
-      chosenClass: "sortable-chosen",
-      dragClass: "sortable-drag",
-
-      onStart: (evt) => {
-        pedidoDragging = evt.item;
-        trash.classList.add("active");
-      },
-
-      onEnd: async (evt) => {
-
-        trash.classList.remove("active");
-        trash.classList.remove("hover");
-        pedidoDragging = null;
-
-        const card = evt.item;
-        const pedidoId = card.dataset.id;
-        const newEstado = evt.to.id;
-
-        refreshEmptyColumns();
-        if (evt.from === evt.to) return;
-
-        const titleWrap = card.querySelector(".pedido-title-wrap");
-
-        if (titleWrap){
-          titleWrap.classList.remove("estado-pendiente","estado-en_curso","estado-finalizado");
-          titleWrap.classList.add("estado-" + newEstado.toLowerCase());
-        }
-
-        try {
-          const res = await fetch(`/pedidos/mover/${pedidoId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ estado: newEstado })
-          });
-
-          if (!res.ok) {
-            evt.from.appendChild(card);
-            refreshEmptyColumns();
-            alert("Error al mover el pedido");
-          }
-
-        } catch (e) {
-          evt.from.appendChild(card);
-          refreshEmptyColumns();
-          alert("Error al mover el pedido");
-        }
-      }
-    });
-  });
-
-  //Desplegar/Contraer en la card
-  document.addEventListener("click", (e) => {
-
-    const card = e.target.closest(".pedido-nueva");
-    if (!card) return;
-
-    if (e.target.closest("button, a, input, select, textarea, [data-pedido-open]")) return;
-
-    const body = card.querySelector(".pedido-body");
-    if (!body) return;
-
-    body.classList.toggle("pedido-collapsed");
-    card.classList.toggle("is-open");
-
-    const icon = card.querySelector(".pedido-toggle i");
-    if (icon){
-      icon.classList.toggle("bi-chevron-down");
-      icon.classList.toggle("bi-chevron-up");
-    }
-
-  });
-
-  trash.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    trash.classList.add("hover");
-  });
-
-  trash.addEventListener("dragleave", () => {
-    trash.classList.remove("hover");
-  });
-
-  trash.addEventListener("drop", async (e) => {
-    e.preventDefault();
-
-    trash.classList.remove("hover");
-    trash.classList.remove("active");
-
-    if (!pedidoDragging) return;
-
-    const card = pedidoDragging;
-    const id = card.dataset.id;
-
-    pedidoDragging = null;
-
-    if (!confirm("¿Eliminar este pedido?")) return;
-
-    const res = await fetch(`/pedidos/eliminar/${id}`, {
-      method: "POST"
-    });
-
-    if (!res.ok){
-      alert("No se pudo eliminar.");
-      return;
-    }
-
-    // animación antes de eliminar
-    card.style.transition = "all .2s ease";
-    card.style.opacity = "0";
-    card.style.transform = "scale(.9)";
-
-    setTimeout(()=>{
-      card.remove();
-      refreshEmptyColumns();
-    },200);
-
-  });
-});
-</script>
-
+<!-- Modal de detalle del pedido (HTML + JS) -->
 {% include "partials/pedido_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- SortableJS: biblioteca para drag & drop entre columnas -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<!-- Lógica del tablero kanban -->
+<script src="{{ url_for('static', filename='js/pedidos.js') }}"></script>
 {% endblock %}

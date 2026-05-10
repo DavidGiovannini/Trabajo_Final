@@ -4,141 +4,36 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ingresar — S. Valvo y Cía</title>
+
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(150deg, #081f36 0%, #0b2a4a 50%, #163e6c 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .login-wrap {
-      width: 100%;
-      max-width: 400px;
-    }
-
-    /* Marca arriba de la card */
-    .login-brand {
-      text-align: center;
-      color: #fff;
-      margin-bottom: 22px;
-    }
-    .login-brand .brand-name {
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: .4px;
-    }
-    .login-brand .brand-sub {
-      font-size: .82rem;
-      opacity: .65;
-      margin-top: 3px;
-    }
-
-    /* Card */
-    .login-card {
-      border: 0;
-      border-radius: 18px;
-      box-shadow: 0 24px 60px rgba(0,0,0,.4);
-      overflow: hidden;
-    }
-
-    /* Header azul de la card */
-    .login-card-header {
-      background: #0b2a4a;
-      padding: 20px 26px 18px;
-      text-align: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: .2px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-
-    /* Body */
-    .login-card-body {
-      padding: 26px 26px 22px;
-      background: #fff;
-    }
-
-    /* Inputs */
-    .login-card-body .input-group-text {
-      background: #f8f9fa;
-      border-right: 0;
-      color: #6c757d;
-    }
-    .login-card-body .form-control {
-      border-left: 0;
-      background: #f8f9fa;
-      border-radius: 0 8px 8px 0 !important;
-      padding: 10px 14px;
-    }
-    .login-card-body .input-group-text {
-      border-radius: 8px 0 0 8px;
-    }
-    .login-card-body .form-control:focus {
-      border-color: #0b2a4a;
-      box-shadow: 0 0 0 3px rgba(11,42,74,.10);
-      background: #fff;
-    }
-    .login-card-body .form-control:focus + .input-group-text,
-    .login-card-body .input-group:focus-within .input-group-text {
-      border-color: #0b2a4a;
-      background: #fff;
-    }
-
-    /* Botón */
-    .btn-login {
-      background: #0b2a4a;
-      border: 0;
-      border-radius: 10px;
-      padding: 12px;
-      font-weight: 700;
-      font-size: .97rem;
-      letter-spacing: .3px;
-      color: #fff;
-      transition: filter .15s, transform .1s;
-    }
-    .btn-login:hover {
-      filter: brightness(1.2);
-      color: #fff;
-      transform: translateY(-1px);
-    }
-    .btn-login:active {
-      transform: translateY(0);
-    }
-
-    /* Footer */
-    .login-footer {
-      text-align: center;
-      color: rgba(255,255,255,.4);
-      font-size: .75rem;
-      margin-top: 18px;
-    }
-  </style>
+  <!-- Estilos propios de la pantalla de login -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 
 <body>
   <div class="login-wrap">
 
-    <!-- Marca -->
+    <!-- Marca: nombre de la empresa sobre la card -->
     <div class="login-brand">
       <div class="brand-name">S. Valvo y Cía</div>
       <div class="brand-sub">Muebles a medida · Panel de administración</div>
     </div>
 
-    <!-- Card -->
+    <!-- Card de login -->
     <div class="card login-card">
 
+      <!-- Encabezado azul -->
       <div class="login-card-header">
         <i class="bi bi-shield-lock me-2"></i>Acceso interno
       </div>
 
+      <!-- Cuerpo con formulario -->
       <div class="login-card-body">
 
+        <!-- Mensajes flash (errores de credenciales, etc.) -->
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, msg in messages %}
@@ -150,6 +45,7 @@
           {% endif %}
         {% endwith %}
 
+        <!-- Formulario de autenticación -->
         <form method="post" action="/login">
 
           <div class="mb-3">
@@ -179,6 +75,7 @@
       </div>
     </div>
 
+    <!-- Aviso de acceso restringido -->
     <div class="login-footer">Red LAN interna &nbsp;·&nbsp; Solo usuarios autorizados</div>
 
   </div>

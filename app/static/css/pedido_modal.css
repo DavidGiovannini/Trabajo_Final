@@ -1,0 +1,575 @@
+/* =========================================================
+   pedido_modal.css — Estilos de los modales de pedido y pago
+   Incluido via partials/pedido_modal.html en dashboard y pedidos
+   ========================================================= */
+
+
+/* =========================================================
+   MODAL PEDIDO (#modalPedido) — Detalle del pedido
+   ========================================================= */
+
+/* Ancho máximo del dialog */
+.modal-custom { max-width: 760px; }
+
+/* Sin borde en el modal-content, sombra profunda */
+#modalPedido .modal-content {
+  border: 0 !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+}
+
+/* Contenedor principal: fondo crema, bordes redondeados */
+.pedido-modal {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f6f3ee;
+}
+
+/* Igualar font-size en todo el contenido del modal */
+.pedido-modal,
+.pedido-modal * { font-size: 0.95rem; }
+
+/* Eliminar bordes extra que Bootstrap agrega al header/body */
+#modalPedido .modal-header { border-bottom: 0 !important; }
+#modalPedido .modal-body   { border-top: 0 !important; }
+
+/* ---- Header azul oscuro del modal ---- */
+.pedido-modal-header {
+  background: #0b2a4a;
+  color: #fff;
+  border: 0;
+  position: relative;
+}
+
+/* Botón cerrar posicionado en la esquina superior derecha */
+.pedido-modal-header .btn-close {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  opacity: .9;
+}
+
+/* Wrap del título centrado (deja espacio para el btn-close) */
+.mp-header-wrap {
+  width: 100%;
+  text-align: center;
+  padding-right: 34px;
+}
+
+/* Nombre del cliente en mayúsculas y negrita */
+.mp-header-title {
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: .8px;
+  line-height: 1.1;
+}
+
+/* Número de orden debajo del nombre */
+.mp-header-sub {
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  opacity: .95;
+}
+
+/* ---- Body del modal ---- */
+.pedido-modal-body {
+  padding: 16px;
+  background: #f6f3ee;
+}
+
+/* ---- Sección de datos del cliente ---- */
+
+/* Caja con fondo azul muy claro */
+.pedido-datos {
+  background: rgba(11, 42, 74, .08);
+  border: 1px solid rgba(11, 42, 74, .15);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* Cada fila: etiqueta | valor | botón acción — 3 columnas */
+.pedido-datos .dato {
+  display: grid;
+  grid-template-columns: auto 1fr 58px;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, .08);
+}
+
+.pedido-datos .dato:last-child { border-bottom: 0; }
+
+/* Etiqueta (label) alineada a la izquierda sin wrap */
+.dato-label {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.dato-label strong { margin: 0; }
+
+/* Celda de valor: toma todo el ancho disponible */
+.dato-value {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Variante con links de contacto al lado (WhatsApp, Gmail, Maps) */
+.dato-value-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Texto truncado con ellipsis si no entra */
+.dato-value > span,
+.dato-value-inline > span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.35;
+}
+
+/* Input y textarea ocupan todo el ancho disponible */
+.dato-value input,
+.dato-value textarea,
+.dato-value-inline input {
+  width: 100%;
+  margin: 0 !important;
+}
+
+.dato-value textarea { width: 100%; }
+
+/* Botones de edición alineados a la derecha */
+.dato-action {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-left: 6px;
+}
+
+/* Responsive: apila las 3 columnas verticalmente en móvil */
+@media (max-width: 768px) {
+  .pedido-datos .dato {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .dato-action { justify-content: flex-start; }
+  .dato-value > span,
+  .dato-value-inline > span { white-space: normal; }
+}
+
+/* ---- Botones de edición inline (lápiz / guardar) ---- */
+
+/* Botón lápiz: cuadrado pequeño */
+.mp-edit-btn {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mp-edit-btn i { font-size: 12px; }
+
+/* Botón guardar: texto pequeño, aparece al editar */
+.mp-save-btn {
+  height: 30px;
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: .70rem;
+  font-weight: 700;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+/* Separador interno del modal — oculto (lo maneja el layout) */
+.pedido-sep { display: none !important; }
+
+
+/* ---- Sección de ítems del pedido (caja naranja) ---- */
+.pedido-box {
+  margin-top: 14px;
+  background: rgba(196, 98, 0, .08);
+  border: 1px solid rgba(196, 98, 0, .18);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* ---- Títulos de sección (naranja / verde) ---- */
+.seccion-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+/* Variante naranja para sección de ítems */
+.pedido-titulo      { background: #c46200; }
+.pedido-titulo-text { min-width: 0; }
+
+/* ---- Badge de estado dentro del modal ---- */
+#mp-estado-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: .8rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.mp-badge-pendiente  { background: #ffc107; color: #212529; }
+.mp-badge-curso      { background: #6c757d; color: #fff; }
+.mp-badge-finalizado { background: #198754; color: #fff; }
+
+/* ---- Lista de ítems del pedido en el modal ---- */
+
+/* Override del .pedido-items genérico: sin fondo ni borde, flex column */
+.pedido-box #mp-items.pedido-items {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 4px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Cada fila de ítem: descripción + línea de puntos + precio */
+.pedido-item-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+/* Descripción: truncado si el texto es muy largo */
+.pedido-item-desc {
+  flex: 0 1 auto;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Línea de puntos entre descripción y precio */
+.pedido-item-dots {
+  flex: 1;
+  border-bottom: 2px dotted rgba(0, 0, 0, .25);
+  transform: translateY(-2px);
+}
+
+/* Precio alineado a la derecha con ancho fijo */
+.pedido-item-sub {
+  min-width: 110px;
+  text-align: right;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fila de total al pie de la lista de ítems */
+.pedido-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, .92);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, .08);
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+/* ---- Sección de estado de pago (caja verde) ---- */
+.forma-pago-box {
+  margin-top: 14px;
+  background: rgba(34, 120, 70, .08);
+  border: 1px solid rgba(34, 120, 70, .18);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* Título de la caja de pago en verde */
+.forma-pago-box .seccion-titulo {
+  background: #227846;
+  margin-top: 0;
+}
+
+/* Indicadores de deuda pendiente / saldada */
+.debe-bad { color: #b02a37; font-weight: 900; }
+.debe-ok  { color: #1e7e34; font-weight: 900; }
+
+/* Botón "Registrar Pago" centrado */
+.mp-addpago-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+#mp-add-pago {
+  width: auto !important;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: .92rem;
+  font-weight: 700;
+}
+
+/* Ícono "+" del botón de pago */
+#mp-add-pago .mp-plus {
+  display: inline-block;
+  font-weight: 900;
+  font-size: 1.2rem;
+  line-height: 1;
+  margin-right: 8px;
+  transform: translateY(1px);
+}
+
+/* Botones de acción del pedido (Imprimir / Eliminar) — grid 2 columnas */
+.pedido-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pedido-acciones .btn {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+/* ---- Links de contacto (WhatsApp, Gmail, Maps) ---- */
+
+/* Iconos de links inline dentro de la fila de datos */
+#mp-wpp,
+#mp-gmail {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+#mp-wpp   i { font-size: 1.1rem !important; }
+#mp-gmail i { font-size: 1rem  !important; }
+
+/* Link de Google Maps con pequeño hover */
+#mp-maps {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  text-decoration: none;
+}
+
+#mp-maps i     { font-size: 1.1rem; }
+#mp-maps:hover { transform: scale(1.15); transition: .15s; }
+
+/* ---- Historial de pagos ---- */
+
+/* Lista con fondo blanco y scroll máximo */
+.mp-pagos-list {
+  background: rgba(255, 255, 255, .65);
+  border: 1px solid rgba(0, 0, 0, .08);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.mp-pagos-scroll {
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Scrollbar fina y discreta */
+.mp-pagos-scroll::-webkit-scrollbar       { width: 6px; }
+.mp-pagos-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, .3); border-radius: 10px; }
+.mp-pagos-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* Cada fila: info del pago a la izquierda, botones a la derecha */
+.mp-pago-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, .06);
+  align-items: center;
+}
+
+.mp-pago-row:last-child { border-bottom: 0; }
+
+.mp-pago-left {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.mp-pago-fecha  { font-weight: 800; color: #1f2937; }
+.mp-pago-monto  { font-weight: 900; }
+.mp-pago-metodo { color: #374151; font-weight: 700; }
+
+.mp-pago-actions {
+  display: inline-flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+
+/* =========================================================
+   MODAL PAGO (#modalPago) — Registrar o ver un pago
+   ========================================================= */
+
+/* Bordes redondeados y sin borde del modal */
+.pago-modal {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 0;
+}
+
+/* Header azul oscuro (igual que en el modal de pedido) */
+.pago-modal-header {
+  background: #0b2a4a;
+  color: #fff;
+  border-bottom: 0;
+  padding: 18px;
+}
+
+/* Body sin scroll forzado — el contenido puede crecer */
+.pago-modal-body {
+  background: #f7f7fb;
+  padding: 14px !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Títulos de sección dentro del modal de pago: sin color de fondo */
+.pago-modal-body .seccion-titulo {
+  color: #000 !important;
+  font-weight: 800;
+  font-size: 1rem;
+  margin: 0 0 10px 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* ---- Selector de método de pago ---- */
+
+/* Grid de 4 botones (2 en móvil) */
+.pay-methods {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 576px) {
+  .pay-methods { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Cada botón de método: borde, sombra, ícono + texto */
+.pay-method {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(11, 42, 74, .25);
+  background: #fff;
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-weight: 700;
+  font-size: .93rem;
+  color: #2c2c2c;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .06);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.pay-method i { font-size: 16px; }
+
+/* Hover: sube levemente */
+.pay-method:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, .10);
+  border-color: rgba(11, 42, 74, .45);
+}
+
+/* Activo: fondo azul claro, borde más marcado */
+.pay-method.active {
+  outline: 2px solid rgba(11, 42, 74, .25);
+  border-color: #0b2a4a;
+  background: #eef3fb;
+  color: #0b2a4a;
+}
+
+/* Área intercambiable (campos tarjeta vs campos normal) */
+.pay-swap { min-height: 92px; }
+
+/* ---- Inputs del formulario de pago ---- */
+.pago-modal-body .form-control {
+  border-radius: 6px;
+  border: 1px solid #c8c8c8;
+  box-shadow: none;
+}
+
+.pago-modal-body .form-control:focus {
+  border-color: #0b2a4a;
+  box-shadow: 0 0 0 2px rgba(11, 42, 74, .10);
+}
+
+.pago-modal-body .col-md-6 .form-control { max-width: 420px; }
+.pago-modal-body label { font-weight: 700; }
+
+/* ---- Comprobante adjunto ---- */
+
+/* Preview del archivo seleccionado */
+#pay-file-preview {
+  border: 1px solid #d6d6d6;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+#pay-file-preview a {
+  text-decoration: none;
+  font-weight: 800;
+}
+
+/* Barra de progreso de subida — color azul oscuro */
+#pay-upload-bar { background: #0b2a4a; }
+
+/* Botón de clip para adjuntar comprobante */
+.pay-clip-solid {
+  width: 46px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dc3545;
+  border: 0;
+  border-radius: .375rem;
+  padding: 0;
+}
+
+.pay-clip-solid i     { color: #fff; font-size: 1.1rem; }
+.pay-clip-solid:hover { filter: brightness(.95); }

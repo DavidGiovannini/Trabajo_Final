@@ -1,0 +1,120 @@
+/* ============================================================
+   login.css — Estilos de la pantalla de ingreso al sistema
+   Página independiente: no extiende base.html
+   ============================================================ */
+
+/* Fondo con degradado azul oscuro que ocupa toda la ventana */
+body {
+  background: linear-gradient(150deg, #081f36 0%, #0b2a4a 50%, #163e6c 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Wrapper centrado con ancho máximo para que no se estire en pantallas grandes */
+.login-wrap {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ---- Marca: nombre y subtítulo sobre la card ---- */
+.login-brand {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 22px;
+}
+.login-brand .brand-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: .4px;
+}
+.login-brand .brand-sub {
+  font-size: .82rem;
+  opacity: .65;
+  margin-top: 3px;
+}
+
+/* ---- Card principal con bordes redondeados y sombra profunda ---- */
+.login-card {
+  border: 0;
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  overflow: hidden;
+}
+
+/* Encabezado azul oscuro de la card con ícono de candado */
+.login-card-header {
+  background: #0b2a4a;
+  padding: 20px 26px 18px;
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: .2px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+/* Cuerpo blanco que contiene el formulario */
+.login-card-body {
+  padding: 26px 26px 22px;
+  background: #fff;
+}
+
+/* ---- Input groups: ícono a la izquierda, campo a la derecha ---- */
+.login-card-body .input-group-text {
+  background: #f8f9fa;
+  border-right: 0;
+  color: #6c757d;
+  border-radius: 8px 0 0 8px;
+}
+.login-card-body .form-control {
+  border-left: 0;
+  background: #f8f9fa;
+  border-radius: 0 8px 8px 0 !important;
+  padding: 10px 14px;
+}
+
+/* Al hacer focus: resaltar borde y fondo del input */
+.login-card-body .form-control:focus {
+  border-color: #0b2a4a;
+  box-shadow: 0 0 0 3px rgba(11,42,74,.10);
+  background: #fff;
+}
+/* El ícono también se ilumina cuando el grupo está en foco */
+.login-card-body .input-group:focus-within .input-group-text {
+  border-color: #0b2a4a;
+  background: #fff;
+}
+
+/* ---- Botón principal de ingreso ---- */
+.btn-login {
+  background: #0b2a4a;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: .97rem;
+  letter-spacing: .3px;
+  color: #fff;
+  transition: filter .15s, transform .1s;
+}
+/* Efecto hover: aclarar y subir levemente */
+.btn-login:hover {
+  filter: brightness(1.2);
+  color: #fff;
+  transform: translateY(-1px);
+}
+/* Efecto active: volver a posición original */
+.btn-login:active {
+  transform: translateY(0);
+}
+
+/* Pie de página con aviso de acceso restringido */
+.login-footer {
+  text-align: center;
+  color: rgba(255,255,255,.4);
+  font-size: .75rem;
+  margin-top: 18px;
+}

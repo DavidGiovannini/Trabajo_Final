@@ -16,14 +16,14 @@ if __name__ == "__main__":
 
 # BUGS
 
+#1- Ver el tema de que cuando apretas el boton de ubicacion y volves no te deja hacer nada, ver si pasa con wpp y que tambien coloque la ciudad y pais en el domicilio para que la busqueda sea mas exacta.
 #2- Ver el tema de que al cambiar el precio de los productos tambien cambie en los presupuestos ya confeccionados.
-#3- corregir y optimizar codigo eliminar duplicados, hacer comentarios, dividir entre css, js, html y el back comentarlo.
-#4- Arreglar presupuestos para muebles a medida, ver como hacer la funcionalidad. Me gusta mucho la del constructor por defecto que te tire el mas cercano pero q tambien haya una forma de elegir o buscar manual, o de elejir el del constructor por defecto q ahora solo te lo muestra, o de particionar es decir agregar 2 bases con la misma medida, ver como hacer. 
+#3- Ver de comentar el codigo, routes.py etc mas comentado.
 #5- Pestaña calendario, con posibilidad de agregar notas.
 #6- Ver tema de descargar en pdf o excel productos, o cargar una planilla en excel.
 #7- Arreglar reporte PDF de presupuesto. Ver tema de pdf hacerlo de acceso publico o reveer opciones para que lo puedan descargar.
 #8- Agregar nuevos indicadores en el dashboard, con posibilidad de agrandarlos, cant stock, ventas, productos mas vendidos, etc.
-#9- Ver tema iva como funciona.
+#9- Ver crear remito ademas del resupuesto (pdf con indicaciones para los empleados)
 #10- Login Arreglarlo, ver tema de users, Cargar fotos.
 #11- chatbox con ia?
-# En la carga de presupuestos, que el boton limpiar todo, tambien limpie el resumen. 
+#12- Presupeustos que no sean obligatorio todos los datos, unicamente con nombre/telefono si

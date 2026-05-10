@@ -4,15 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mueblería - Administración</title>
+
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Estilos del layout global (sidebar, topbar) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+
+  <!-- Bloque para CSS específico de cada página -->
+  {% block extra_css %}{% endblock %}
 </head>
 
 <body style="background:#f6f3ee;">
 <div class="d-flex" style="min-height:100vh;">
 
-  <!-- Sidebar -->
+  <!-- ==================== SIDEBAR ==================== -->
   <aside class="sidebar">
 
     <a class="sidebar-brand" href="{{ url_for('dashboard') }}">
@@ -20,7 +27,7 @@
       <span class="brand-text">S. Valvo y Cía</span>
     </a>
 
-    <!-- OPERACIÓN -->
+    <!-- Sección Operación -->
     <div class="sidebar-section">Operación</div>
 
     <a class="sidebar-link" href="/dashboard">
@@ -38,9 +45,10 @@
       <span>Pedidos</span>
     </a>
 
-    <!-- GESTIÓN -->
+    <!-- Sección Gestión -->
     <div class="sidebar-section mt-4">Gestión</div>
 
+    <!-- Submenú colapsable de Productos -->
     <div class="sidebar-group">
       <button class="sidebar-link sidebar-group-toggle w-100 border-0 text-start"
               type="button"
@@ -66,22 +74,18 @@
     </div>
 
     <div class="sidebar-bottom">
-
       <a class="btn btn-outline-light w-100" href="/logout">
         <i class="bi bi-box-arrow-right"></i>
         Salir
       </a>
-
-      <div class="sidebar-status">
-        LAN interna • 1 usuario
-      </div>
-
+      <div class="sidebar-status">LAN interna • 1 usuario</div>
     </div>
 
   </aside>
 
-  <!-- Main -->
+  <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
   <main class="flex-grow-1" style="min-width:0;">
+
     <!-- Top bar -->
     <div class="px-4 py-3 border-bottom" style="background:#fff;">
       <div class="d-flex justify-content-between align-items-center">
@@ -91,10 +95,12 @@
     </div>
 
     <div class="container-fluid px-4 py-4">
+
+      <!-- Mensajes flash (se auto-cierran en base.js) -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, msg in messages %}
-            <div class="alert alert-{{category}}">{{ msg }}</div>
+            <div class="alert alert-{{ category }}">{{ msg }}</div>
           {% endfor %}
         {% endif %}
       {% endwith %}
@@ -104,72 +110,13 @@
   </main>
 </div>
 
-<!-- Notificación -->
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    setTimeout(function () {
-        document.querySelectorAll(".alert").forEach(alert => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        });
-    }, 3000);
-});
-</script>
-
-<style>
-  .sidebar-group-toggle {
-    background: transparent;
-    cursor: pointer;
-  }
-  .sidebar-chevron {
-    font-size: 11px;
-    transition: transform .2s ease;
-  }
-  .sidebar-group-toggle[aria-expanded="true"] .sidebar-chevron {
-    transform: rotate(180deg);
-  }
-  .sidebar-sublink {
-    padding-left: 34px !important;
-    font-size: 13px;
-    opacity: .85;
-  }
-  .sidebar-sublink:hover {
-    opacity: 1;
-  }
-  .sidebar-group-toggle.active {
-    background: #163e6c;
-    box-shadow: inset 3px 0 0 #4dabf7;
-  }
-</style>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-  const links = document.querySelectorAll(".sidebar-link");
-  const path  = window.location.pathname;
-
-  links.forEach(link => {
-    const href = link.getAttribute("href");
-    if (href && path.startsWith(href)) {
-      link.classList.add("active");
-    }
-  });
-
-  // Si la ruta activa es un sub-link, expandir el menú padre y marcar el toggle
-  const subPaths = ["/productos", "/configuracion"];
-  const isSubActive = subPaths.some(p => path.startsWith(p));
-
-  if (isSubActive) {
-    const collapse = document.getElementById("submenuProductos");
-    const toggle   = document.querySelector('[data-bs-target="#submenuProductos"]');
-    if (collapse) collapse.classList.add("show");
-    if (toggle)   toggle.setAttribute("aria-expanded", "true");
-    if (toggle)   toggle.classList.add("active");
-  }
-
-});
-</script>
-
+<!-- Bootstrap JS (bundle incluye Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Scripts globales: alertas flash, sidebar activo -->
+<script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+<!-- Bloque para JS específico de cada página -->
+{% block extra_js %}{% endblock %}
+
 </body>
 </html>

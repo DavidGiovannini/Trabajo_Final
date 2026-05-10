@@ -1,0 +1,358 @@
+/* =========================================================
+   presupuestador.css — Estilos exclusivos del Presupuestador
+========================================================= */
+
+/* ── Layout principal: dos columnas (panel + resumen) ─── */
+.presu-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* En pantallas angostas el resumen cae debajo */
+@media (max-width: 1200px) {
+  .presu-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Cards genéricas del presupuestador ───────────────── */
+.presu-card {
+  border: 0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .06);
+  overflow: hidden;
+}
+
+.presu-card-header {
+  background: #0b2a4a;
+  color: #fff;
+  padding: 13px 18px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  font-size: .95rem;
+  letter-spacing: .3px;
+}
+
+.presu-card-body {
+  padding: 18px;
+}
+
+/* ── Navegación por tabs ──────────────────────────────── */
+.presu-nav {
+  border-bottom: 0;
+  gap: 8px;
+}
+
+.presu-nav .nav-link {
+  border: 1px solid rgba(11, 42, 74, .15);
+  border-radius: 10px;
+  color: #0b2a4a;
+  font-weight: 700;
+  background: #fff;
+  padding: 9px 16px;
+  font-size: .92rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all .15s;
+}
+
+.presu-nav .nav-link:hover {
+  background: #f0f4fa;
+}
+
+.presu-nav .nav-link.active {
+  background: #0b2a4a;
+  color: #fff;
+  border-color: #0b2a4a;
+}
+
+.presu-section {
+  margin-top: 18px;
+}
+
+/* ── Mini etiquetas de campo ──────────────────────────── */
+.mini-label {
+  font-size: .75rem;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+
+/* ── Tarjetas de productos independientes ─────────────── */
+.producto-card {
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 12px;
+  background: #fff;
+  height: 100%;
+  transition: box-shadow .18s, transform .18s;
+}
+
+.producto-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
+}
+
+/* Ícono cuadrado dentro de cada tarjeta de producto */
+.prod-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: rgba(11, 42, 74, .07);
+  color: #0b2a4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex: 0 0 52px;
+}
+
+/* Inputs de cantidad y metros dentro de la tarjeta */
+.qty-inline   { width: 72px; }
+.metro-inline { width: 88px; }
+
+/* ── Tarjetas de línea de mueble ──────────────────────── */
+.linea-card {
+  border: 2px solid rgba(0, 0, 0, .07);
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px 10px 12px;
+  cursor: pointer;
+  transition: all .18s;
+  height: 100%;
+  text-align: center;
+}
+
+.linea-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .08);
+}
+
+.linea-card.active {
+  border-color: #0b2a4a;
+  background: #eef3fb;
+  box-shadow: 0 0 0 3px rgba(11, 42, 74, .10);
+}
+
+/* Ícono dentro de cada linea-card */
+.linea-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin: 0 auto 10px;
+}
+
+/* Colores de ícono por línea */
+.linea-standard .linea-icon { background: rgba(11, 42, 74, .08);  color: #0b2a4a; }
+.linea-roble    .linea-icon { background: rgba(141, 110, 99, .12); color: #6d4c41; }
+.linea-glaciar  .linea-icon { background: rgba(33, 150, 243, .10); color: #1565c0; }
+.linea-lujo     .linea-icon { background: rgba(196, 98, 0, .10);   color: #c46200; }
+
+/* Estado activo con borde del color de la línea */
+.linea-card.active.linea-standard { border-color: #0b2a4a; background: #eef3fb; }
+.linea-card.active.linea-roble    { border-color: #6d4c41; background: #fdf5f0; }
+.linea-card.active.linea-glaciar  { border-color: #1565c0; background: #e8f1fc; }
+.linea-card.active.linea-lujo     { border-color: #c46200; background: #fff5ec; }
+
+/* ── Box de sugerencia de armado ──────────────────────── */
+.sugerencia-box {
+  border-radius: 10px;
+  background: #eef3fb;
+  border-left: 4px solid #0b2a4a;
+  padding: 10px 14px;
+  font-size: .88rem;
+  color: #1f2937;
+}
+
+/* ── Constructor de mueble ────────────────────────────── */
+.builder-box {
+  border: 1px dashed rgba(11, 42, 74, .2);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fbfcfe;
+}
+
+/* Cada componente calculado dentro del builder */
+.builder-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .04);
+}
+
+.builder-row:last-child {
+  margin-bottom: 0;
+}
+
+.builder-price {
+  font-weight: 800;
+  white-space: nowrap;
+  color: #0b2a4a;
+}
+
+/* ── Grid de adicionales ──────────────────────────────── */
+.add-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.add-card {
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: box-shadow .15s;
+}
+
+.add-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .07);
+}
+
+/* ── Resumen lateral (sticky) ─────────────────────────── */
+.sticky-summary {
+  position: sticky;
+  top: 18px;
+}
+
+/* Lista de ítems en el resumen — scrollable */
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.summary-list::-webkit-scrollbar       { width: 5px; }
+.summary-list::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, .2); border-radius: 10px; }
+
+/* Cada ítem del resumen: descripción + puntos + precio + ✕ */
+.summary-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, .8);
+  border: 1px solid rgba(0, 0, 0, .07);
+  border-radius: 10px;
+}
+
+.summary-item-desc {
+  font-weight: 600;
+  font-size: .88rem;
+  color: #1f2937;
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Línea punteada que rellena el espacio entre desc y precio */
+.summary-item-dots {
+  flex: 1;
+  border-bottom: 2px dotted rgba(0, 0, 0, .18);
+  transform: translateY(-3px);
+  min-width: 12px;
+}
+
+.summary-item-price {
+  font-weight: 800;
+  font-size: .9rem;
+  white-space: nowrap;
+  color: #0b2a4a;
+}
+
+/* Botón ✕ para eliminar un ítem individual del resumen */
+.summary-item-remove {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: #dc3545;
+  padding: 0 0 0 4px;
+  font-size: .8rem;
+  cursor: pointer;
+  opacity: .7;
+}
+
+.summary-item-remove:hover {
+  opacity: 1;
+}
+
+/* ── Totales al pie del resumen ───────────────────────── */
+.summary-total {
+  border-top: 1px solid rgba(0, 0, 0, .08);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+  font-size: .9rem;
+}
+
+.summary-grand {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #0b2a4a;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+/* ── Seña deshabilitada ───────────────────────────────── */
+#inputSena:disabled {
+  background-color: #e9ecef;
+  opacity: .85;
+}
+
+/* ── Botón con bordes redondeados estándar ────────────── */
+.btn-soft {
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+/* ── Toggle de grupos de productos (collapse) ─────────── */
+.presu-grupo-toggle {
+  transition: background .15s;
+}
+
+.presu-grupo-toggle[aria-expanded="true"] {
+  background: #eef3fb !important;
+  border-color: rgba(11, 42, 74, .2) !important;
+}
+
+/* Flecha del toggle — rota 180° cuando está expandido */
+.presu-grupo-toggle .bi-chevron-down {
+  transition: transform .2s ease;
+}
+
+.presu-grupo-toggle[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+}
