@@ -1,7 +1,22 @@
+# ==============================================================================
+#  models.py  —  Modelos ORM (SQLAlchemy) de la aplicación
+#
+#  Jerarquía de relaciones:
+#    User                    — Usuarios del sistema (administradores)
+#    Producto                — Catálogo de productos con precio y stock
+#    PrecioMueble            — Precios de muebles por línea y medida
+#    AdicionalMueble         — Adicionales (accesorios) por línea
+#    ConfiguracionPrecio     — Parámetros de precio clave-valor (reservado)
+#    ConfiguracionGeneral    — Fecha de última actualización de precios
+#    Pedido ─┬─ PedidoItem   — Pedido de cliente con sus ítems de detalle
+#            └─ Pago ── PagoComprobante  — Pagos parciales con comprobantes
+#    Recordatorio            — Eventos del calendario
+# ==============================================================================
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from . import db, login_manager
-from datetime import datetime, date
+from datetime import datetime
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -11,12 +26,18 @@ def load_user(user_id):
 # USUARIO
 # =========================
 class User(db.Model, UserMixin):
+    """Usuario del sistema. Actualmente solo existe el rol administrador.
+    Las contraseñas se almacenan como hash Werkzeug (pbkdf2:sha256).
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
 
     @staticmethod
     def create_default_admin():
+        """Crea el usuario admin por defecto (contraseña: admin123).
+        Se llama en create_app() solo si la tabla User está vacía.
+        """
         u = User(username="admin")
         u.password_hash = generate_password_hash("admin123")
         return u
@@ -24,36 +45,58 @@ class User(db.Model, UserMixin):
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
 
+
 # =========================
 # PRODUCTOS
 # =========================
 class Producto(db.Model):
+    """Ítem del catálogo de productos (electrodomésticos, accesorios, etc.).
+    El campo stock es nullable: None significa que el producto no gestiona stock.
+    Cuando stock == 0 el badge muestra "sin stock" en la vista de productos.
+    """
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100))
     tipo = db.Column(db.String(100))
     precio = db.Column(db.Float)
     stock = db.Column(db.Integer, nullable=True)
 
+
 class AdicionalMueble(db.Model):
+    """Adicionales (extras) disponibles para una línea de muebles.
+    Cada adicional tiene hasta tres precios según el tipo de mueble:
+      precio_base    → mueble sin mesada
+      precio_alacena → alacena
+      precio_inox    → con mesada de acero inoxidable
+    Un precio None significa que el adicional no aplica a ese tipo.
+    """
     id = db.Column(db.Integer, primary_key=True)
-    linea = db.Column(db.String(50), nullable=False)  # standard / roble / lujo / laqueado
+    linea = db.Column(db.String(50), nullable=False)
     nombre = db.Column(db.String(150), nullable=False)
-    precio = db.Column(db.Float, nullable=False)
+    precio_base    = db.Column(db.Float, nullable=True)
+    precio_alacena = db.Column(db.Float, nullable=True)
+    precio_inox    = db.Column(db.Float, nullable=True)
+
     def __repr__(self):
         return f"<Adicional {self.linea} - {self.nombre}>"
+
 
 # =========================
 # CONFIGURACIONES
 # =========================
 class ConfiguracionPrecio(db.Model):
+    """Par clave-valor genérico para guardar parámetros de precio (reservado)."""
     id = db.Column(db.Integer, primary_key=True)
     clave = db.Column(db.String(100), unique=True, nullable=False)
     valor = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return f"<Config {self.clave}={self.valor}>"
-    
+
+
 class ConfiguracionGeneral(db.Model):
+    """Registro único que guarda la fecha de la última actualización de precios.
+    Se muestra en el encabezado de la vista de Configuración.
+    """
     id = db.Column(db.Integer, primary_key=True)
     fecha_actualizacion = db.Column(db.Date, nullable=False)
 
@@ -62,9 +105,14 @@ class ConfiguracionGeneral(db.Model):
 
 
 # =========================
-# NUEVO: PRECIOS MUEBLES
+# PRECIOS DE MUEBLES
 # =========================
 class PrecioMueble(db.Model):
+    """Precio de un módulo de mueble según línea y medida (en cm).
+    Las líneas disponibles son: standard, melamina, glaciar, lujo, roble.
+    Cada combinación linea+medida tiene tres variantes de precio:
+      base → sin mesada, alacena → alacena superior, inox → con mesada inox.
+    """
     id = db.Column(db.Integer, primary_key=True)
     linea = db.Column(db.String(50), nullable=False)
     medida = db.Column(db.Integer, nullable=False)
@@ -80,6 +128,13 @@ class PrecioMueble(db.Model):
 # PEDIDOS
 # =========================
 class Pedido(db.Model):
+    """Pedido de un cliente. Ciclo de vida: PENDIENTE → EN_CURSO → FINALIZADO.
+    - activo=False se usa como "borrado lógico" para pedidos finalizados.
+    - stock_descontado evita doble descuento si el pedido se finaliza dos veces.
+    - token_pdf es un token único de 32 chars para compartir el presupuesto
+      sin requerir login (ruta pública /p/<token>).
+    - monto_sena y forma_pago_preferida registran la seña inicial del pedido.
+    """
     id = db.Column(db.Integer, primary_key=True)
     cliente = db.Column(db.String(150), nullable=False)
     telefono = db.Column(db.String(50))
@@ -114,6 +169,11 @@ class Pedido(db.Model):
 
 
 class PedidoItem(db.Model):
+    """Línea de detalle de un pedido.
+    producto_id es nullable: los ítems de muebles a medida no tienen producto
+    en el catálogo y solo llevan descripción de texto libre.
+    metros es opcional y aplica a materiales que se venden por superficie.
+    """
     id = db.Column(db.Integer, primary_key=True)
     pedido_id = db.Column(
         db.Integer,
@@ -135,6 +195,10 @@ class PedidoItem(db.Model):
 # PAGOS
 # =========================
 class Pago(db.Model):
+    """Pago parcial o total registrado contra un pedido.
+    Para pagos con tarjeta se almacenan cuotas y monto_cuota.
+    Cada pago puede tener uno o más comprobantes adjuntos (PagoComprobante).
+    """
     id = db.Column(db.Integer, primary_key=True)
     pedido_id = db.Column(db.Integer, db.ForeignKey("pedido.id"), nullable=False)
     metodo = db.Column(db.String(50), nullable=False)
@@ -152,6 +216,10 @@ class Pago(db.Model):
 
 
 class PagoComprobante(db.Model):
+    """Archivo adjunto (imagen o PDF) que sirve como comprobante de un pago.
+    Los archivos se guardan en instance/uploads/comprobantes/ con un nombre
+    único generado en el momento del upload para evitar colisiones.
+    """
     id = db.Column(db.Integer, primary_key=True)
     pago_id = db.Column(db.Integer, db.ForeignKey("pago.id"), nullable=False)
     filename = db.Column(db.String(255), nullable=False)
@@ -166,6 +234,12 @@ class PagoComprobante(db.Model):
 # RECORDATORIOS / CALENDARIO
 # =========================
 class Recordatorio(db.Model):
+    """Evento del calendario interno.
+    hora es un string "HH:MM" opcional; None indica evento de día completo.
+    color puede ser 'azul', 'naranja', 'verde', 'rojo' o 'gris' (usados en el
+    frontend para colorear los chips del calendario).
+    completado=True oculta el recordatorio de la vista de próximos recordatorios.
+    """
     id = db.Column(db.Integer, primary_key=True)
     titulo = db.Column(db.String(200), nullable=False)
     descripcion = db.Column(db.Text, nullable=True)

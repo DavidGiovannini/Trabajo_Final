@@ -324,12 +324,14 @@
 <div class="modal fade" id="modalChartExpand" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content" style="border:0;border-radius:16px;overflow:hidden;">
-      <div class="modal-header" style="background:#0b2a4a;border:0;padding:14px 20px;">
+      <div class="modal-header" style="background:#0b2a4a;border:0;padding:14px 20px;gap:12px;">
         <span class="text-white fw-bold" id="modalChartTitle"></span>
+        <!-- Filtros inyectados dinámicamente según el gráfico expandido -->
+        <div id="modalExpandFilters" class="ms-3 me-auto d-flex align-items-center"></div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
-        <div style="position:relative;height:420px;">
+        <div style="position:relative;height:440px;">
           <canvas id="graficoExpanded"></canvas>
         </div>
       </div>

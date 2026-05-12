@@ -61,12 +61,13 @@
 
 <form method="post" action="/configuracion" id="formConfig">
 
-  {% for nombre, data in {
-    "STANDARD": (standard, adicionales_standard),
-    "ROBLE": (roble, adicionales_roble),
-    "LUJO": (lujo, adicionales_lujo),
-    "GLACIAR LAQUEADO": (glaciar, adicionales_glaciar)
-  }.items() %}
+  {% for nombre, data in [
+    ("STANDARD",        (standard,  adicionales_standard)),
+    ("MELAMINA",        (melamina,  adicionales_melamina)),
+    ("GLACIAR LAQUEADO",(glaciar,   adicionales_glaciar)),
+    ("LUJO",            (lujo,      adicionales_lujo)),
+    ("ROBLE",           (roble,     adicionales_roble))
+  ] %}
 
   <div class="card shadow-sm mb-4">
 
@@ -153,7 +154,9 @@
       <div class="cfg-row cfg-row-header cfg-row-add">
         <div></div>
         <div>Nombre</div>
-        <div>Precio</div>
+        <div>P. Sin Mesada</div>
+        <div>P. Alacena</div>
+        <div>P. Inox</div>
         <div></div>
       </div>
 
@@ -171,7 +174,19 @@
           <div>
             <div class="input-group input-group-sm">
               <span class="input-group-text">$</span>
-              <input class="form-control precio-input editable" name="precio_adicional[]" value="{{ a.precio }}">
+              <input class="form-control precio-input editable" name="precios_base[]" value="{{ a.precio_base or 0 }}">
+            </div>
+          </div>
+          <div>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input class="form-control precio-input editable" name="precios_alacena[]" value="{{ a.precio_alacena or 0 }}">
+            </div>
+          </div>
+          <div>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input class="form-control precio-input editable" name="precios_inox[]" value="{{ a.precio_inox or 0 }}">
             </div>
           </div>
           <div class="text-center">

@@ -1,19 +1,53 @@
+# ==============================================================================
+#  routes.py  —  Registro de todas las rutas HTTP de la aplicación
+#
+#  Secciones:
+#    · Productos            — CRUD de catálogo de productos con stock
+#    · Configuración        — Precios de muebles por línea y adicionales
+#    · Presupuestador       — Generación de presupuestos y creación de pedidos
+#    · Pedidos              — Kanban de pedidos (Pendiente / En Curso / Finalizado)
+#    · Dashboard            — KPIs y gráficos de actividad
+#    · API Pedidos          — Endpoints JSON para el modal de detalle de pedido
+#    · PDFs                 — Presupuesto (público vía token) y Remito interno
+#    · Pagos                — Registro de pagos y subida de comprobantes
+#    · Calendario           — CRUD de recordatorios
+# ==============================================================================
+
 from flask import render_template, request, redirect, url_for, flash, send_file, jsonify, current_app
 from flask_login import login_required
 from . import db
-from .models import Producto, Pedido, PedidoItem, Pago, PagoComprobante, PrecioMueble, AdicionalMueble, ConfiguracionPrecio, ConfiguracionGeneral, Recordatorio
+from .models import Producto, Pedido, PedidoItem, Pago, PagoComprobante, PrecioMueble, AdicionalMueble, ConfiguracionGeneral, Recordatorio
 from sqlalchemy import func
 from datetime import datetime, timedelta, date
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from sqlalchemy import text
+from reportlab.lib.colors import HexColor
 import os
 import secrets
 from werkzeug.utils import secure_filename
 import json
 
+# ------------------------------------------------------------------------------
+#  Constantes de color compartidas entre los dos generadores de PDF
+# ------------------------------------------------------------------------------
+_PDF_NAVY   = HexColor("#0b2a4a")
+_PDF_ORANGE = HexColor("#c46200")
+_PDF_LGRAY  = HexColor("#f1f5f9")
+_PDF_MGRAY  = HexColor("#64748b")
+_PDF_WHITE  = HexColor("#ffffff")
+_PDF_DARK   = HexColor("#1e293b")
+_PDF_LLINE  = HexColor("#e2e8f0")
+
+# ------------------------------------------------------------------------------
+#  Helpers a nivel de módulo
+# ------------------------------------------------------------------------------
+
 def _decrementar_stock_pedido(pedido):
+    """Descuenta el stock de cada ítem del pedido al finalizarlo.
+    Solo actúa sobre productos que tienen stock habilitado (stock != None).
+    El mínimo resultante es 0 para evitar valores negativos.
+    """
     for item in pedido.items:
         if item.producto_id:
             prod = Producto.query.get(item.producto_id)
@@ -22,11 +56,20 @@ def _decrementar_stock_pedido(pedido):
 
 
 def register_routes(app):
+
+    # --------------------------------------------------------------------------
+    #  Raíz: redirige al dashboard
+    # --------------------------------------------------------------------------
     @app.get("/")
     def home():
         return redirect(url_for("dashboard"))
 
-    # ---------- PRODUCTOS ----------
+    # ==========================================================================
+    #  PRODUCTOS
+    #  CRUD del catálogo: alta, listado, edición de precio/stock, baja.
+    #  Los precios se pueden actualizar de forma individual (AJAX) o en masa
+    #  (bulk) aplicando un porcentaje de aumento a todos los productos.
+    # ==========================================================================
     @app.get("/productos")
     @login_required
     def productos():
@@ -75,6 +118,33 @@ def register_routes(app):
         db.session.commit()
         return jsonify({"ok": True, "stock": p.stock})
 
+    @app.post("/productos/<int:pid>/precio")
+    @login_required
+    def actualizar_precio(pid):
+        p = Producto.query.get_or_404(pid)
+        data = request.get_json() or {}
+        nuevo = data.get("precio")
+        if nuevo is None:
+            return jsonify({"ok": False}), 400
+        p.precio = float(nuevo)
+        db.session.commit()
+        return jsonify({"ok": True, "precio": p.precio})
+
+    @app.post("/productos/bulk_precio")
+    @login_required
+    def productos_bulk_precio():
+        items = request.get_json() or []
+        for item in items:
+            pid   = item.get("id")
+            precio = item.get("precio")
+            if pid is None or precio is None:
+                continue
+            p = Producto.query.get(pid)
+            if p:
+                p.precio = float(precio)
+        db.session.commit()
+        return jsonify({"ok": True})
+
     @app.post("/productos/<int:pid>/delete")
     @login_required
     def productos_delete(pid):
@@ -84,34 +154,44 @@ def register_routes(app):
         flash("Producto eliminado.", "success")
         return redirect(url_for("productos"))
 
-    # ---------- CONFIGURACION ----------
+    # ==========================================================================
+    #  CONFIGURACIÓN DE PRECIOS
+    #  Maneja las tablas PrecioMueble (medidas × líneas) y AdicionalMueble
+    #  (extras por línea). El formulario envía todos los registros en un
+    #  único POST con arrays indexados; la ruta distingue nuevos vs. existentes
+    #  por el valor del campo "ref" ("new" o ID numérico).
+    # ==========================================================================
     @app.get("/configuracion")
     @login_required
     def configuracion():
 
-        standard = PrecioMueble.query.filter_by(linea="standard").order_by(PrecioMueble.medida).all()
-        roble = PrecioMueble.query.filter_by(linea="roble").order_by(PrecioMueble.medida).all()
-        lujo = PrecioMueble.query.filter_by(linea="lujo").order_by(PrecioMueble.medida).all()
-        glaciar = PrecioMueble.query.filter_by(linea="glaciar").order_by(PrecioMueble.medida).all()
+        standard  = PrecioMueble.query.filter_by(linea="standard").order_by(PrecioMueble.medida).all()
+        melamina  = PrecioMueble.query.filter_by(linea="melamina").order_by(PrecioMueble.medida).all()
+        glaciar   = PrecioMueble.query.filter_by(linea="glaciar").order_by(PrecioMueble.medida).all()
+        lujo      = PrecioMueble.query.filter_by(linea="lujo").order_by(PrecioMueble.medida).all()
+        roble     = PrecioMueble.query.filter_by(linea="roble").order_by(PrecioMueble.medida).all()
 
         adicionales_standard = AdicionalMueble.query.filter_by(linea="standard").all()
-        adicionales_roble = AdicionalMueble.query.filter_by(linea="roble").all()
-        adicionales_lujo = AdicionalMueble.query.filter_by(linea="lujo").all()
-        adicionales_glaciar = AdicionalMueble.query.filter_by(linea="glaciar").all()
+        adicionales_melamina = AdicionalMueble.query.filter_by(linea="melamina").all()
+        adicionales_glaciar  = AdicionalMueble.query.filter_by(linea="glaciar").all()
+        adicionales_lujo     = AdicionalMueble.query.filter_by(linea="lujo").all()
+        adicionales_roble    = AdicionalMueble.query.filter_by(linea="roble").all()
 
         config = ConfiguracionGeneral.query.first()
 
         return render_template(
             "configuracion.html",
             standard=standard,
-            roble=roble,
+            melamina=melamina,
+            glaciar=glaciar,
             lujo=lujo,
-            glaciar=glaciar,  
+            roble=roble,
             adicionales_standard=adicionales_standard,
-            adicionales_roble=adicionales_roble,
-            adicionales_lujo=adicionales_lujo,
+            adicionales_melamina=adicionales_melamina,
             adicionales_glaciar=adicionales_glaciar,
-            config_fecha = config.fecha_actualizacion if config else None
+            adicionales_lujo=adicionales_lujo,
+            adicionales_roble=adicionales_roble,
+            config_fecha=config.fecha_actualizacion if config else None
         )
     
     @app.route("/configuracion/fecha", methods=["POST"])
@@ -166,8 +246,10 @@ def register_routes(app):
         alacenas = request.form.getlist("alacena[]")
         inoxs = request.form.getlist("inox[]")
 
-        nombres = request.form.getlist("nombre_adicional[]")
-        precios = request.form.getlist("precio_adicional[]")
+        nombres        = request.form.getlist("nombre_adicional[]")
+        precios_base   = request.form.getlist("precios_base[]")
+        precios_alacena= request.form.getlist("precios_alacena[]")
+        precios_inox   = request.form.getlist("precios_inox[]")
 
         idx_mueble = 0
         idx_adicional = 0
@@ -216,22 +298,28 @@ def register_routes(app):
             # =====================
             elif tipo == "adicional":
 
+                def _p(lst, idx):
+                    v = float(lst[idx] or 0) if idx < len(lst) else 0
+                    return v if v > 0 else None
+
                 nombre = nombres[idx_adicional]
-                precio = float(precios[idx_adicional] or 0)
+                pb = _p(precios_base,    idx_adicional)
+                pa = _p(precios_alacena, idx_adicional)
+                pi = _p(precios_inox,    idx_adicional)
 
                 if ref == "new":
                     a = AdicionalMueble(
-                        linea=linea,
-                        nombre=nombre,
-                        precio=precio
+                        linea=linea, nombre=nombre,
+                        precio_base=pb, precio_alacena=pa, precio_inox=pi
                     )
                     db.session.add(a)
-
                 else:
                     a = AdicionalMueble.query.get(int(ref))
                     if a:
                         a.nombre = nombre
-                        a.precio = precio
+                        a.precio_base    = pb
+                        a.precio_alacena = pa
+                        a.precio_inox    = pi
 
                 idx_adicional += 1
 
@@ -263,10 +351,14 @@ def register_routes(app):
             return {"ok": True}, 200
 
         except Exception as e:
-            print("ERROR DELETE:", e)
             return {"error": str(e)}, 500
 
-    # ---------- PRESUPUESTADOR ----------
+    # ==========================================================================
+    #  PRESUPUESTADOR
+    #  Muestra la herramienta interactiva que arma presupuestos con muebles,
+    #  adicionales y productos del catálogo. Al confirmar, crea un Pedido con
+    #  sus PedidoItems y redirige al kanban de pedidos.
+    # ==========================================================================
     @app.get("/presupuestador")
     @login_required
     def presupuestador():
@@ -287,7 +379,9 @@ def register_routes(app):
                 "id": a.id,
                 "linea": a.linea,
                 "nombre": a.nombre,
-                "precio": a.precio
+                "precio_base":    a.precio_base,
+                "precio_alacena": a.precio_alacena,
+                "precio_inox":    a.precio_inox,
             }
             for a in AdicionalMueble.query.all()
         ]
@@ -418,7 +512,14 @@ def register_routes(app):
         flash(f"Pedido creado. Total: ${total:.2f}", "success")
         return redirect(url_for("pedidos"))
 
-    # ---------- PEDIDOS ----------
+    # ==========================================================================
+    #  PEDIDOS — Kanban y acciones
+    #  Vista principal con columnas Pendiente / En Curso / Finalizado.
+    #  Las transiciones de estado se gestionan vía AJAX (POST /pedidos/mover).
+    #  Al finalizar un pedido se descuenta el stock automáticamente (una sola
+    #  vez, controlado por el flag stock_descontado).
+    #  Los pedidos finalizados no se borran físicamente: se marcan activo=False.
+    # ==========================================================================
     def pedidos_por_estado(estado):
         return Pedido.query.filter_by(
             estado=estado,
@@ -590,6 +691,14 @@ def register_routes(app):
 
         return {"ok": True}, 200
     
+    # ==========================================================================
+    #  DASHBOARD
+    #  Calcula KPIs (totales por estado), series temporales para los gráficos
+    #  (7 / 30 / 90 días y evolución mensual), top-5 productos más vendidos y
+    #  las últimas 5 filas para la tabla rápida.  Todo se inyecta en
+    #  window.DASHBOARD_DATA dentro del template para que dashboard.js lo
+    #  consuma sin llamadas AJAX adicionales.
+    # ==========================================================================
     @app.get("/dashboard")
     @login_required
     def dashboard():
@@ -706,6 +815,11 @@ def register_routes(app):
             pedidos_modal=pedidos_modal,
         )
     
+    # ==========================================================================
+    #  API JSON — Pedidos
+    #  Endpoints consumidos por el frontend JS para el modal de detalle,
+    #  el modal de tabla expandida y el kanban (drag & drop de estado).
+    # ==========================================================================
     @app.get("/api/pedidos")
     @login_required
     def api_pedidos():
@@ -752,10 +866,16 @@ def register_routes(app):
 
         return {"pedidos": data}
     
+    # ==========================================================================
+    #  GENERACIÓN DE PDFs
+    #  _generar_pdf_presupuesto — presupuesto para el cliente (A4, con logo,
+    #    datos del cliente, detalle de ítems, total y condiciones de pago).
+    #    Se accede vía token público (/p/<token>) o con login (/pedidos/<id>/pdf).
+    #  pedido_remito — remito interno (A4) con tabla de ítems, casilleros de
+    #    firma y sección de observaciones.  Solo accesible con login.
+    # ==========================================================================
     def _generar_pdf_presupuesto(p):
         """Genera y devuelve el PDF de presupuesto para un objeto Pedido."""
-        from reportlab.lib.colors import HexColor
-
         buf = BytesIO()
         cv  = canvas.Canvas(buf, pagesize=A4)
         W, H = A4
@@ -763,13 +883,13 @@ def register_routes(app):
         UW   = W - 2 * MG
         FOOT_H = 28
 
-        NAVY   = HexColor("#0b2a4a")
-        ORANGE = HexColor("#c46200")
-        LGRAY  = HexColor("#f1f5f9")
-        MGRAY  = HexColor("#64748b")
-        WHITE  = HexColor("#ffffff")
-        DARK   = HexColor("#1e293b")
-        LLINE  = HexColor("#e2e8f0")
+        NAVY   = _PDF_NAVY
+        ORANGE = _PDF_ORANGE
+        LGRAY  = _PDF_LGRAY
+        MGRAY  = _PDF_MGRAY
+        WHITE  = _PDF_WHITE
+        DARK   = _PDF_DARK
+        LLINE  = _PDF_LLINE
 
         def ars(n):
             try:    return "$" + f"{int(round(float(n or 0))):,}".replace(",", ".")
@@ -952,9 +1072,6 @@ def register_routes(app):
     @app.get("/pedidos/<int:pid>/remito")
     @login_required
     def pedido_remito(pid):
-        import os
-        from reportlab.lib.colors import HexColor
-
         p   = Pedido.query.get_or_404(pid)
         buf = BytesIO()
         cv  = canvas.Canvas(buf, pagesize=A4)
@@ -962,13 +1079,13 @@ def register_routes(app):
         MG   = 36
         UW   = W - 2 * MG
 
-        NAVY   = HexColor("#0b2a4a")
-        ORANGE = HexColor("#c46200")
-        LGRAY  = HexColor("#f1f5f9")
-        MGRAY  = HexColor("#64748b")
-        WHITE  = HexColor("#ffffff")
-        DARK   = HexColor("#1e293b")
-        LLINE  = HexColor("#e2e8f0")
+        NAVY   = _PDF_NAVY
+        ORANGE = _PDF_ORANGE
+        LGRAY  = _PDF_LGRAY
+        MGRAY  = _PDF_MGRAY
+        WHITE  = _PDF_WHITE
+        DARK   = _PDF_DARK
+        LLINE  = _PDF_LLINE
 
         # ── HEADER ─────────────────────────────────────────────────
         HDR_H = 68
@@ -1197,9 +1314,6 @@ def register_routes(app):
         try:
             pedido = Pedido.query.get_or_404(id)
 
-            print("Estado:", pedido.estado)
-            print("Activo:", pedido.activo)
-
             if pedido.estado in ["PENDIENTE", "EN_CURSO"]:
                 db.session.delete(pedido)
             else:
@@ -1209,9 +1323,15 @@ def register_routes(app):
             return "", 204
 
         except Exception as e:
-            print("ERROR:", e)
             return str(e), 500
     
+    # ==========================================================================
+    #  PAGOS
+    #  Registro de pagos parciales/totales asociados a un pedido.
+    #  Soporta efectivo, transferencia y tarjeta (con cuotas y monto/cuota).
+    #  Cada pago puede tener un comprobante adjunto (PDF o imagen) que se
+    #  almacena en instance/uploads/comprobantes/ con nombre único.
+    # ==========================================================================
     @app.post("/api/pedidos/<int:pid>/pagos")
     @login_required
     def api_crear_pago(pid):
@@ -1319,12 +1439,8 @@ def register_routes(app):
     @login_required
     def api_eliminar_pago(pay_id):
         pago = Pago.query.get_or_404(pay_id)
-
-        pedido = Pedido.query.get_or_404(pago.pedido_id)
-
         db.session.delete(pago)
         db.session.commit()
-
         return {"ok": True}, 200
 
     # ================================================================

@@ -1,3 +1,12 @@
+# ==============================================================================
+#  __init__.py  —  Application factory de Flask
+#
+#  Patrón usado: Application Factory (create_app).
+#  Las extensiones (db, login_manager, migrate) se inicializan aquí y se
+#  configuran con la instancia de app dentro de create_app() para permitir
+#  múltiples instancias (tests, producción, etc.).
+# ==============================================================================
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -5,8 +14,14 @@ from pathlib import Path
 from flask_migrate import Migrate
 
 db = SQLAlchemy()
+
+# login_view define a qué ruta redirigir cuando se requiere login.
+# login_message = None suprime el mensaje en inglés que Flask-Login mostraría
+# automáticamente al redirigir usuarios no autenticados.
 login_manager = LoginManager()
-login_manager.login_view = "login"
+login_manager.login_view    = "login"
+login_manager.login_message = None
+
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)

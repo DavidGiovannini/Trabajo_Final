@@ -108,8 +108,18 @@
         </div><!-- /collapse -->
       </div>
 
-      <!-- TABS: PRODUCTOS / MUEBLES -->
+      <!-- CONFECCIÓN DE PRESUPUESTO (collapsible) -->
       <div class="presu-card">
+        <div class="presu-card-header presu-card-header-toggle d-flex align-items-center"
+             data-bs-toggle="collapse"
+             data-bs-target="#collapsePresupuesto"
+             aria-expanded="true"
+             aria-controls="collapsePresupuesto">
+          <i class="bi bi-calculator-fill"></i>
+          Confección de Presupuesto
+          <i class="bi bi-chevron-down presu-header-chevron"></i>
+        </div>
+        <div class="collapse show" id="collapsePresupuesto">
         <div class="presu-card-body">
 
           <ul class="nav presu-nav mb-0" id="presuTabs" role="tablist">
@@ -226,117 +236,97 @@
             <!-- ===== TAB MUEBLES ===== -->
             <div class="tab-pane fade" id="muebles-pane" role="tabpanel">
 
-              <!-- LÍNEAS -->
+              <!-- PASO 1: LÍNEA -->
               <div class="mini-label">1. Elegí la línea</div>
               <div class="row g-2 mb-4" id="lineasGrid">
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-2">
                   <div class="linea-card linea-standard" data-linea="standard">
                     <div class="linea-icon"><i class="bi bi-grid-3x3-gap"></i></div>
                     <div class="fw-bold">Standard</div>
                     <div class="small text-muted">Línea estándar</div>
                   </div>
                 </div>
-                <div class="col-6 col-md-3">
-                  <div class="linea-card linea-roble" data-linea="roble">
-                    <div class="linea-icon"><i class="bi bi-tree-fill"></i></div>
-                    <div class="fw-bold">Roble</div>
-                    <div class="small text-muted">Terminación roble</div>
+                <div class="col-6 col-md-2">
+                  <div class="linea-card linea-melamina" data-linea="melamina">
+                    <div class="linea-icon"><i class="bi bi-layers-fill"></i></div>
+                    <div class="fw-bold">Melamina</div>
+                    <div class="small text-muted">Línea melamina</div>
                   </div>
                 </div>
-                <div class="col-6 col-md-3">
-                  <div class="linea-card linea-glaciar" data-linea="glaciar laqueado">
+                <div class="col-6 col-md-2">
+                  <div class="linea-card linea-glaciar" data-linea="glaciar">
                     <div class="linea-icon"><i class="bi bi-snow"></i></div>
                     <div class="fw-bold">Glaciar</div>
                     <div class="small text-muted">Laqueado</div>
                   </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-2">
                   <div class="linea-card linea-lujo" data-linea="lujo">
                     <div class="linea-icon"><i class="bi bi-stars"></i></div>
                     <div class="fw-bold">Lujo</div>
                     <div class="small text-muted">Alta gama</div>
                   </div>
                 </div>
+                <div class="col-6 col-md-2">
+                  <div class="linea-card linea-roble" data-linea="roble">
+                    <div class="linea-icon"><i class="bi bi-tree-fill"></i></div>
+                    <div class="fw-bold">Roble</div>
+                    <div class="small text-muted">Terminación roble</div>
+                  </div>
+                </div>
               </div>
 
-              <!-- MEDIDA Y COMPOSICIÓN -->
-              <div class="mini-label">2. Medida y composición</div>
-              <div class="row g-3 mb-3">
+              <!-- PASO 2: COMPOSICIÓN -->
+              <div class="mini-label">2. Elegí la composición</div>
+              <div class="d-flex flex-wrap gap-3 mb-4 ps-1">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="comp-mueble" id="comp-base" value="base" checked>
+                  <label class="form-check-label small" for="comp-base">Mueble sin mesada</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="comp-mueble" id="comp-alacena" value="alacena">
+                  <label class="form-check-label small" for="comp-alacena">Alacena</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="comp-mueble" id="comp-inox" value="inox">
+                  <label class="form-check-label small" for="comp-inox">Mesada acero inox</label>
+                </div>
+              </div>
+
+              <!-- PASO 3: MEDIDA -->
+              <div class="mini-label">3. Escribí la medida total deseada (cm)</div>
+              <div class="row g-2 mb-3">
                 <div class="col-md-4">
-                  <label class="form-label small fw-semibold mb-1">Medida total (cm)</label>
                   <div class="input-group input-group-sm">
                     <input type="number" class="form-control" id="mueble-medida-total" placeholder="Ej: 374">
                     <span class="input-group-text">cm</span>
                   </div>
                 </div>
-                <div class="col-md-8">
-                  <label class="form-label small fw-semibold mb-1">Componentes</label>
-                  <div class="d-flex flex-wrap gap-3 pt-1">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="comp-mueble" id="comp-base" value="base" checked>
-                      <label class="form-check-label small" for="comp-base">Mueble sin mesada</label>
-                    </div>
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="comp-mueble" id="comp-alacena" value="alacena">
-                      <label class="form-check-label small" for="comp-alacena">Alacena</label>
-                    </div>
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="comp-mueble" id="comp-inox" value="inox">
-                      <label class="form-check-label small" for="comp-inox">Mesada acero inox</label>
-                    </div>
-                  </div>
-                </div>
               </div>
-
-              <!-- SUGERENCIA -->
               <div class="sugerencia-box mb-3" id="sugerenciaMueble">
                 <i class="bi bi-info-circle me-1"></i>
                 Ingresá una medida para ver la sugerencia de armado.
               </div>
 
-              <!-- BUILDER -->
-              <div class="mini-label">3. Constructor</div>
-              <div class="builder-box mb-4">
+              <!-- PASO 4: SUGERENCIA (BUILDER) -->
+              <div class="mini-label">4. Sugerencia</div>
+              <div class="builder-box mb-3">
                 <div id="builderDetalle">
                   <div class="text-muted small">Todavía no hay componentes calculados.</div>
                 </div>
               </div>
 
-              <!-- ADICIONALES -->
-              {% if adicionales %}
-              <div class="mini-label">4. Adicionales con cargo</div>
-              <div class="add-grid mb-4">
-                {% for a in adicionales %}
-                <div class="add-card">
-                  <div class="min-width-0">
-                    <div class="fw-bold small text-truncate">{{ a.nombre }}</div>
-                    <div class="small text-muted">${{ a.precio }}</div>
-                  </div>
-                  <button type="button"
-                          class="btn btn-outline-primary btn-sm btn-soft flex-shrink-0 btn-add-adicional"
-                          data-nombre="{{ a.nombre }}"
-                          data-precio="{{ a.precio or 0 }}"
-                          data-porcentaje="0">
-                    <i class="bi bi-plus"></i>
-                  </button>
-                </div>
-                {% endfor %}
+              <!-- ADICIONALES (filtrados por línea, llenados via JS) -->
+              <div id="adicionalesSection" class="d-none">
+                <div class="mini-label">5. Adicionales con cargo</div>
+                <div class="add-grid mb-4" id="adicionalesContainer"></div>
               </div>
-              {% endif %}
 
-              <!-- ACCIONES MUEBLE -->
-              <div class="d-flex gap-2">
-                <button type="button" class="btn btn-primary btn-soft" id="btnAgregarMueble">
-                  <i class="bi bi-plus-lg me-1"></i>Agregar recomendación
-                </button>
-                <button type="button" class="btn btn-outline-danger btn-soft" id="btnCancelarMueble">
-                  <i class="bi bi-x-circle me-1"></i>Cancelar
-                </button>
-              </div>
 
             </div>
           </div>
         </div>
+        </div><!-- /collapse collapsePresupuesto -->
       </div>
 
       <input type="hidden" name="items_manual_json" id="items_manual_json">

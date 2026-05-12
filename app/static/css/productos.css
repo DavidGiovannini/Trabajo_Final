@@ -37,3 +37,96 @@
 .module-toggle[aria-expanded="true"] .module-chevron {
   transform: rotate(180deg);
 }
+
+/* ── Tarjeta de producto ────────────────────────────────── */
+.prod-card {
+  border: 1px solid rgba(0, 0, 0, .08);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow .18s, transform .18s;
+  height: 100%;
+}
+
+.prod-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .10);
+}
+
+/* Ícono cuadrado de la tarjeta */
+.prod-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: rgba(11, 42, 74, .07);
+  color: #0b2a4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex: 0 0 46px;
+}
+
+/* Badge del tipo de producto */
+.prod-badge-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: .70rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, .04);
+  border: 1px solid rgba(0, 0, 0, .10);
+  color: #495057;
+}
+
+/* Precio */
+.prod-card-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0b2a4a;
+  letter-spacing: -.01em;
+}
+
+/* Badge de stock */
+.prod-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: .70rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.prod-stock-ok  { background: rgba(25,135,84,.10); border: 1px solid rgba(25,135,84,.25); color: #157347; }
+.prod-stock-out { background: rgba(220,53,69,.10);  border: 1px solid rgba(220,53,69,.25);  color: #b02a37; }
+
+/* Footer de la tarjeta */
+.prod-card-footer {
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, .06);
+  padding: 10px 14px;
+}
+
+/* Botón lápiz (gris sólido) */
+.prod-btn-pencil {
+  background: #6c757d;
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+}
+.prod-btn-pencil:hover  { background: #5a6268; color: #fff !important; }
+.prod-btn-pencil.is-editing { background: #198754; }
+.prod-btn-pencil.is-editing:hover { background: #157347; }
+
+/* Botón stock (azul marino sólido) */
+.prod-btn-navy {
+  background: #0b2a4a;
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+}
+.prod-btn-navy:hover { background: #163e6c; color: #fff !important; }

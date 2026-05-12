@@ -103,9 +103,9 @@
   box-shadow: none;
 }
 
-/* Variante para adicionales — 4 columnas en lugar de 6 */
+/* Variante para adicionales — 6 columnas (nombre + 3 precios) */
 .cfg-row-add {
-  grid-template-columns: 32px 1fr 200px 40px;
+  grid-template-columns: 32px 1fr 150px 150px 150px 40px;
 }
 
 /* ── Barra de herramientas inferior de cada card ──────── */

@@ -65,108 +65,158 @@
 
 {% if productos %}
 
-<!-- FILTRO -->
-<div class="mb-3" style="max-width:420px;">
-  <div class="input-group input-group-sm">
-    <span class="input-group-text"><i class="bi bi-search"></i></span>
-    <input type="text" id="filtroProd" class="form-control" placeholder="Buscar módulo o producto...">
+<!-- TOOLBAR DE ACTUALIZACIÓN DE PRECIOS (estilo configuración) -->
+<div class="d-flex align-items-center gap-3 flex-wrap mb-3 px-3 py-2 rounded-3"
+     style="background:#f8f9fa;border:1px solid rgba(0,0,0,.07);">
+  <div class="d-flex align-items-center gap-2">
+    <label class="form-label small fw-semibold mb-0 text-muted">Aumento de precios:</label>
+    <input type="number" step="0.1" id="inputPctProd" class="form-control form-control-sm"
+           placeholder="%" style="width:90px;">
+    <button type="button" id="btnAplicarPctProd" class="btn btn-sm btn-success">
+      <i class="bi bi-percent me-1"></i>Aplicar a todos
+    </button>
+  </div>
+  <div id="pctAcciones" class="d-none align-items-center gap-2 ms-auto">
+    <button type="button" id="btnResetPctProd" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-x-lg me-1"></i>Cancelar
+    </button>
+    <button type="button" id="btnGuardarPctProd" class="btn btn-sm btn-success">
+      <i class="bi bi-check-lg me-1"></i>Guardar cambios
+    </button>
   </div>
 </div>
 
-<!-- MÓDULOS COLAPSABLES -->
-{% for tipo, grupo in productos | groupby('tipo') %}
-<div class="module-group mb-3" data-grupo="{{ tipo | lower }}">
+<!-- CONTENEDOR: FILTRO + MÓDULOS COLAPSABLES -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;">
 
-  <button class="btn w-100 text-start module-toggle mb-2" type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#module{{ loop.index }}"
-          aria-expanded="false"
-          aria-controls="module{{ loop.index }}">
-    <i class="bi bi-grid-3x3-gap-fill" style="font-size:.85rem;opacity:.65;"></i>
-    <span>{{ tipo }}</span>
-    <span class="badge bg-secondary fw-normal" style="font-size:.68rem;font-weight:600;">{{ grupo | length }}</span>
-    <i class="bi bi-chevron-down module-chevron"></i>
-  </button>
+  <div style="background:#0b2a4a;color:#fff;padding:13px 18px;display:flex;align-items:center;gap:9px;font-weight:700;font-size:.95rem;">
+    <i class="bi bi-grid-3x3-gap-fill"></i>
+    Productos cargados
+    <span class="badge ms-1 fw-normal" style="background:rgba(255,255,255,.18);font-size:.72rem;">
+      {{ productos|length }}
+    </span>
+  </div>
 
-  <div class="collapse" id="module{{ loop.index }}">
-    <div class="row g-3">
-      {% for p in grupo %}
-      <div class="col-md-4 producto-item"
-           data-nombre="{{ p.nombre | lower }}"
-           data-tipo="{{ p.tipo | lower }}">
-        <div class="card border-0 shadow-sm h-100"
-             style="border-radius:12px;overflow:hidden;transition:box-shadow .18s,transform .18s;"
-             onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 22px rgba(0,0,0,.10)'"
-             onmouseleave="this.style.transform='';this.style.boxShadow=''">
+  <div class="card-body p-3">
 
-          <div class="card-body d-flex gap-3 align-items-start">
-            <div style="width:46px;height:46px;border-radius:10px;background:rgba(11,42,74,.07);color:#0b2a4a;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex:0 0 46px;">
-              <i class="bi bi-box"></i>
-            </div>
-            <div class="flex-grow-1" style="min-width:0;">
-              <div class="fw-bold text-truncate">{{ p.nombre }}</div>
-              <span class="badge bg-light border text-secondary small mt-1">
-                <i class="bi bi-tag me-1" style="font-size:.7rem;"></i>{{ p.tipo }}
-              </span>
-              <div class="mt-2 d-flex align-items-center gap-2 flex-wrap">
-                <span class="fw-bold text-success">${{ "{:,.0f}".format(p.precio or 0)|replace(",",".") }}</span>
-                {% if p.stock is not none %}
-                <span class="badge small stock-badge"
-                      style="{% if p.stock > 0 %}background:rgba(25,135,84,.1);border:1px solid rgba(25,135,84,.3);color:#157347;{% else %}background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);color:#b02a37;{% endif %}">
-                  <i class="bi bi-boxes me-1"></i>Stock: <span class="stock-val">{{ p.stock }}</span>
-                </span>
-                {% else %}
-                <span class="badge small stock-badge d-none" style="background:rgba(25,135,84,.1);border:1px solid rgba(25,135,84,.3);color:#157347;">
-                  <i class="bi bi-boxes me-1"></i>Stock: <span class="stock-val">0</span>
-                </span>
-                {% endif %}
+    <!-- FILTRO -->
+    <div class="mb-3" style="max-width:400px;">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" id="filtroProd" class="form-control" placeholder="Buscar módulo o producto...">
+      </div>
+    </div>
+
+    <!-- MÓDULOS COLAPSABLES -->
+    {% for tipo, grupo in productos | groupby('tipo') %}
+    <div class="module-group mb-3" data-grupo="{{ tipo | lower }}">
+
+      <button class="btn w-100 text-start module-toggle mb-2" type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#module{{ loop.index }}"
+              aria-expanded="false"
+              aria-controls="module{{ loop.index }}">
+        <i class="bi bi-grid-3x3-gap-fill" style="font-size:.85rem;opacity:.65;"></i>
+        <span>{{ tipo }}</span>
+        <span class="badge bg-secondary fw-normal" style="font-size:.68rem;font-weight:600;">{{ grupo | length }}</span>
+        <i class="bi bi-chevron-down module-chevron"></i>
+      </button>
+
+      <div class="collapse" id="module{{ loop.index }}">
+        <div class="row g-3">
+          {% for p in grupo %}
+          <div class="col-md-4 producto-item"
+               data-nombre="{{ p.nombre | lower }}"
+               data-tipo="{{ p.tipo | lower }}">
+
+            <div class="prod-card">
+              <div class="card-body d-flex gap-3 align-items-start p-3">
+                <div class="prod-card-icon">
+                  <i class="bi bi-box"></i>
+                </div>
+                <div class="flex-grow-1" style="min-width:0;">
+                  <div class="fw-bold text-truncate mb-1">{{ p.nombre }}</div>
+                  <span class="prod-badge-tipo">
+                    <i class="bi bi-tag" style="font-size:.65rem;"></i>{{ p.tipo }}
+                  </span>
+                  <div class="mt-2 d-flex align-items-center gap-2 flex-wrap">
+                    <!-- Precio: modo visualización -->
+                    <span class="prod-card-price"
+                          data-precio-original="{{ p.precio or 0 }}"
+                          data-pid="{{ p.id }}">
+                      ${{ "{:,.0f}".format(p.precio or 0)|replace(",",".") }}
+                    </span>
+                    <!-- Precio: modo edición (oculto por defecto) -->
+                    <div class="prod-precio-edit-wrap d-none">
+                      <div class="input-group input-group-sm" style="width:130px;">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control prod-precio-input" min="0" step="0.01">
+                      </div>
+                    </div>
+                    <!-- Badge de stock -->
+                    {% if p.stock is not none %}
+                    <span class="prod-stock-badge {% if p.stock > 0 %}prod-stock-ok{% else %}prod-stock-out{% endif %}">
+                      <i class="bi bi-boxes"></i>&nbsp;Stock: <span class="stock-val">{{ p.stock }}</span>
+                    </span>
+                    {% else %}
+                    <span class="prod-stock-badge prod-stock-ok d-none">
+                      <i class="bi bi-boxes"></i>&nbsp;Stock: <span class="stock-val">0</span>
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="prod-card-footer">
+                <!-- inline edit stock form (hidden by default) -->
+                <div class="stock-edit-form d-none mb-2" id="stockForm{{ p.id }}">
+                  <div class="input-group input-group-sm">
+                    <input type="number" class="form-control stock-edit-input" min="0"
+                           value="{{ p.stock if p.stock is not none else 0 }}"
+                           style="border-radius:6px 0 0 6px;">
+                    <button class="btn btn-success btn-sm stock-save-btn" data-pid="{{ p.id }}"
+                            style="border-radius:0;">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm stock-cancel-btn" data-pid="{{ p.id }}"
+                            style="border-radius:0 6px 6px 0;">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 prod-footer-btns">
+                  <!-- Botón editar precio -->
+                  <button class="btn btn-sm prod-btn-pencil btn-precio-edit"
+                          data-pid="{{ p.id }}" title="Editar precio">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <!-- Botón editar stock -->
+                  <button class="btn btn-sm fw-semibold prod-btn-navy stock-edit-btn"
+                          data-pid="{{ p.id }}">
+                    <i class="bi bi-boxes me-1"></i>Stock
+                  </button>
+                  <!-- Eliminar -->
+                  <form method="post" action="/productos/{{ p.id }}/delete"
+                        onsubmit="return confirm('¿Eliminar producto?');">
+                    <button class="btn btn-danger btn-sm fw-semibold" style="border-radius:8px;">
+                      <i class="bi bi-trash me-1"></i>Eliminar
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div class="card-footer bg-white border-top py-2"
-               style="border-color:rgba(0,0,0,.06)!important;">
-
-            <!-- inline edit stock form (hidden by default) -->
-            <div class="stock-edit-form d-none mb-2" id="stockForm{{ p.id }}">
-              <div class="input-group input-group-sm">
-                <input type="number" class="form-control stock-edit-input" min="0"
-                       value="{{ p.stock if p.stock is not none else 0 }}"
-                       style="border-radius:6px 0 0 6px;">
-                <button class="btn btn-success btn-sm stock-save-btn" data-pid="{{ p.id }}"
-                        style="border-radius:0;">
-                  <i class="bi bi-check-lg"></i>
-                </button>
-                <button class="btn btn-outline-secondary btn-sm stock-cancel-btn" data-pid="{{ p.id }}"
-                        style="border-radius:0 6px 6px 0;">
-                  <i class="bi bi-x-lg"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-              <button class="btn btn-outline-primary btn-sm stock-edit-btn"
-                      data-pid="{{ p.id }}" style="border-radius:8px;">
-                <i class="bi bi-pencil me-1"></i>Editar Stock
-              </button>
-              <form method="post" action="/productos/{{ p.id }}/delete"
-                    onsubmit="return confirm('¿Eliminar producto?');">
-                <button class="btn btn-outline-danger btn-sm" style="border-radius:8px;">
-                  <i class="bi bi-trash me-1"></i>Eliminar
-                </button>
-              </form>
-            </div>
 
           </div>
-
+          {% endfor %}
         </div>
       </div>
-      {% endfor %}
-    </div>
-  </div>
 
-</div>
-{% endfor %}
+    </div>
+    {% endfor %}
+
+  </div><!-- /card-body -->
+</div><!-- /card contenedor -->
 
 {% else %}
 <div class="text-center py-5 text-muted">

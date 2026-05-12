@@ -193,11 +193,37 @@
 .tabla-header .btn-ver-mas:hover { background: rgba(255,255,255,.25); }
 
 
-/* ── Modal filtros ───────────────────────────────────────── */
+/* ── Modal filtros (tabla pedidos) ───────────────────────── */
 .modal-filtros {
   background: #f8f9fa;
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 16px;
   border: 1px solid rgba(0,0,0,.07);
+}
+
+/* ── Botones de filtro dentro del header del modal expandido */
+.btn-chart-toggle-modal {
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .30);
+  color: rgba(255, 255, 255, .85);
+  font-size: .74rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  transition: all .15s;
+  line-height: 1.4;
+}
+
+.btn-chart-toggle-modal:hover {
+  background: rgba(255, 255, 255, .22);
+  border-color: rgba(255, 255, 255, .50);
+  color: #fff;
+}
+
+.btn-chart-toggle-modal.active {
+  background: rgba(255, 255, 255, .30);
+  border-color: rgba(255, 255, 255, .60);
+  color: #fff;
+  font-weight: 700;
 }

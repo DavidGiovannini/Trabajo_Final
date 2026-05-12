@@ -2,10 +2,25 @@
    configuracion.js — Lógica de la vista Configuración de Muebles
 ========================================================= */
 
+/* ── Helpers de formateo numérico estilo argentino ──────
+   Muestra: 100.000  |  Envía al servidor: 100000
+──────────────────────────────────────────────────────── */
+function fmtARS(valor) {
+  const n = parseFloat(valor) || 0;
+  return n.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+function parseARS(str) {
+  // "100.000" → 100000;  "100,5" → 100.5
+  return parseFloat(String(str).replace(/\./g, "").replace(",", ".")) || 0;
+}
+
 /* ── Guardar el valor original de cada precio al cargar ─ */
 const fechaOriginal = document.getElementById("fechaTexto")?.innerText.trim() || "";
 document.querySelectorAll(".precio-input").forEach(function (inp) {
+  const raw = parseFloat(inp.value) || 0;
+  inp.dataset.raw      = raw;           // valor numérico real
   inp.dataset.original = inp.value;
+  inp.value            = fmtARS(raw);   // mostrar con puntos de miles
 });
 
 /* ── Colapsar / expandir cada card de línea ──────────────
@@ -115,7 +130,19 @@ document.addEventListener("click", function (e) {
     <div>
       <div class="input-group input-group-sm">
         <span class="input-group-text">$</span>
-        <input class="form-control precio-input" name="precio_adicional[]" value="0">
+        <input class="form-control precio-input" name="precios_base[]" value="0">
+      </div>
+    </div>
+    <div>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">$</span>
+        <input class="form-control precio-input" name="precios_alacena[]" value="0">
+      </div>
+    </div>
+    <div>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">$</span>
+        <input class="form-control precio-input" name="precios_inox[]" value="0">
       </div>
     </div>
     <div class="text-center">
@@ -178,6 +205,7 @@ document.addEventListener("click", function (e) {
 ──────────────────────────────────────────────────────── */
 document.addEventListener("click", function (e) {
   if (!e.target.classList.contains("btn-guardar-bloque")) return;
+  desformatearAntesDeEnviar();
   document.getElementById("formConfig").submit();
 });
 
@@ -213,22 +241,28 @@ document.addEventListener("change", function (e) {
   }
 });
 
-/* ── Borrar cero al hacer focus en un campo de precio ─── */
+/* ── Al hacer focus: mostrar número crudo para editar ─── */
 document.addEventListener("focusin", function (e) {
-  if (e.target.classList.contains("precio-input") || e.target.name === "medida[]") {
+  if (e.target.classList.contains("precio-input")) {
+    const raw = parseARS(e.target.value);
+    e.target.value = raw === 0 ? "" : String(raw);
+    activarBloque(e.target);
+  } else if (e.target.name === "medida[]") {
     if (parseFloat(e.target.value) === 0) e.target.value = "";
     activarBloque(e.target);
   }
 });
 
-/* ── Formatear a 2 decimales al salir del campo ─────────
+/* ── Al salir del campo: volver a formato con puntos ────
    También actualiza la fecha si el valor cambió.
 ──────────────────────────────────────────────────────── */
 document.addEventListener("blur", function (e) {
   if (e.target.classList.contains("precio-input")) {
-    const antes = e.target.defaultValue;
-    e.target.value = Number(e.target.value || 0).toFixed(2);
-    if (e.target.value !== antes) autoSetFecha();
+    const raw   = parseARS(e.target.value);
+    const antes = parseARS(e.target.dataset.original || "0");
+    e.target.dataset.raw = raw;
+    e.target.value       = fmtARS(raw);
+    if (raw !== antes) autoSetFecha();
   }
 }, true);
 
@@ -247,9 +281,10 @@ document.addEventListener("click", function (e) {
   filas.forEach(function (chk) {
     const fila = chk.closest(".cfg-row");
     fila.querySelectorAll(".precio-input").forEach(function (input) {
-      let val = Number(input.value || 0);
+      let val = parseARS(input.value);
       val += val * porcentaje / 100;
-      input.value = val.toFixed(2);
+      input.dataset.raw = val;
+      input.value       = fmtARS(val);
     });
   });
 
@@ -366,8 +401,16 @@ document.getElementById("btnCancelarGlobal")?.addEventListener("click", async fu
   if (g) { g.checked = false; g.indeterminate = false; }
 });
 
+/* ── Desformatear precios antes de enviar al servidor ─── */
+function desformatearAntesDeEnviar() {
+  document.querySelectorAll(".precio-input").forEach(function (inp) {
+    inp.value = String(parseARS(inp.value));
+  });
+}
+
 /* ── Guardar global: envía el formulario ─────────────── */
 document.getElementById("btnGuardarGlobal")?.addEventListener("click", function () {
+  desformatearAntesDeEnviar();
   document.getElementById("formConfig").submit();
 });
 
@@ -381,9 +424,10 @@ document.getElementById("btnAplicarGlobal")?.addEventListener("click", function 
 
   filas.forEach(function (chk) {
     chk.closest(".cfg-row")?.querySelectorAll(".precio-input").forEach(function (input) {
-      let val = Number(input.value || 0);
+      let val = parseARS(input.value);
       val += val * porcentaje / 100;
-      input.value = val.toFixed(2);
+      input.dataset.raw = val;
+      input.value       = fmtARS(val);
     });
     activarBloque(chk);
   });

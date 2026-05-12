@@ -78,22 +78,95 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /* ──────────────────────────────────────────────────────
-     HELPER: medida base más cercana (≤ medidaReal)
+     HELPER: devuelve las opciones a mostrar en el builder.
+     Reglas:
+       - Exacto → [{ precios, resaltado:true }]
+       - Fuera de rango (< min o > max) → el extremo resaltado
+       - Entre dos medidas → ambas, con resaltado en la más
+         cercana (si equidistante, ambas resaltadas)
   ──────────────────────────────────────────────────── */
-  function getMedidaBase(linea, medidaReal) {
-    const medidas = window.PRECIOS_MUEBLES
+  function getOpciones(linea, medidaReal) {
+    const sorted = window.PRECIOS_MUEBLES
       .filter(function (x) { return x.linea === linea; })
-      .map(function (x)    { return x.medida; })
-      .sort(function (a, b) { return a - b; });
+      .sort(function (a, b) { return a.medida - b.medida; });
 
-    if (!medidas.length) return null;
+    if (!sorted.length) return [];
 
-    let base = medidas[0];
-    for (const m of medidas) {
-      if (m <= medidaReal) base = m;
-      if (m >  medidaReal) break;
+    /* Exacto */
+    const exacto = sorted.find(function (x) { return x.medida === medidaReal; });
+    if (exacto) return [{ precios: exacto, resaltado: true }];
+
+    /* Por debajo del mínimo */
+    if (medidaReal < sorted[0].medida) return [{ precios: sorted[0], resaltado: true }];
+
+    /* Por encima del máximo */
+    if (medidaReal > sorted[sorted.length - 1].medida) {
+      return [{ precios: sorted[sorted.length - 1], resaltado: true }];
     }
-    return base;
+
+    /* Entre dos medidas: buscar piso y techo */
+    let floor = null, ceiling = null;
+    for (const p of sorted) {
+      if (p.medida < medidaReal) floor = p;
+      if (p.medida > medidaReal && ceiling === null) ceiling = p;
+    }
+
+    const distFloor   = medidaReal - floor.medida;
+    const distCeiling = ceiling.medida - medidaReal;
+
+    return [
+      { precios: floor,   resaltado: distFloor  <= distCeiling },
+      { precios: ceiling, resaltado: distCeiling <= distFloor  }
+    ];
+  }
+
+  /* ──────────────────────────────────────────────────────
+     HELPER: renderiza adicionales de la línea seleccionada
+  ──────────────────────────────────────────────────── */
+  function renderAdicionales(linea) {
+    const section   = document.getElementById("adicionalesSection");
+    const container = document.getElementById("adicionalesContainer");
+    if (!section || !container) return;
+
+    const items = (window.ADICIONALES || []).filter(function (a) {
+      return a.linea === linea;
+    });
+
+    /* Expandir: una card por cada tipo con precio cargado */
+    const cards = [];
+    items.forEach(function (a) {
+      if (a.precio_base)    cards.push({ nombre: a.nombre, tipo: "Mueble",  precio: a.precio_base,    badge: "badge-mueble"  });
+      if (a.precio_alacena) cards.push({ nombre: a.nombre, tipo: "Alacena", precio: a.precio_alacena, badge: "badge-alacena" });
+      if (a.precio_inox)    cards.push({ nombre: a.nombre, tipo: "Inox",    precio: a.precio_inox,    badge: "badge-inox"    });
+    });
+
+    if (!cards.length) {
+      section.classList.add("d-none");
+      container.innerHTML = "";
+      return;
+    }
+
+    const fmt = function (n) {
+      return Number(n).toLocaleString("es-AR", { maximumFractionDigits: 0 });
+    };
+
+    container.innerHTML = cards.map(function (c) {
+      return `<div class="add-card">
+        <div>
+          <div class="add-card-nombre">${c.nombre}</div>
+          <span class="add-card-badge ${c.badge}">${c.tipo}</span>
+        </div>
+        <div class="add-card-precio">$${fmt(c.precio)}</div>
+        <button type="button"
+                class="add-card-btn btn-add-adicional"
+                data-nombre="${c.nombre}" data-tipo="${c.tipo}"
+                data-precio="${c.precio}" data-porcentaje="0">
+          <i class="bi bi-plus-lg me-1"></i>Agregar
+        </button>
+      </div>`;
+    }).join("");
+
+    section.classList.remove("d-none");
   }
 
   /* ══════════════════════════════════════════════════════
@@ -196,7 +269,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /* ══════════════════════════════════════════════════════
      SELECCIÓN DE LÍNEA DE MUEBLE
+     Al elegir línea (incluso la misma) se blanquean todos los campos.
   ════════════════════════════════════════════════════ */
+  function resetMuebleFields() {
+    document.getElementById("mueble-medida-total").value = "";
+    const radioBase = document.querySelector('input[name="comp-mueble"][value="base"]');
+    if (radioBase) radioBase.checked = true;
+    document.getElementById("sugerenciaMueble").innerHTML =
+      `<i class="bi bi-info-circle me-1"></i>Ingresá una medida para ver la sugerencia de armado.`;
+    document.getElementById("builderDetalle").innerHTML =
+      `<div class="text-muted small">Todavía no hay componentes calculados.</div>`;
+  }
+
   document.querySelectorAll(".linea-card").forEach(function (card) {
     card.addEventListener("click", function () {
       document.querySelectorAll(".linea-card").forEach(function (x) {
@@ -204,7 +288,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       this.classList.add("active");
       lineaSeleccionada = this.dataset.linea;
-      calcularMueblePreview();
+      resetMuebleFields();
+      renderAdicionales(lineaSeleccionada);
     });
   });
 
@@ -216,7 +301,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /* ══════════════════════════════════════════════════════
      PREVIEW DEL CONSTRUCTOR DE MUEBLE
-     Actualiza la sugerencia y el detalle del builder.
+     Muestra 1 opción (exacta / fuera de rango) o 2 opciones
+     (piso y techo) con la más cercana levemente resaltada.
+     Sin repicero.
   ════════════════════════════════════════════════════ */
   function calcularMueblePreview() {
     const sugerencia = document.getElementById("sugerenciaMueble");
@@ -235,60 +322,68 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const base    = getMedidaBase(lineaSeleccionada, medidaTotal);
-    const precios = window.PRECIOS_MUEBLES.find(function (x) {
-      return x.linea === lineaSeleccionada && x.medida === base;
-    });
-
-    if (!base || !precios) {
+    const opciones = getOpciones(lineaSeleccionada, medidaTotal);
+    if (!opciones.length) {
       sugerencia.innerHTML = `<i class="bi bi-exclamation-triangle me-1"></i>No hay precios cargados para esa línea.`;
       builder.innerHTML    = `<div class="text-muted small">No se pudo calcular el mueble.</div>`;
       return;
     }
 
-    const diferencia = Math.max(0, medidaTotal - base);
-    const comp       = document.querySelector('input[name="comp-mueble"]:checked')?.value;
+    const comp      = document.querySelector('input[name="comp-mueble"]:checked')?.value;
+    const linNombre = lineaSeleccionada.charAt(0).toUpperCase() + lineaSeleccionada.slice(1);
+    const doble     = opciones.length > 1;
 
     /* Caja de sugerencia */
+    const baseTexto = opciones.map(function (o) {
+      return o.precios.medida + " cm" + (doble && o.resaltado ? " ✓" : "");
+    }).join(" / ");
+
     sugerencia.innerHTML = `
       <i class="bi bi-check-circle me-1"></i>
-      <strong>Línea:</strong> ${lineaSeleccionada} &nbsp;|&nbsp;
+      <strong>Línea:</strong> ${linNombre} &nbsp;|&nbsp;
       <strong>Medida solicitada:</strong> ${medidaTotal} cm &nbsp;|&nbsp;
-      <strong>Base sugerida:</strong> ${base} cm
-      ${diferencia > 0 ? `&nbsp;|&nbsp;<strong>Ajuste:</strong> ${diferencia} cm` : ""}
+      <strong>Sugerida${doble ? "s" : ""}:</strong> ${baseTexto}
     `;
 
+    if (!comp) {
+      builder.innerHTML = `<div class="text-muted small">Seleccioná un tipo de componente.</div>`;
+      return;
+    }
+
+    const labelComp = comp === "base"    ? "Mueble sin mesada"
+                    : comp === "alacena" ? "Alacena"
+                                         : "Mesada de acero inox";
     let html = "";
 
-    /* Fila del componente seleccionado */
-    if (comp === "base") {
-      html += `<div class="builder-row">
-        <div><div class="fw-bold">Mueble sin mesada</div><div class="small text-muted">${base} cm</div></div>
-        <div class="builder-price">${money(precios.base)}</div>
-      </div>`;
-    }
-    if (comp === "alacena") {
-      html += `<div class="builder-row">
-        <div><div class="fw-bold">Alacena</div><div class="small text-muted">${base} cm</div></div>
-        <div class="builder-price">${money(precios.alacena)}</div>
-      </div>`;
-    }
-    if (comp === "inox") {
-      html += `<div class="builder-row">
-        <div><div class="fw-bold">Mesada de acero inox</div><div class="small text-muted">${base} cm</div></div>
-        <div class="builder-price">${money(precios.inox)}</div>
-      </div>`;
-    }
+    opciones.forEach(function (opcion) {
+      const precios  = opcion.precios;
+      const base     = precios.medida;
+      const subtotal = Number(precios[comp] || 0);
+      const desc     = linNombre + " - " + labelComp + " " + base + " cm";
 
-    /* Fila de ajuste si la medida no coincide exactamente */
-    if (diferencia > 0) {
-      html += `<div class="builder-row">
-        <div><div class="fw-bold">Ajuste / repicero estimado</div><div class="small text-muted">${diferencia} cm</div></div>
-        <div class="builder-price">${money(diferencia * 1000)}</div>
-      </div>`;
-    }
+      /* Resaltado = más cercana; secundaria = la otra opción */
+      const rowClass = opcion.resaltado
+        ? "builder-row builder-row-highlight"
+        : "builder-row builder-row-secondary";
 
-    builder.innerHTML = html || `<div class="text-muted small">Seleccioná al menos un componente.</div>`;
+      html += `<div class="${rowClass}">
+        <div>
+          <div class="fw-bold">${labelComp}</div>
+          <div class="small text-muted">${base} cm</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="builder-price">${money(subtotal)}</span>
+          <button type="button"
+                  class="btn btn-success btn-sm btn-soft btn-agregar-opcion"
+                  data-subtotal="${subtotal}"
+                  data-desc="${desc.replace(/"/g, "&quot;")}">
+            <i class="bi bi-check2-circle me-1"></i>Agregar
+          </button>
+        </div>
+      </div>`;
+    });
+
+    builder.innerHTML = html;
   }
 
   /* ══════════════════════════════════════════════════════
@@ -297,16 +392,15 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("btnCancelarMueble")?.addEventListener("click", function () {
     if (resumenItems.length > 0 && !confirm("¿Cancelar y borrar todo el presupuesto armado?")) return;
 
-    /* Resetear constructor */
-    document.getElementById("mueble-medida-total").value = "";
-    const radioBase = document.querySelector('input[name="comp-mueble"][value="base"]');
-    if (radioBase) radioBase.checked = true;
     lineaSeleccionada = null;
     document.querySelectorAll(".linea-card").forEach(function (x) { x.classList.remove("active"); });
-    document.getElementById("sugerenciaMueble").innerHTML =
-      `<i class="bi bi-info-circle me-1"></i>Ingresá una medida para ver la sugerencia de armado.`;
-    document.getElementById("builderDetalle").innerHTML =
-      `<div class="text-muted small">Todavía no hay componentes calculados.</div>`;
+    resetMuebleFields();
+
+    /* Ocultar adicionales */
+    const section = document.getElementById("adicionalesSection");
+    if (section) section.classList.add("d-none");
+    const container = document.getElementById("adicionalesContainer");
+    if (container) container.innerHTML = "";
 
     /* Vaciar resumen */
     resumenItems.length = 0;
@@ -314,58 +408,24 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   /* ══════════════════════════════════════════════════════
-     AGREGAR RECOMENDACIÓN AL RESUMEN
-     Agrega el componente actual sin limpiar el constructor,
-     permitiendo apilar varias medidas seguidas.
+     AGREGAR OPCIÓN DEL BUILDER AL RESUMEN
+     Cada fila del builder tiene su propio botón "Agregar"
+     con el subtotal y la descripción ya calculados.
   ════════════════════════════════════════════════════ */
-  document.getElementById("btnAgregarMueble")?.addEventListener("click", function () {
-    if (!lineaSeleccionada) { alert("Elegí una línea."); return; }
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-agregar-opcion");
+    if (!btn) return;
 
-    const medidaTotal = Number(document.getElementById("mueble-medida-total")?.value || 0);
-    if (!medidaTotal) { alert("Ingresá la medida total."); return; }
+    const subtotal = Number(btn.dataset.subtotal || 0);
+    const desc     = btn.dataset.desc || "";
 
-    const base    = getMedidaBase(lineaSeleccionada, medidaTotal);
-    const precios = window.PRECIOS_MUEBLES.find(function (x) {
-      return x.linea === lineaSeleccionada && x.medida === base;
-    });
-    if (!base || !precios) { alert("No se pudo calcular el mueble."); return; }
-
-    const comp       = document.querySelector('input[name="comp-mueble"]:checked')?.value;
-    if (!comp) { alert("Seleccioná un tipo de componente."); return; }
-
-    const diferencia = Math.max(0, medidaTotal - base);
-    let subtotalMueble = 0;
-    const partes       = [];
-
-    if (comp === "base") {
-      subtotalMueble += Number(precios.base || 0);
-      partes.push("Mueble " + base + " cm");
-    }
-    if (comp === "alacena") {
-      subtotalMueble += Number(precios.alacena || 0);
-      partes.push("Alacena " + base + " cm");
-    }
-    if (comp === "inox") {
-      subtotalMueble += Number(precios.inox || 0);
-      partes.push("Mesada inox " + base + " cm");
-    }
-    if (diferencia > 0) {
-      subtotalMueble += diferencia * 1000;
-      partes.push("Ajuste " + diferencia + " cm");
-    }
-
-    if (!partes.length) { alert("Seleccioná al menos un componente."); return; }
-
-    const linNombre = lineaSeleccionada.charAt(0).toUpperCase() + lineaSeleccionada.slice(1);
-    resumenItems.push({
-      tipo:        "manual",
-      descripcion: linNombre + " - " + partes.join(" + "),
-      cantidad:    1,
-      metros:      null,
-      subtotal:    subtotalMueble
-    });
-
+    resumenItems.push({ tipo: "manual", descripcion: desc, cantidad: 1, metros: null, subtotal });
     actualizarResumen();
+
+    /* Deshabilitar el botón para evitar doble agregado */
+    btn.disabled  = true;
+    btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Agregado';
+    btn.classList.replace("btn-success", "btn-secondary");
   });
 
   /* ══════════════════════════════════════════════════════
@@ -377,6 +437,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!btn || btn.closest("#formConfig")) return;
 
     const nombre     = btn.dataset.nombre;
+    const tipo       = btn.dataset.tipo || "";
     const precio     = Number(btn.dataset.precio || 0);
     const porcentaje = Number(btn.dataset.porcentaje || 0);
 
@@ -388,13 +449,13 @@ document.addEventListener("DOMContentLoaded", function () {
       subtotal = subtotalActual * (porcentaje / 100);
     }
 
-    resumenItems.push({ tipo: "manual", descripcion: nombre, cantidad: 1, metros: null, subtotal });
+    const desc = tipo ? nombre + " (" + tipo + ")" : nombre;
+    resumenItems.push({ tipo: "manual", descripcion: desc, cantidad: 1, metros: null, subtotal });
     actualizarResumen();
   });
 
   /* Dibuja el resumen inicial (vacío) */
   actualizarResumen();
-
 
   /* ══════════════════════════════════════════════════════
      VALIDACIÓN AL ENVIAR EL FORMULARIO

@@ -19,13 +19,12 @@ if __name__ == "__main__":
 
 # BUGS
 
-#2- Ver el tema de que al cambiar el precio de los productos tambien cambie en los presupuestos ya confeccionados.
-#3- Ver de comentar el codigo, routes.py etc mas comentado.
-#4- Adicionales con cargo tambien dependan del tipo de modelo elegido. ver de quitar lo del ajuste en el presupuesto. Organizar botones de confirmación, que haya uno para el constructor y otro para adicionales, ver de 
-# meter adicionales que tambien tienen diferentes tipos de precios segun si es mueble, alacena o mesada acero y puede no tener valor.
-#6- Ver tema de descargar en pdf o excel productos, o cargar una planilla en excel.
-#7- Ver tema de pdf hacerlo de acceso publico o reveer opciones para que lo puedan descargar. Ver en el futuro al hostearlo, probarlo
-#10- Login Arreglarlo, ver tema de users, Cargar fotos.
-#11- chatbox con ia?
-#13- Ver embalaje en adicional es un 2.50% del total calculado, ver de agregarlo como un check
-#14- Ver adaptación a mobile.
+#1 Ver el tema de que al cambiar el precio de los productos tambien cambie en los presupuestos ya confeccionados, colocar alguna alerta o mensajes de atencion.
+#2 Ver de comentar el codigo, routes.py etc mas comentado.
+#3 Ver tema de descargar en pdf o excel productos, o cargar una planilla en excel.
+#4 Ver en el futuro al hostearlo, probar pdf.
+#5 Login Arreglarlo, ver tema de users, Cargar fotos.
+#6 chatbox con ia?
+#7 Ver embalaje en adicional es un 2.50% del total calculado, ver de agregarlo como un check
+#8 Ver adaptación a mobile.
+#9 Ver tema seguridad que no quede user y contraseña en el proyecto, ver funcionalidad de cambiar contraseña, enviando un mail etc.
