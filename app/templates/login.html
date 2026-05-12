@@ -16,18 +16,22 @@
 <body>
   <div class="login-wrap">
 
-    <!-- Marca: nombre de la empresa sobre la card -->
+    <!-- Marca: logo + nombre sobre la card -->
     <div class="login-brand">
+      <div class="login-logo-wrap">
+        <img src="{{ url_for('static', filename='img/logo.png') }}"
+             alt="S. Valvo y Cía" class="login-logo-img">
+      </div>
       <div class="brand-name">S. Valvo y Cía</div>
-      <div class="brand-sub">Muebles a medida · Panel de administración</div>
+      <div class="brand-sub">Muebles a medida &nbsp;·&nbsp; Panel de administración</div>
     </div>
 
     <!-- Card de login -->
     <div class="card login-card">
 
-      <!-- Encabezado azul -->
+      <!-- Header sutil -->
       <div class="login-card-header">
-        <i class="bi bi-shield-lock me-2"></i>Acceso interno
+        <i class="bi bi-shield-lock-fill"></i>Acceso interno
       </div>
 
       <!-- Cuerpo con formulario -->
@@ -61,8 +65,12 @@
             <label class="form-label fw-semibold small mb-1">Contraseña</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-lock"></i></span>
-              <input class="form-control" type="password" name="password"
+              <input class="form-control" type="password" name="password" id="loginPassword"
                      placeholder="••••••••" autocomplete="current-password">
+              <button type="button" class="input-group-text login-eye-btn" id="togglePassword"
+                      tabindex="-1" aria-label="Mostrar/ocultar contraseña">
+                <i class="bi bi-eye" id="togglePasswordIcon"></i>
+              </button>
             </div>
           </div>
 
@@ -79,5 +87,15 @@
     <div class="login-footer">Red LAN interna &nbsp;·&nbsp; Solo usuarios autorizados</div>
 
   </div>
+
+  <script>
+    document.getElementById("togglePassword").addEventListener("click", function () {
+      const input = document.getElementById("loginPassword");
+      const icon  = document.getElementById("togglePasswordIcon");
+      const show  = input.type === "password";
+      input.type      = show ? "text" : "password";
+      icon.className  = show ? "bi bi-eye-slash" : "bi bi-eye";
+    });
+  </script>
 </body>
 </html>

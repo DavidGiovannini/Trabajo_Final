@@ -1,0 +1,365 @@
+/* =========================================================
+   calendario.css
+========================================================= */
+
+/* ── Wrapper principal ──────────────────────────────────── */
+.cal-wrapper {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.09);
+  overflow: hidden;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ── Barra superior: navegación + título ────────────────── */
+.cal-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #0b2a4a 0%, #163e6c 100%);
+  padding: 18px 24px;
+  gap: 12px;
+}
+
+.cal-nav { display: flex; gap: 6px; }
+
+.cal-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  font-size: .95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.cal-nav-btn:hover { background: rgba(255,255,255,.25); }
+
+.cal-title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cal-select {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
+  appearance: auto;
+}
+.cal-select option { background: #0b2a4a; color: #fff; }
+
+.cal-hoy-btn {
+  background: #c46200;
+  border: 0;
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: .83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+}
+.cal-hoy-btn:hover { background: #a35200; }
+
+/* ── Días de la semana ──────────────────────────────────── */
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+.cal-weekdays > div {
+  text-align: center;
+  padding: 10px 0;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #64748b;
+}
+
+/* ── Grid del mes ───────────────────────────────────────── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-left: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.cal-day {
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  min-height: 100px;
+  padding: 8px 8px 6px;
+  cursor: pointer;
+  transition: background .12s;
+  position: relative;
+}
+.cal-day:hover { background: #f8fafc; }
+
+/* Día del mes anterior / siguiente: apagado */
+.cal-day.otro-mes {
+  background: #fafafa;
+  cursor: default;
+}
+.cal-day.otro-mes .cal-day-num { opacity: .3; }
+.cal-day.otro-mes:hover { background: #fafafa; }
+
+/* Hoy */
+.cal-day.hoy { background: rgba(196,98,0,.04); }
+.cal-day.hoy .cal-day-num {
+  background: #c46200;
+  color: #fff;
+}
+
+/* Número del día */
+.cal-day-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: .82rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+/* Píldoras de recordatorios dentro del día */
+.cal-pill {
+  display: block;
+  font-size: .7rem;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity .12s;
+}
+.cal-pill:hover { opacity: .82; }
+
+.cal-pill.color-azul    { background: #0b2a4a; }
+.cal-pill.color-naranja { background: #c46200; }
+.cal-pill.color-verde   { background: #15803d; }
+.cal-pill.color-rojo    { background: #dc2626; }
+.cal-pill.color-gris    { background: #6b7280; }
+.cal-pill.completado    { opacity: .45; text-decoration: line-through; }
+
+/* Indicador "+ N más" cuando hay muchos */
+.cal-day-mas {
+  font-size: .68rem;
+  color: #94a3b8;
+  font-weight: 600;
+  padding-left: 6px;
+}
+
+/* ── Modal del día ──────────────────────────────────────── */
+.cal-modal-content {
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.cal-modal-header {
+  background: linear-gradient(135deg, #0b2a4a 0%, #163e6c 100%);
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cal-modal-fecha {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cal-modal-subtitle {
+  color: rgba(255,255,255,.65);
+  font-size: .8rem;
+  margin-top: 2px;
+}
+
+/* Lista de recordatorios en el modal */
+.cal-rec-list {
+  padding: 12px 16px 0;
+}
+
+.cal-rec-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.cal-rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 10px;
+  margin-top: 4px;
+}
+.cal-rec-dot.color-azul    { background: #0b2a4a; }
+.cal-rec-dot.color-naranja { background: #c46200; }
+.cal-rec-dot.color-verde   { background: #15803d; }
+.cal-rec-dot.color-rojo    { background: #dc2626; }
+.cal-rec-dot.color-gris    { background: #6b7280; }
+
+.cal-rec-body  { flex: 1; min-width: 0; }
+.cal-rec-titulo {
+  font-weight: 700;
+  font-size: .88rem;
+  color: #1e293b;
+  line-height: 1.3;
+}
+.cal-rec-titulo.completado { text-decoration: line-through; opacity: .55; }
+.cal-rec-hora   { font-size: .75rem; color: #64748b; margin-top: 1px; }
+.cal-rec-desc   { font-size: .78rem; color: #475569; margin-top: 3px; white-space: pre-wrap; }
+
+.cal-rec-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.cal-rec-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  font-size: .75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .12s;
+}
+.cal-rec-action-btn:hover { background: #f1f5f9; color: #1e293b; }
+.cal-rec-action-btn.check:hover  { background: #dcfce7; border-color: #16a34a; color: #16a34a; }
+.cal-rec-action-btn.edit:hover   { background: #dbeafe; border-color: #2563eb; color: #2563eb; }
+.cal-rec-action-btn.delete:hover { background: #fee2e2; border-color: #dc2626; color: #dc2626; }
+
+/* Estado "completado" en el ítem */
+.cal-rec-item.completado { opacity: .6; }
+
+.cal-rec-empty {
+  text-align: center;
+  padding: 20px 0 8px;
+  color: #94a3b8;
+  font-size: .85rem;
+}
+.cal-rec-empty i { display: block; font-size: 1.6rem; opacity: .35; margin-bottom: 6px; }
+
+/* ── Formulario dentro del modal ────────────────────────── */
+.cal-form-wrap {
+  padding: 14px 16px 16px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 4px;
+}
+
+.cal-form-title {
+  font-size: .82rem;
+  font-weight: 700;
+  color: #0b2a4a;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 12px;
+}
+
+.cal-label {
+  font-size: .78rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.cal-input {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: .85rem;
+  padding: 7px 10px;
+}
+.cal-input:focus {
+  border-color: #0b2a4a;
+  box-shadow: 0 0 0 3px rgba(11,42,74,.1);
+  outline: none;
+}
+
+.cal-err {
+  font-size: .75rem;
+  color: #dc2626;
+  margin-top: 3px;
+}
+
+/* Color picker */
+.cal-colors {
+  display: flex;
+  gap: 7px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+}
+.cal-color-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform .12s, border-color .12s;
+}
+.cal-color-btn:hover   { transform: scale(1.15); }
+.cal-color-btn.active  { border-color: #fff; box-shadow: 0 0 0 2px #0b2a4a; }
+
+.cal-add-wrap {
+  padding: 10px 16px 16px;
+}
+.cal-add-btn {
+  width: 100%;
+  background: transparent;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 9px;
+  padding: 9px;
+  color: #64748b;
+  font-size: .83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.cal-add-btn:hover {
+  border-color: #0b2a4a;
+  color: #0b2a4a;
+  background: rgba(11,42,74,.03);
+}
+
+.cal-btn-save {
+  background: #0b2a4a;
+  border-color: #0b2a4a;
+}
+.cal-btn-save:hover {
+  background: #163e6c;
+  border-color: #163e6c;
+}

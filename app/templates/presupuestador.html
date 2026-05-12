@@ -18,21 +18,30 @@
 
       <!-- DATOS DEL CLIENTE -->
       <div class="presu-card mb-3">
-        <div class="presu-card-header">
+        <div class="presu-card-header presu-card-header-toggle d-flex align-items-center"
+             data-bs-toggle="collapse"
+             data-bs-target="#collapseCliente"
+             aria-expanded="true"
+             aria-controls="collapseCliente">
           <i class="bi bi-person-fill"></i>
           Datos del Cliente
+          <i class="bi bi-chevron-down presu-header-chevron"></i>
         </div>
+        <div class="collapse show" id="collapseCliente">
         <div class="presu-card-body">
           <div class="row g-2">
 
+            <!-- Fila 1: datos personales -->
             <div class="col-md-4">
               <label class="mini-label">Cliente *</label>
-              <input class="form-control form-control-sm" name="cliente" placeholder="Nombre y apellido" required>
+              <input class="form-control form-control-sm" name="cliente" id="inputCliente" placeholder="Nombre y apellido">
+              <div id="errCliente" class="text-danger small mt-1 d-none"></div>
             </div>
 
             <div class="col-md-4">
               <label class="mini-label">Teléfono *</label>
-              <input class="form-control form-control-sm" name="telefono" placeholder="Ej: 1145678900" required>
+              <input class="form-control form-control-sm" name="telefono" id="inputTelefono" placeholder="Ej: 1145678900">
+              <div id="errTelefono" class="text-danger small mt-1 d-none"></div>
             </div>
 
             <div class="col-md-4">
@@ -40,32 +49,54 @@
               <input class="form-control form-control-sm" name="email" placeholder="correo@ejemplo.com">
             </div>
 
-            <div class="col-md-4">
-              <label class="mini-label">Dirección *</label>
-              <input class="form-control form-control-sm" name="direccion" placeholder="Calle, número, localidad" required>
+            <!-- Fila 2: desglose de dirección -->
+            <div class="col-md-3">
+              <label class="mini-label">País</label>
+              <input class="form-control form-control-sm" name="pais" placeholder="Argentina">
+            </div>
+
+            <div class="col-md-3">
+              <label class="mini-label">Localidad</label>
+              <input class="form-control form-control-sm" name="localidad" placeholder="Ciudad / Partido">
+            </div>
+
+            <div class="col-md-2">
+              <label class="mini-label">Código Postal</label>
+              <input class="form-control form-control-sm" name="codigo_postal" placeholder="Ej: 1425">
             </div>
 
             <div class="col-md-4">
-              <label class="mini-label">Forma de Pago (seña)</label>
-              <select name="forma_pago" id="selectFormaPago" class="form-select form-select-sm" disabled>
-                <option value="Efectivo">Efectivo</option>
-                <option value="Tarjeta">Tarjeta</option>
-                <option value="Transferencia">Transferencia</option>
-              </select>
+              <label class="mini-label">Barrio</label>
+              <input class="form-control form-control-sm" name="barrio" placeholder="Ej: Palermo">
             </div>
 
-            <div class="col-md-4">
-              <label class="mini-label">Seña</label>
-              <div class="d-flex align-items-center gap-2">
-                <div class="form-check mb-0 flex-shrink-0">
+            <div class="col-md-6">
+              <label class="mini-label">Dirección (calle y número)</label>
+              <input class="form-control form-control-sm" name="direccion" placeholder="Ej: Av. Corrientes 1234">
+            </div>
+
+            <!-- Fila 3: seña — forma de pago y monto aparecen al marcar el check -->
+            <div class="col-12">
+              <div class="d-flex align-items-center gap-3 flex-wrap">
+                <div class="form-check mb-0">
                   <input class="form-check-input" type="checkbox" id="checkSena" name="entrega_sena" value="1">
-                  <label class="form-check-label small" for="checkSena">¿Entrega?</label>
+                  <label class="form-check-label small fw-semibold" for="checkSena">¿Entrega seña?</label>
                 </div>
-                <input type="number" step="0.01" name="monto_sena" id="inputSena"
-                       class="form-control form-control-sm" placeholder="Monto $" disabled>
+
+                <div id="senaFields" class="d-none d-flex align-items-center gap-2 flex-wrap">
+                  <select name="forma_pago" id="selectFormaPago" class="form-select form-select-sm" style="width:auto;" disabled>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                    <option value="Transferencia">Transferencia</option>
+                  </select>
+                  <input type="number" step="0.01" name="monto_sena" id="inputSena"
+                         class="form-control form-control-sm" style="width:130px;" placeholder="Monto $" disabled>
+                </div>
               </div>
+              <div id="errSena" class="text-danger small mt-1 d-none"></div>
             </div>
 
+            <!-- Fila 4: observaciones -->
             <div class="col-12">
               <label class="mini-label">Observaciones</label>
               <textarea class="form-control form-control-sm" name="observaciones" rows="2"
@@ -74,6 +105,7 @@
 
           </div>
         </div>
+        </div><!-- /collapse -->
       </div>
 
       <!-- TABS: PRODUCTOS / MUEBLES -->
@@ -148,7 +180,7 @@
                                   <input class="form-control form-control-sm qty-inline"
                                          id="cant_{{p.id}}" value="1" min="1" type="number">
                                 </div>
-                                <span class="fw-bold text-success small">${{ "%.2f"|format(p.precio or 0) }}</span>
+                                <span class="fw-bold text-success small">${{ "{:,.0f}".format(p.precio or 0)|replace(",",".") }}</span>
                                 {% if p.stock is not none %}
                                 <span class="badge small"
                                       style="{% if p.stock > 0 %}background:rgba(25,135,84,.1);border:1px solid rgba(25,135,84,.25);color:#157347;{% else %}background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.25);color:#b02a37;{% endif %}">

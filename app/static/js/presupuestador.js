@@ -12,9 +12,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const checkSena       = document.getElementById("checkSena");
   const inputSena       = document.getElementById("inputSena");
   const selectFormaPago = document.getElementById("selectFormaPago");
+  const senaFields      = document.getElementById("senaFields");
 
   checkSena?.addEventListener("change", function () {
     const activo = this.checked;
+    senaFields?.classList.toggle("d-none", !activo);
     inputSena.disabled       = !activo;
     selectFormaPago.disabled = !activo;
     if (!activo) { inputSena.value = ""; selectFormaPago.value = "Efectivo"; }
@@ -72,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /* Formatea un número como moneda AR */
   function money(n) {
-    return "$" + Number(n || 0).toLocaleString("es-AR");
+    return "$" + Number(n || 0).toLocaleString("es-AR", {maximumFractionDigits: 0});
   }
 
   /* ──────────────────────────────────────────────────────
@@ -392,5 +394,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /* Dibuja el resumen inicial (vacío) */
   actualizarResumen();
+
+
+  /* ══════════════════════════════════════════════════════
+     VALIDACIÓN AL ENVIAR EL FORMULARIO
+     Muestra mensajes inline antes de hacer el POST.
+  ════════════════════════════════════════════════════ */
+  document.getElementById("formPresupuesto")?.addEventListener("submit", function (e) {
+    let ok = true;
+
+    const valCliente   = document.getElementById("inputCliente")?.value.trim() || "";
+    const valTelefono  = document.getElementById("inputTelefono")?.value.trim() || "";
+    const errCliente   = document.getElementById("errCliente");
+    const errTelefono  = document.getElementById("errTelefono");
+    const errSena      = document.getElementById("errSena");
+
+    /* Nombre / apellido obligatorio */
+    if (!valCliente) {
+      errCliente.textContent = "El nombre y apellido del cliente es obligatorio.";
+      errCliente.classList.remove("d-none");
+      ok = false;
+    } else {
+      errCliente.classList.add("d-none");
+    }
+
+    /* Teléfono obligatorio */
+    if (!valTelefono) {
+      errTelefono.textContent = "El teléfono del cliente es obligatorio.";
+      errTelefono.classList.remove("d-none");
+      ok = false;
+    } else {
+      errTelefono.classList.add("d-none");
+    }
+
+    /* Seña: si está marcada, forma de pago y monto son obligatorios */
+    if (checkSena?.checked) {
+      const monto = Number(inputSena?.value || 0);
+      if (!monto || monto <= 0) {
+        errSena.textContent = "Ingresá el monto de la seña.";
+        errSena.classList.remove("d-none");
+        ok = false;
+      } else {
+        errSena.classList.add("d-none");
+      }
+    } else {
+      errSena?.classList.add("d-none");
+    }
+
+    if (!ok) e.preventDefault();
+  });
 
 });

@@ -21,7 +21,7 @@
           {# Calcular saldo pendiente: total menos seña ya entregada #}
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
 
-          <div class="pedido-card pedido-nueva"
+          <div class="pedido-card pedido-nueva estado-{{ p.estado|lower }}"
                data-id="{{ p.id }}"
                data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
 
@@ -53,8 +53,23 @@
               <div class="pedido-debe">
                 <strong>Debe:</strong>
                 <span class="debe-monto" id="pedido-debe-{{ p.id }}">
-                  ${{ "%.2f"|format(p.total) }}
+                  ${{ "{:,.0f}".format(p.total or 0)|replace(",",".") }}
                 </span>
+              </div>
+
+              <div class="pedido-card-acciones">
+                <a class="pedido-card-accion-btn pedido-card-pdf"
+                   href="{{ url_for('pedido_pdf', pid=p.id) }}" target="_blank"
+                   title="Descargar Presupuesto PDF">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                  <span>Presupuesto</span>
+                </a>
+                <a class="pedido-card-accion-btn pedido-card-remito"
+                   href="{{ url_for('pedido_remito', pid=p.id) }}" target="_blank"
+                   title="Descargar Remito">
+                  <i class="bi bi-file-earmark-text-fill"></i>
+                  <span>Remito</span>
+                </a>
               </div>
 
               <div class="pedido-creado">
@@ -79,7 +94,7 @@
         {% for p in pedidos_en_curso %}
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
 
-          <div class="pedido-card pedido-nueva"
+          <div class="pedido-card pedido-nueva estado-{{ p.estado|lower }}"
                data-id="{{ p.id }}"
                data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
             <div class="pedido-header">
@@ -104,9 +119,24 @@
               <div class="pedido-debe">
                 <strong>Debe:</strong>
                 <span class="debe-monto" id="pedido-debe-{{ p.id }}">
-                  ${{ "%.2f"|format(p.total) }}
+                  ${{ "{:,.0f}".format(p.total or 0)|replace(",",".") }}
                 </span>
               </div>
+              <div class="pedido-card-acciones">
+                <a class="pedido-card-accion-btn pedido-card-pdf"
+                   href="{{ url_for('pedido_pdf', pid=p.id) }}" target="_blank"
+                   title="Descargar Presupuesto PDF">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                  <span>Presupuesto</span>
+                </a>
+                <a class="pedido-card-accion-btn pedido-card-remito"
+                   href="{{ url_for('pedido_remito', pid=p.id) }}" target="_blank"
+                   title="Descargar Remito">
+                  <i class="bi bi-file-earmark-text-fill"></i>
+                  <span>Remito</span>
+                </a>
+              </div>
+
               <div class="pedido-creado">
                 Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>
@@ -127,7 +157,7 @@
         {% for p in pedidos_finalizados %}
           {% set deb = (p.total or 0) - (p.monto_sena or 0) %}
 
-          <div class="pedido-card pedido-nueva"
+          <div class="pedido-card pedido-nueva estado-{{ p.estado|lower }}"
                data-id="{{ p.id }}"
                data-created="{{ p.created_at.strftime('%d/%m/%Y') if p.created_at else '-' }}">
             <div class="pedido-header">
@@ -151,9 +181,24 @@
               <div class="pedido-debe">
                 <strong>Debe:</strong>
                 <span class="debe-monto" id="pedido-debe-{{ p.id }}">
-                  ${{ "%.2f"|format(p.total) }}
+                  ${{ "{:,.0f}".format(p.total or 0)|replace(",",".") }}
                 </span>
               </div>
+              <div class="pedido-card-acciones">
+                <a class="pedido-card-accion-btn pedido-card-pdf"
+                   href="{{ url_for('pedido_pdf', pid=p.id) }}" target="_blank"
+                   title="Descargar Presupuesto PDF">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                  <span>Presupuesto</span>
+                </a>
+                <a class="pedido-card-accion-btn pedido-card-remito"
+                   href="{{ url_for('pedido_remito', pid=p.id) }}" target="_blank"
+                   title="Descargar Remito">
+                  <i class="bi bi-file-earmark-text-fill"></i>
+                  <span>Remito</span>
+                </a>
+              </div>
+
               <div class="pedido-creado">
                 Pedido creado el <span class="pedido-creado-fecha"></span>
               </div>

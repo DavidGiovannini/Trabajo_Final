@@ -1,120 +1,253 @@
 /* ============================================================
-   login.css — Estilos de la pantalla de ingreso al sistema
-   Página independiente: no extiende base.html
+   login.css — Pantalla de ingreso al sistema
+   Página independiente (no extiende base.html)
    ============================================================ */
 
-/* Fondo con degradado azul oscuro que ocupa toda la ventana */
+/* ── Reset y fondo ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
-  background: linear-gradient(150deg, #081f36 0%, #0b2a4a 50%, #163e6c 100%);
+  margin: 0;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px;
+  background-color: #060e1a;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(11,62,108,.55) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 80% 90%, rgba(9,42,74,.5)  0%, transparent 55%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
-/* Wrapper centrado con ancho máximo para que no se estire en pantallas grandes */
+/* ── Wrapper central ────────────────────────────────────── */
 .login-wrap {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 
-/* ---- Marca: nombre y subtítulo sobre la card ---- */
+/* ── Logo / marca ───────────────────────────────────────── */
 .login-brand {
   text-align: center;
   color: #fff;
-  margin-bottom: 22px;
-}
-.login-brand .brand-name {
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: .4px;
-}
-.login-brand .brand-sub {
-  font-size: .82rem;
-  opacity: .65;
-  margin-top: 3px;
+  margin-bottom: 28px;
 }
 
-/* ---- Card principal con bordes redondeados y sombra profunda ---- */
+.login-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 14px;
+  border-radius: 28px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow:
+    0 0 0 10px rgba(11,42,74,.35),
+    0 16px 48px rgba(0,0,0,.55);
+}
+
+.login-logo-img {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,.5));
+}
+
+.brand-name {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+
+.brand-sub {
+  font-size: .78rem;
+  color: rgba(255,255,255,.45);
+  margin-top: 4px;
+  letter-spacing: .4px;
+}
+
+/* ── Card ───────────────────────────────────────────────── */
 .login-card {
-  border: 0;
-  border-radius: 18px;
-  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  width: 100%;
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  box-shadow:
+    0 32px 80px rgba(0,0,0,.6),
+    0 0 0 1px rgba(255,255,255,.04) inset;
   overflow: hidden;
 }
 
-/* Encabezado azul oscuro de la card con ícono de candado */
+/* ── Header de la card ──────────────────────────────────── */
 .login-card-header {
-  background: #0b2a4a;
-  padding: 20px 26px 18px;
+  padding: 18px 28px 16px;
   text-align: center;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: .2px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.05);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  color: rgba(255,255,255,.55);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
-/* Cuerpo blanco que contiene el formulario */
+.login-card-header i {
+  font-size: .9rem;
+  color: rgba(255,255,255,.35);
+}
+
+/* ── Body ───────────────────────────────────────────────── */
 .login-card-body {
-  padding: 26px 26px 22px;
-  background: #fff;
+  padding: 28px 28px 24px;
 }
 
-/* ---- Input groups: ícono a la izquierda, campo a la derecha ---- */
+/* ── Labels ─────────────────────────────────────────────── */
+.login-card-body .form-label {
+  color: rgba(255,255,255,.6);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── Input groups ───────────────────────────────────────── */
+.login-card-body .input-group {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+
 .login-card-body .input-group-text {
-  background: #f8f9fa;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
   border-right: 0;
-  color: #6c757d;
-  border-radius: 8px 0 0 8px;
+  color: rgba(255,255,255,.4);
+  padding: 11px 14px;
+  border-radius: 10px 0 0 10px;
+  transition: background .15s, color .15s;
 }
+
 .login-card-body .form-control {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
   border-left: 0;
-  background: #f8f9fa;
-  border-radius: 0 8px 8px 0 !important;
-  padding: 10px 14px;
+  color: #fff;
+  padding: 11px 14px;
+  font-size: .95rem;
+  border-radius: 0 10px 10px 0 !important;
+  transition: background .15s, border-color .15s, box-shadow .15s;
 }
 
-/* Al hacer focus: resaltar borde y fondo del input */
-.login-card-body .form-control:focus {
-  border-color: #0b2a4a;
-  box-shadow: 0 0 0 3px rgba(11,42,74,.10);
-  background: #fff;
+.login-card-body .form-control::placeholder {
+  color: rgba(255,255,255,.22);
 }
-/* El ícono también se ilumina cuando el grupo está en foco */
+
+/* Focus — ilumina grupo completo */
 .login-card-body .input-group:focus-within .input-group-text {
-  border-color: #0b2a4a;
-  background: #fff;
+  background: rgba(255,255,255,.12);
+  border-color: rgba(99,157,255,.6);
+  color: rgba(255,255,255,.75);
 }
 
-/* ---- Botón principal de ingreso ---- */
+.login-card-body .form-control:focus {
+  background: rgba(255,255,255,.11);
+  border-color: rgba(99,157,255,.6);
+  box-shadow: none;
+  color: #fff;
+  outline: none;
+}
+
+/* ── Alerts flash ───────────────────────────────────────── */
+.login-card-body .alert {
+  background: rgba(220,38,38,.15);
+  border: 1px solid rgba(220,38,38,.3);
+  color: #fca5a5;
+  border-radius: 10px;
+}
+
+.login-card-body .alert i { color: #f87171; }
+
+/* ── Botón ojo: mostrar/ocultar contraseña ──────────────── */
+.login-eye-btn {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-left: 0;
+  color: rgba(255,255,255,.4);
+  padding: 11px 14px;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+  line-height: 1;
+}
+
+.login-eye-btn:hover {
+  color: rgba(255,255,255,.8);
+  background: rgba(255,255,255,.12);
+}
+
+.login-eye-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ── Botón de ingreso ───────────────────────────────────── */
 .btn-login {
-  background: #0b2a4a;
+  width: 100%;
+  background: linear-gradient(135deg, #1565c0 0%, #0b2a4a 100%);
   border: 0;
   border-radius: 10px;
   padding: 12px;
   font-weight: 700;
-  font-size: .97rem;
-  letter-spacing: .3px;
+  font-size: .95rem;
+  letter-spacing: .4px;
   color: #fff;
-  transition: filter .15s, transform .1s;
-}
-/* Efecto hover: aclarar y subir levemente */
-.btn-login:hover {
-  filter: brightness(1.2);
-  color: #fff;
-  transform: translateY(-1px);
-}
-/* Efecto active: volver a posición original */
-.btn-login:active {
-  transform: translateY(0);
+  box-shadow: 0 4px 20px rgba(21,101,192,.35);
+  transition: opacity .15s, transform .1s, box-shadow .15s;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Pie de página con aviso de acceso restringido */
+.btn-login::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255,255,255,.08), transparent);
+  pointer-events: none;
+}
+
+.btn-login:hover {
+  color: #fff;
+  opacity: .92;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(21,101,192,.45);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(21,101,192,.3);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
 .login-footer {
   text-align: center;
-  color: rgba(255,255,255,.4);
-  font-size: .75rem;
-  margin-top: 18px;
+  color: rgba(255,255,255,.22);
+  font-size: .72rem;
+  margin-top: 20px;
+  letter-spacing: .4px;
 }

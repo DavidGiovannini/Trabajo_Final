@@ -338,6 +338,21 @@
   font-weight: 700;
 }
 
+/* ── Toggle de la sección Datos del Cliente ──────────── */
+.presu-card-header-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+
+.presu-card-header-toggle .presu-header-chevron {
+  transition: transform .2s ease;
+  margin-left: auto;
+}
+
+.presu-card-header-toggle[aria-expanded="false"] .presu-header-chevron {
+  transform: rotate(-90deg);
+}
+
 /* ── Toggle de grupos de productos (collapse) ─────────── */
 .presu-grupo-toggle {
   transition: background .15s;

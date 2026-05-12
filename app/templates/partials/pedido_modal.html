@@ -19,27 +19,66 @@
 
         <div class="pedido-datos">
 
-          <div class="dato dato-editable" data-field="direccion">
-            <div class="dato-label">
-              <strong>Domicilio:</strong>
+          <div class="dato dato-editable" data-field="pais">
+            <div class="dato-label"><strong>País:</strong></div>
+            <div class="dato-value dato-value-inline">
+              <span id="mp-pais-view"></span>
+              <input id="mp-pais-input" class="form-control d-none">
             </div>
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="pais"><i class="bi bi-pencil"></i></button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="pais">Guardar</button>
+            </div>
+          </div>
 
+          <div class="dato dato-editable" data-field="localidad">
+            <div class="dato-label"><strong>Localidad:</strong></div>
+            <div class="dato-value dato-value-inline">
+              <span id="mp-localidad-view"></span>
+              <input id="mp-localidad-input" class="form-control d-none">
+            </div>
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="localidad"><i class="bi bi-pencil"></i></button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="localidad">Guardar</button>
+            </div>
+          </div>
+
+          <div class="dato dato-editable" data-field="codigo_postal">
+            <div class="dato-label"><strong>Cód. Postal:</strong></div>
+            <div class="dato-value dato-value-inline">
+              <span id="mp-cp-view"></span>
+              <input id="mp-cp-input" class="form-control d-none">
+            </div>
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="codigo_postal"><i class="bi bi-pencil"></i></button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="codigo_postal">Guardar</button>
+            </div>
+          </div>
+
+          <div class="dato dato-editable" data-field="barrio">
+            <div class="dato-label"><strong>Barrio:</strong></div>
+            <div class="dato-value dato-value-inline">
+              <span id="mp-barrio-view"></span>
+              <input id="mp-barrio-input" class="form-control d-none">
+            </div>
+            <div class="dato-action">
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="barrio"><i class="bi bi-pencil"></i></button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="barrio">Guardar</button>
+            </div>
+          </div>
+
+          <div class="dato dato-editable" data-field="direccion">
+            <div class="dato-label"><strong>Dirección:</strong></div>
             <div class="dato-value dato-value-inline">
               <span id="mp-domicilio-view"></span>
               <input id="mp-domicilio-input" class="form-control d-none">
-
-              <a href="#" id="mp-maps" class="text-danger d-none" target="_blank">
+              <a href="#" id="mp-maps" class="text-danger d-none">
                 <i class="bi bi-geo-alt-fill"></i>
               </a>
             </div>
-
             <div class="dato-action">
-              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="direccion">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="direccion">
-                Guardar
-              </button>
+              <button type="button" class="btn btn-outline-secondary mp-edit-btn" data-edit-field="direccion"><i class="bi bi-pencil"></i></button>
+              <button type="button" class="btn btn-success mp-save-btn d-none" data-save-field="direccion">Guardar</button>
             </div>
           </div>
 
@@ -51,7 +90,7 @@
             <div class="dato-value dato-value-inline">
               <span id="mp-telefono-view"></span>
               <input id="mp-telefono-input" class="form-control d-none">
-              <a href="#" id="mp-wpp" class="text-success d-none" target="_blank">
+              <a href="#" id="mp-wpp" class="text-success d-none">
                 <i class="bi bi-whatsapp"></i>
               </a>
             </div>
@@ -74,7 +113,7 @@
             <div class="dato-value dato-value-inline">
               <span id="mp-email-view"></span>
               <input id="mp-email-input" class="form-control d-none">
-              <a href="#" id="mp-gmail" class="text-danger d-none" target="_blank">
+              <a href="#" id="mp-gmail" class="text-danger d-none">
                 <i class="bi bi-envelope-fill"></i>
               </a>
             </div>
@@ -150,12 +189,20 @@
         </div>
 
         <div class="pedido-acciones">
-          <a class="btn btn-outline-secondary" id="mp-imprimir" target="_blank">
-            <i class="bi bi-printer"></i> Imprimir
+          <a class="pedido-accion-btn pedido-accion-pdf" id="mp-pdf" href="#" target="_blank"
+             title="Descargar Presupuesto PDF">
+            <i class="bi bi-file-earmark-pdf-fill"></i>
+            <span>Presupuesto</span>
           </a>
-
-          <button type="button" class="btn btn-outline-secondary text-danger" id="mp-eliminar">
-            <i class="bi bi-trash"></i> Eliminar
+          <a class="pedido-accion-btn pedido-accion-remito" id="mp-remito" href="#" target="_blank"
+             title="Descargar Remito">
+            <i class="bi bi-file-earmark-text-fill"></i>
+            <span>Remito</span>
+          </a>
+          <button type="button" class="pedido-accion-btn pedido-accion-danger" id="mp-eliminar"
+                  title="Eliminar pedido">
+            <i class="bi bi-trash-fill"></i>
+            <span>Eliminar</span>
           </button>
         </div>
 

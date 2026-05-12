@@ -35,4 +35,33 @@ document.addEventListener("DOMContentLoaded", function () {
     if (toggle)   toggle.classList.add("active");
   }
 
+  /* ── Notificaciones del navegador: recordatorios de hoy ─ */
+  if ("Notification" in window) {
+    const disparar = function () {
+      fetch("/api/recordatorios/hoy")
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (recs) {
+          recs.forEach(function (r) {
+            const key = "notif_" + r.id + "_" + new Date().toDateString();
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, "1");
+            new Notification("Recordatorio — S. Valvo y Cía", {
+              body: (r.hora ? r.hora + " — " : "") + r.titulo + (r.descripcion ? "\n" + r.descripcion : ""),
+              icon: "/static/img/logo.png",
+              tag:  "rec-" + r.id
+            });
+          });
+        })
+        .catch(function () {});
+    };
+
+    if (Notification.permission === "granted") {
+      disparar();
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(function (perm) {
+        if (perm === "granted") disparar();
+      });
+    }
+  }
+
 });

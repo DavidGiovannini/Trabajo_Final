@@ -26,6 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* Mapa campo → [id-span-lectura, id-input-edición] */
   const CAMPO_MAP = {
+    pais:          ["mp-pais-view",       "mp-pais-input"],
+    localidad:     ["mp-localidad-view",  "mp-localidad-input"],
+    codigo_postal: ["mp-cp-view",         "mp-cp-input"],
+    barrio:        ["mp-barrio-view",     "mp-barrio-input"],
     direccion:     ["mp-domicilio-view",  "mp-domicilio-input"],
     telefono:      ["mp-telefono-view",   "mp-telefono-input"],
     email:         ["mp-email-view",      "mp-email-input"],
@@ -46,11 +50,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(`[data-save-field="${field}"]`)?.classList.toggle("d-none", !activo);
   }
 
-  /* Envía PATCH al servidor con los 4 campos y actualiza el DOM */
+  /* Envía PATCH al servidor con todos los campos editables y actualiza el DOM */
   async function guardarCampoPedido(field) {
     if (!pedidoActualId) return;
 
     const payload = {
+      pais:          document.getElementById("mp-pais-input")?.value.trim()      || "",
+      localidad:     document.getElementById("mp-localidad-input")?.value.trim() || "",
+      codigo_postal: document.getElementById("mp-cp-input")?.value.trim()        || "",
+      barrio:        document.getElementById("mp-barrio-input")?.value.trim()    || "",
       direccion:     document.getElementById("mp-domicilio-input").value.trim(),
       telefono:      document.getElementById("mp-telefono-input").value.trim(),
       email:         document.getElementById("mp-email-input").value.trim(),
@@ -72,18 +80,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = await res.json();
 
     /* Refrescar textos en los spans de lectura */
-    document.getElementById("mp-domicilio-view").textContent = data.direccion || "-";
-    document.getElementById("mp-telefono-view").textContent  = data.telefono  || "-";
-    document.getElementById("mp-email-view").textContent     = data.email     || "-";
+    document.getElementById("mp-pais-view").textContent      = data.pais          || "-";
+    document.getElementById("mp-localidad-view").textContent = data.localidad     || "-";
+    document.getElementById("mp-cp-view").textContent        = data.codigo_postal || "-";
+    document.getElementById("mp-barrio-view").textContent    = data.barrio        || "-";
+    document.getElementById("mp-domicilio-view").textContent = data.direccion     || "-";
+    document.getElementById("mp-telefono-view").textContent  = data.telefono      || "-";
+    document.getElementById("mp-email-view").textContent     = data.email         || "-";
     document.getElementById("mp-obs-view").textContent       = data.observaciones || "-";
     document.getElementById("mp-obs-input").value            = data.observaciones || "";
 
     /* Actualizar links de contacto con los nuevos datos */
     actualizarAccesosContacto({
-      telefono:  data.telefono  || "",
-      email:     data.email     || "",
-      direccion: data.direccion || "",
-      pedidoId:  data.id || pedidoActualId
+      pais:         data.pais          || "",
+      localidad:    data.localidad     || "",
+      codigoPostal: data.codigo_postal || "",
+      barrio:       data.barrio        || "",
+      telefono:     data.telefono      || "",
+      email:        data.email         || "",
+      direccion:    data.direccion     || "",
+      pedidoId:     data.id || pedidoActualId
     });
 
     setModoEdicionCampo(field, false);
@@ -106,9 +122,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* Actualizar links de contacto en tiempo real mientras se tipea */
-  document.getElementById("mp-domicilio-input")?.addEventListener("input", (e) =>
-    actualizarLinkMaps(e.target.value));
+  /* Actualizar Maps en tiempo real mientras se tipea en cualquier campo de dirección */
+  ["mp-pais-input","mp-localidad-input","mp-cp-input","mp-barrio-input","mp-domicilio-input"]
+    .forEach(id => document.getElementById(id)?.addEventListener("input", () => {
+      actualizarLinkMaps({
+        pais:         document.getElementById("mp-pais-input")?.value      || "",
+        localidad:    document.getElementById("mp-localidad-input")?.value || "",
+        codigoPostal: document.getElementById("mp-cp-input")?.value        || "",
+        barrio:       document.getElementById("mp-barrio-input")?.value    || "",
+        direccion:    document.getElementById("mp-domicilio-input")?.value || ""
+      });
+    }));
   document.getElementById("mp-telefono-input")?.addEventListener("input", (e) =>
     actualizarLinkWhatsApp(e.target.value));
   document.getElementById("mp-email-input")?.addEventListener("input", (e) =>
@@ -142,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!el) return;
 
     if (debe > 0) {
-      el.textContent = `$${Number(debe).toLocaleString("es-AR")}`;
+      el.textContent = `$${Number(debe).toLocaleString("es-AR", {maximumFractionDigits: 0})}`;
       el.classList.remove("text-success");
       el.classList.add("text-danger");
     } else {
@@ -166,21 +190,38 @@ document.addEventListener("DOMContentLoaded", () => {
       const p = await res.json();
 
       /* Datos de contacto (spans y inputs) */
-      document.getElementById("mp-domicilio-view").textContent = p.direccion || "-";
-      document.getElementById("mp-telefono-view").textContent  = p.telefono  || "-";
-      document.getElementById("mp-email-view").textContent     = p.email     || "-";
+      document.getElementById("mp-pais-view").textContent      = p.pais          || "-";
+      document.getElementById("mp-localidad-view").textContent = p.localidad     || "-";
+      document.getElementById("mp-cp-view").textContent        = p.codigo_postal || "-";
+      document.getElementById("mp-barrio-view").textContent    = p.barrio        || "-";
+      document.getElementById("mp-domicilio-view").textContent = p.direccion     || "-";
+      document.getElementById("mp-telefono-view").textContent  = p.telefono      || "-";
+      document.getElementById("mp-email-view").textContent     = p.email         || "-";
       document.getElementById("mp-obs-view").textContent       = p.observaciones || "-";
 
+      if (document.getElementById("mp-pais-input"))
+        document.getElementById("mp-pais-input").value      = p.pais          || "";
+      if (document.getElementById("mp-localidad-input"))
+        document.getElementById("mp-localidad-input").value = p.localidad     || "";
+      if (document.getElementById("mp-cp-input"))
+        document.getElementById("mp-cp-input").value        = p.codigo_postal || "";
+      if (document.getElementById("mp-barrio-input"))
+        document.getElementById("mp-barrio-input").value    = p.barrio        || "";
       document.getElementById("mp-domicilio-input").value = p.direccion || "";
       document.getElementById("mp-telefono-input").value  = p.telefono  || "";
       document.getElementById("mp-email-input").value     = p.email     || "";
       document.getElementById("mp-obs-input").value       = p.observaciones || "";
 
       actualizarAccesosContacto({
-        telefono:  p.telefono  || "",
-        email:     p.email     || "",
-        direccion: p.direccion || "",
-        pedidoId:  p.id || pedidoActualId
+        pais:         p.pais          || "",
+        localidad:    p.localidad     || "",
+        codigoPostal: p.codigo_postal || "",
+        barrio:       p.barrio        || "",
+        telefono:     p.telefono      || "",
+        email:        p.email         || "",
+        direccion:    p.direccion     || "",
+        pedidoId:     p.id || pedidoActualId,
+        tokenPdf:     p.token_pdf     || null
       });
 
       setBadge(p.estado);
@@ -263,7 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* Formatea un número como moneda argentina */
   function fmtMoney(n) {
-    return `$${Number(n || 0).toLocaleString("es-AR")}`;
+    return "$" + Number(n || 0).toLocaleString("es-AR", {maximumFractionDigits: 0});
   }
 
 
@@ -402,53 +443,95 @@ document.addEventListener("DOMContentLoaded", () => {
      SECCIÓN 10 — LINKS DE CONTACTO (WhatsApp, Maps, Gmail)
      ================================================================ */
 
-  /* Normaliza un teléfono argentino al formato internacional 54XXXXXXXXXX */
+  /* Normaliza un teléfono argentino al formato internacional 54XXXXXXXXXX
+     Acepta: 3492-123456 | 03492 15-1234 | +54 9 3492 123456 | 011-4xxx-xxxx */
   function normalizarTelefonoAR(telefono) {
     if (!telefono) return null;
     let num = telefono.replace(/\D/g, "");
     if (!num) return null;
 
-    /* Quitar prefijo 0 o código de país 54 si ya viene incluido */
-    if (num.startsWith("0"))  num = num.substring(1);
+    // Quitar código de país 54
     if (num.startsWith("54")) num = num.substring(2);
+    // Quitar prefijo troncal 0
+    if (num.startsWith("0"))  num = num.substring(1);
 
-    /* Agregar 9 entre el código de país y el código de área (celular AR) */
-    if (num.length === 10) num = "9" + num;
+    if (!num.startsWith("9")) {
+      // Detectar y quitar el viejo prefijo "15" móvil (aparece después del código de área)
+      // Los códigos de área argentinos tienen 2, 3 o 4 dígitos
+      for (const off of [2, 3, 4]) {
+        if (num.length > off + 2 && num.substring(off, off + 2) === "15") {
+          num = num.substring(0, off) + num.substring(off + 2);
+          break;
+        }
+      }
+      // Agregar el "9" que requiere WhatsApp para números móviles argentinos
+      num = "9" + num;
+    }
+
     if (num.length !== 11) return null;
-
     return "54" + num;
   }
 
-  /* Arma el link de Google Maps con la dirección */
-  function actualizarLinkMaps(direccion) {
+  /* Abre una URL externa sin pasar por el anchor — evita el bug del focus-trap de Bootstrap 5
+     donde un <a target="_blank"> dentro del modal hace que la página quede sin respuesta
+     al volver del tab. Usando window.open() el modal nunca pierde el foco gestionado. */
+  function abrirLinkContacto(e, url) {
+    e.preventDefault();
+    if (!url || url === "#") return;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  /* Arma el link de Google Maps combinando los 5 campos de dirección.
+     Acepta un objeto { pais, localidad, codigoPostal, barrio, direccion }
+     o (por compatibilidad) un string con la calle. */
+  function actualizarLinkMaps(addr) {
     const mapsEl = document.getElementById("mp-maps");
     if (!mapsEl) return;
-    const raw = (direccion || "").trim();
-    if (!raw) { mapsEl.href = "#"; mapsEl.classList.add("d-none"); return; }
 
-    const query  = encodeURIComponent(`${raw}, Argentina`);
-    mapsEl.href  = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    let partes;
+    if (typeof addr === "string") {
+      partes = [addr.trim()].filter(Boolean);
+    } else {
+      /* El barrio se excluye intencionalmente: en Argentina muchos barrios
+         comparten nombre con ciudades ("9 de Julio", "Palermo", etc.) y confunden
+         a Maps. Con calle + localidad + CP + país la ubicación es unívoca. */
+      partes = [
+        (addr.direccion    || "").trim(),
+        (addr.localidad    || "").trim(),
+        (addr.codigoPostal || "").trim(),
+        (addr.pais         || "").trim()
+      ].filter(Boolean);
+    }
+
+    if (!partes.length) { mapsEl.dataset.url = ""; mapsEl.classList.add("d-none"); return; }
+
+    /* Unir componentes para una búsqueda más precisa */
+    const query = encodeURIComponent(partes.join(", "));
+    mapsEl.dataset.url = `https://www.google.com/maps/search/?api=1&query=${query}&region=ar`;
     mapsEl.classList.remove("d-none");
   }
 
   /* Arma el link de WhatsApp (app móvil o web según el dispositivo) */
-  function actualizarLinkWhatsApp(telefono, pedidoId = null) {
+  function actualizarLinkWhatsApp(telefono, pedidoId = null, tokenPdf = null) {
     const wppEl = document.getElementById("mp-wpp");
     if (!wppEl) return;
     const numero = normalizarTelefonoAR((telefono || "").trim());
 
-    if (!numero || !pedidoId) { wppEl.href = "#"; wppEl.classList.add("d-none"); return; }
+    if (!numero || !pedidoId) { wppEl.dataset.url = ""; wppEl.classList.add("d-none"); return; }
 
-    const pdfUrl  = `${window.location.origin}/pedidos/${pedidoId}/pdf`;
+    // Usar ruta pública con token si está disponible (funciona hosteado),
+    // si no caer a la ruta privada (solo red local)
+    const pdfUrl = tokenPdf
+      ? `${window.location.origin}/p/${tokenPdf}`
+      : `${window.location.origin}/pedidos/${pedidoId}/pdf`;
+
     const mensaje = encodeURIComponent(
-      `Hola, nos comunicamos de S. Valvo y Cía.\nTe compartimos el presupuesto:\n${pdfUrl}`
+      `Hola, le enviamos su presupuesto de S. Valvo y Cía:\n${pdfUrl}`
     );
     const esMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const url = esMobile
+    wppEl.dataset.url = esMobile
       ? `https://api.whatsapp.com/send?phone=${numero}&text=${mensaje}`
       : `https://web.whatsapp.com/send?phone=${numero}&text=${mensaje}`;
-
-    wppEl.href = url;
     wppEl.classList.remove("d-none");
   }
 
@@ -458,23 +541,39 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!mailEl) return;
     const raw = (email || "").trim();
 
-    if (!raw || !pedidoId) { mailEl.href = "#"; mailEl.classList.add("d-none"); return; }
+    if (!raw || !pedidoId) { mailEl.dataset.url = ""; mailEl.classList.add("d-none"); return; }
 
-    const pdfUrl  = `${window.location.origin}/pedidos/${pedidoId}/pdf`;
-    const asunto  = encodeURIComponent(`Presupuesto Pedido #${pedidoId}`);
-    const cuerpo  = encodeURIComponent(
-      `Hola, nos comunicamos de S. Valvo y Cía.\n\nTe compartimos el presupuesto:\n${pdfUrl}`
+    const pdfUrl = window._tokenPdf
+      ? `${window.location.origin}/p/${window._tokenPdf}`
+      : `${window.location.origin}/pedidos/${pedidoId}/pdf`;
+    const asunto = encodeURIComponent(`Presupuesto - S. Valvo y Cía`);
+    const cuerpo = encodeURIComponent(
+      `Hola, le enviamos su presupuesto de S. Valvo y Cía:\n${pdfUrl}`
     );
-    mailEl.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(raw)}&su=${asunto}&body=${cuerpo}`;
+    mailEl.dataset.url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(raw)}&su=${asunto}&body=${cuerpo}`;
     mailEl.classList.remove("d-none");
   }
 
   /* Actualiza los 3 links de contacto a la vez */
-  function actualizarAccesosContacto({ telefono = "", email = "", direccion = "", pedidoId = null }) {
-    actualizarLinkWhatsApp(telefono, pedidoId);
+  function actualizarAccesosContacto({
+    pais = "", localidad = "", codigoPostal = "", barrio = "",
+    telefono = "", email = "", direccion = "", pedidoId = null, tokenPdf = null
+  }) {
+    actualizarLinkWhatsApp(telefono, pedidoId, tokenPdf);
     actualizarLinkMail(email, pedidoId);
-    actualizarLinkMaps(direccion);
+    actualizarLinkMaps({ pais, localidad, codigoPostal, barrio, direccion });
   }
+
+  /* Click handlers para los 3 links: usan window.open() en lugar de navegación href */
+  document.getElementById("mp-maps")?.addEventListener("click", function(e) {
+    abrirLinkContacto(e, this.dataset.url);
+  });
+  document.getElementById("mp-wpp")?.addEventListener("click", function(e) {
+    abrirLinkContacto(e, this.dataset.url);
+  });
+  document.getElementById("mp-gmail")?.addEventListener("click", function(e) {
+    abrirLinkContacto(e, this.dataset.url);
+  });
 
 
   /* ================================================================
@@ -489,16 +588,27 @@ document.addEventListener("DOMContentLoaded", () => {
     /* Resetear contenido mientras carga */
     document.getElementById("mp-orden").textContent   = `Nro de Orden: #${id}`;
     document.getElementById("mp-cliente").textContent = "Cargando...";
+    document.getElementById("mp-pais-view").textContent      = "-";
+    document.getElementById("mp-localidad-view").textContent = "-";
+    document.getElementById("mp-cp-view").textContent        = "-";
+    document.getElementById("mp-barrio-view").textContent    = "-";
     document.getElementById("mp-domicilio-view").textContent = "-";
     document.getElementById("mp-telefono-view").textContent  = "-";
     document.getElementById("mp-email-view").textContent     = "-";
     document.getElementById("mp-obs-view").textContent       = "-";
+    document.getElementById("mp-pais-input")?.setAttribute("value", "");
+    document.getElementById("mp-localidad-input")?.setAttribute("value", "");
+    document.getElementById("mp-cp-input")?.setAttribute("value", "");
+    document.getElementById("mp-barrio-input")?.setAttribute("value", "");
     document.getElementById("mp-domicilio-input").value = "";
     document.getElementById("mp-telefono-input").value  = "";
     document.getElementById("mp-email-input").value     = "";
     document.getElementById("mp-obs-input").value       = "";
 
-    actualizarAccesosContacto({ telefono: "", email: "", direccion: "", pedidoId: id });
+    actualizarAccesosContacto({
+      pais: "", localidad: "", codigoPostal: "", barrio: "",
+      telefono: "", email: "", direccion: "", pedidoId: id
+    });
 
     document.getElementById("mp-items").innerHTML    = "<div class='text-muted'>Cargando...</div>";
     document.getElementById("mp-total").textContent  = "-";
@@ -510,8 +620,9 @@ document.addEventListener("DOMContentLoaded", () => {
     badge.className   = "badge d-none";
     badge.textContent = "";
 
-    /* Link de impresión/PDF */
-    document.getElementById("mp-imprimir")?.setAttribute("href", `/pedidos/${id}/pdf`);
+    /* Links de descarga PDF */
+    document.getElementById("mp-pdf")?.setAttribute("href", `/pedidos/${id}/pdf`);
+    document.getElementById("mp-remito")?.setAttribute("href", `/pedidos/${id}/remito`);
 
     modal.show();  // mostrar el modal con el loader antes de hacer el fetch
 
@@ -532,26 +643,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* Rellenar datos del cliente */
     document.getElementById("mp-cliente").textContent        = (p.cliente || "-").toString();
-    document.getElementById("mp-domicilio-view").textContent = p.direccion || "-";
-    document.getElementById("mp-telefono-view").textContent  = p.telefono  || "-";
-    document.getElementById("mp-email-view").textContent     = p.email     || "-";
+    document.getElementById("mp-pais-view").textContent      = p.pais          || "-";
+    document.getElementById("mp-localidad-view").textContent = p.localidad     || "-";
+    document.getElementById("mp-cp-view").textContent        = p.codigo_postal || "-";
+    document.getElementById("mp-barrio-view").textContent    = p.barrio        || "-";
+    document.getElementById("mp-domicilio-view").textContent = p.direccion     || "-";
+    document.getElementById("mp-telefono-view").textContent  = p.telefono      || "-";
+    document.getElementById("mp-email-view").textContent     = p.email         || "-";
     document.getElementById("mp-obs-view").textContent       = p.observaciones || "-";
 
+    if (document.getElementById("mp-pais-input"))
+      document.getElementById("mp-pais-input").value      = p.pais          || "";
+    if (document.getElementById("mp-localidad-input"))
+      document.getElementById("mp-localidad-input").value = p.localidad     || "";
+    if (document.getElementById("mp-cp-input"))
+      document.getElementById("mp-cp-input").value        = p.codigo_postal || "";
+    if (document.getElementById("mp-barrio-input"))
+      document.getElementById("mp-barrio-input").value    = p.barrio        || "";
     document.getElementById("mp-domicilio-input").value = p.direccion || "";
     document.getElementById("mp-telefono-input").value  = p.telefono  || "";
     document.getElementById("mp-email-input").value     = p.email     || "";
     document.getElementById("mp-obs-input").value       = p.observaciones || "";
 
     actualizarAccesosContacto({
-      telefono:  p.telefono  || "",
-      email:     p.email     || "",
-      direccion: p.direccion || "",
-      pedidoId:  p.id ?? id
+      pais:         p.pais          || "",
+      localidad:    p.localidad     || "",
+      codigoPostal: p.codigo_postal || "",
+      barrio:       p.barrio        || "",
+      telefono:     p.telefono      || "",
+      email:        p.email         || "",
+      direccion:    p.direccion     || "",
+      pedidoId:     p.id ?? id,
+      tokenPdf:     p.token_pdf     || null
     });
 
     document.getElementById("mp-orden").textContent = `Nro de Orden: #${p.id ?? id}`;
     document.getElementById("mp-total").textContent =
-      `$${Number(p.total || 0).toLocaleString("es-AR")}`;
+      `$${Number(p.total || 0).toLocaleString("es-AR", {maximumFractionDigits: 0})}`;
 
     /* Calcular y mostrar deuda actual */
     const debeNum = (p.debe !== undefined && p.debe !== null)
@@ -560,7 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     elDebe.classList.remove("debe-ok", "debe-bad");
     if (debeNum > 0) {
-      elDebe.textContent = `$${debeNum.toLocaleString("es-AR")}`;
+      elDebe.textContent = `$${debeNum.toLocaleString("es-AR", {maximumFractionDigits: 0})}`;
       elDebe.classList.add("debe-bad");
     } else {
       elDebe.textContent = "No hay Deudas";
@@ -576,7 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
       p.items.forEach(it => {
         const row = document.createElement("div");
         row.className = "pedido-item-row";
-        const subtotal = `$${Number(it.subtotal || 0).toLocaleString("es-AR")}`;
+        const subtotal = `$${Number(it.subtotal || 0).toLocaleString("es-AR", {maximumFractionDigits: 0})}`;
         row.innerHTML = `
           <div class="pedido-item-desc">${it.descripcion || "-"}</div>
           <div class="pedido-item-dots"></div>
@@ -587,13 +715,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  /* Prevenir navegación al hacer click en link de WhatsApp cuando no tiene número */
-  document.getElementById("mp-wpp")?.addEventListener("click", function(e) {
-    if (this.classList.contains("d-none") || !this.href || this.href === "#") {
-      e.preventDefault();
-      alert("No existe dicho contacto.");
-    }
-  });
 
 
   /* ================================================================

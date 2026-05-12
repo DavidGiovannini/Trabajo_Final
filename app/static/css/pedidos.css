@@ -1,79 +1,79 @@
 /* =========================================================
-   pedidos.css — Estilos del tablero Kanban de pedidos
-   Cargado exclusivamente en pedidos.html
+   pedidos.css — Tablero Kanban de pedidos
    ========================================================= */
 
 
 /* =========================================================
-   KANBAN — Columnas de estado
+   COLUMNAS DEL KANBAN
    ========================================================= */
 
-/* Columna con fondo semi-transparente y borde sutil */
 .kanban-column {
   padding: 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, .55);
-  border: 2px solid rgba(11, 42, 74, .20);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .6);
+  border: 1px solid rgba(11, 42, 74, .13);
   height: auto;
-  transition: background .15s ease, border-color .15s ease, min-height .15s ease;
+  transition: background .15s, border-color .15s;
 }
 
-/* Columna vacía: borde punteado con placeholder de texto */
 .kanban-column.is-empty {
   min-height: 320px;
-  background: rgba(255, 255, 255, .75);
-  border: 2px dashed rgba(11, 42, 74, .35);
+  background: rgba(255, 255, 255, .8);
+  border: 2px dashed rgba(11, 42, 74, .22);
   position: relative;
-  padding-top: 18px;
 }
 
-/* Texto "Arrastrá un pedido aquí" generado por CSS */
 .kanban-column.is-empty::after {
   content: "Arrastrá un pedido aquí";
   display: block;
   text-align: center;
-  font-size: 13px;
-  color: rgba(11, 42, 74, .45);
+  font-size: 12.5px;
+  color: rgba(11, 42, 74, .38);
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-top: 14px;
+  letter-spacing: .3px;
 }
 
 
 /* =========================================================
-   PEDIDO CARDS — Tarjetas arrastrables del kanban
+   PEDIDO CARD
    ========================================================= */
 
-/* Card base con cursor de arrastre */
 .pedido-card {
   background: #fff;
-  border-radius: 10px;
-  padding: 15px;
+  border-radius: 12px;
+  padding: 0;
   margin-bottom: 12px;
   cursor: grab;
-  transition: box-shadow .2s ease;
+  transition: box-shadow .2s, transform .2s;
 }
 
 .pedido-card.dragging {
-  opacity: .55;
+  opacity: .5;
   pointer-events: none;
 }
 
-/* Variante "nueva": borde redondeado, fondo crema, sombra */
 .pedido-nueva {
-  border: 1px solid rgba(0, 0, 0, .08);
+  border: 1px solid rgba(11, 42, 74, .12);
   border-radius: 12px;
   overflow: hidden;
-  background: #fbfaf8;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, .08);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(11, 42, 74, .08), 0 1px 2px rgba(0,0,0,.04);
   user-select: none;
   margin-bottom: 12px;
   cursor: grab;
+  transition: box-shadow .2s, transform .18s;
 }
 
 .pedido-nueva:active { cursor: grabbing; }
-.pedido-nueva:hover  { box-shadow: 0 10px 22px rgba(0, 0, 0, .10); }
 
-/* ---- Header: fondo azul oscuro con nombre del cliente ---- */
+.pedido-nueva:hover {
+  box-shadow: 0 6px 20px rgba(11, 42, 74, .13), 0 2px 6px rgba(0,0,0,.06);
+  transform: translateY(-2px);
+}
+
+
+/* ---- Header con gradiente y borde de acento por estado ---- */
 .pedido-header {
   position: relative;
   display: flex;
@@ -81,161 +81,201 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 14px 14px 12px;
-  background: #0b2a4a;
+  padding: 13px 14px 11px;
+  background: linear-gradient(160deg, #0f3560 0%, #0b2a4a 100%);
   color: #fff;
   text-align: center;
-  font-weight: 800;
-  letter-spacing: .6px;
 }
 
-/* Marco punteado decorativo superpuesto al header */
-.pedido-header::before {
-  content: "";
-  position: absolute;
-  left: 10px; right: 10px;
-  top: 8px;   bottom: 8px;
-  border-radius: 2px;
-  border: 1px dashed rgba(255, 255, 255, .55);
-  pointer-events: none;
-  opacity: .9;
-}
+/* Franja de color en la parte superior según estado */
+.pedido-nueva.estado-pendiente  { border-top: 3px solid #f59e0b; }
+.pedido-nueva.estado-en_curso   { border-top: 3px solid #60a5fa; }
+.pedido-nueva.estado-finalizado { border-top: 3px solid #34d399; }
 
-/* Wrap del nombre del cliente con el dot de estado */
 .pedido-title-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 9px;
   font-weight: 600;
 }
 
-/* Nombre del cliente: truncado si es muy largo */
 .pedido-title {
-  font-size: .9rem;
-  font-weight: 600;
+  font-size: .88rem;
+  font-weight: 700;
   line-height: 1.3;
-  padding: 0 10px;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+  padding: 0 8px;
+  letter-spacing: .4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Fecha dentro del header */
 .pedido-fecha {
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, .92);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,.8);
+  margin-top: 2px;
 }
 
-/* ---- Botón de colapsar/expandir el body ---- */
+/* ---- Toggle ---- */
 .pedido-toggle {
   border: none;
   background: transparent;
   box-shadow: none;
   padding: 0;
-  margin: 10px auto 0;
+  margin: 8px auto 0;
   cursor: pointer;
   display: inline-grid;
   place-items: center;
 }
 
 .pedido-toggle:focus,
-.pedido-toggle:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
+.pedido-toggle:focus-visible { outline: none; box-shadow: none; }
 
 .pedido-toggle i {
-  color: #fff;
-  font-size: 18px;
+  color: rgba(255,255,255,.75);
+  font-size: 17px;
   pointer-events: none;
-  transition: transform .18s ease;
+  transition: transform .18s, color .15s;
 }
 
-/* La flecha gira 180° cuando la card está expandida */
 .pedido-nueva.is-open .pedido-toggle i {
   transform: rotate(180deg);
+  color: #fff;
 }
 
-/* ---- Body: fondo crema, oculto cuando está colapsado ---- */
+
+/* ---- Body de la card ---- */
 .pedido-body {
   padding: 12px 14px 14px;
-  background: #f7f2ea;
-  border-top: 1px solid rgba(0, 0, 0, .06);
+  background: #fff;
+  border-top: 1px solid rgba(11, 42, 74, .07);
 }
 
-/* Ocultar body cuando está colapsado */
-.pedido-nueva .pedido-body.pedido-collapsed {
-  display: none !important;
-}
+.pedido-nueva .pedido-body.pedido-collapsed { display: none !important; }
 
-/* Número de pedido en negrita */
+/* Número de pedido */
 .pedido-label {
-  font-weight: 700;
-  color: #3b2f2a;
-  margin-bottom: 6px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
 }
 
-/* Lista de ítems dentro de la card */
+/* Lista de ítems */
 .pedido-items {
-  background: rgba(255, 255, 255, .55);
-  border: 1px solid rgba(0, 0, 0, .08);
-  border-radius: 10px;
-  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid rgba(11, 42, 74, .08);
+  border-radius: 8px;
+  padding: 8px 10px;
   margin-bottom: 10px;
 }
 
-/* Cada línea de ítem con separador inferior */
 .pedido-item-line {
-  font-size: 13px;
-  color: #2f2f2f;
+  font-size: 12.5px;
+  color: #374151;
   padding: 4px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, .06);
+  border-bottom: 1px dashed rgba(0,0,0,.07);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.pedido-item-line:last-child {
-  border-bottom: 0;
+.pedido-item-line::before {
+  content: "•";
+  color: #0b2a4a;
+  font-size: 10px;
+  flex-shrink: 0;
 }
 
-/* Fila de monto adeudado al pie de la card */
+.pedido-item-line:last-child { border-bottom: 0; }
+
+/* Monto adeudado */
 .pedido-debe {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, .45);
-  border: 1px solid rgba(0, 0, 0, .08);
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid rgba(11, 42, 74, .1);
+  font-size: .88rem;
 }
 
-.pedido-debe-label { font-weight: 700; color: #3b2f2a; }
-.pedido-debe-valor { font-weight: 900; font-size: 16px; }
+.pedido-debe strong { color: #0b2a4a; font-weight: 700; }
 
-/* Texto de fecha de creación centrado al pie */
+.debe-monto { font-weight: 800; font-size: .95rem; color: #0b2a4a; }
+
+/* Fecha de creación */
 .pedido-creado {
   text-align: center;
-  color: #6c757d;
-  font-size: 13px;
-  margin: 16px 0;
+  color: #94a3b8;
+  font-size: 11.5px;
+  margin: 10px 0 12px;
   padding-top: 8px;
-  border-top: 1px solid rgba(0, 0, 0, .08);
+  border-top: 1px solid rgba(0,0,0,.06);
 }
 
-/* Botón "Ver más" — fondo azul, borde recto */
-.btn-vermas {
+/* Botones PDF / Remito en la card */
+.pedido-card-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+
+.pedido-card-accion-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-size: .75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity .15s, transform .1s;
+}
+
+.pedido-card-accion-btn:hover {
+  opacity: .85;
+  transform: translateY(-1px);
+}
+
+.pedido-card-pdf {
+  background: #c0392b;
+  color: #fff;
+}
+
+.pedido-card-remito {
   background: #0b2a4a;
-  border-color: #0b2a4a;
-  font-weight: 700;
-  border-radius: 0;
-  font-size: 11px;
-  padding: 6px 10px;
-  letter-spacing: .2px;
+  color: #fff;
 }
 
-.btn-vermas:hover { filter: brightness(1.06); }
+/* Botón Ver Más */
+.btn-vermas {
+  display: block;
+  width: 100%;
+  background: #0b2a4a;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: .82rem;
+  letter-spacing: .4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-align: center;
+  transition: background .15s, transform .15s;
+}
+
+.btn-vermas:hover {
+  background: #0f3560;
+  color: #fff;
+  transform: none;
+}
 
 
 /* =========================================================
@@ -243,81 +283,82 @@
    ========================================================= */
 .pedidos-board hr {
   border: none;
-  border-top: 1px solid rgba(0, 0, 0, .08);
+  border-top: 1px solid rgba(11, 42, 74, .08);
 }
 
 
 /* =========================================================
-   SORTABLE.JS — Clases de estado visual durante el arrastre
+   SORTABLE.JS
    ========================================================= */
 .sortable-chosen,
-.sortable-fallback { box-shadow: 0 12px 26px rgba(0, 0, 0, .14) !important; }
+.sortable-fallback {
+  box-shadow: 0 16px 32px rgba(11, 42, 74, .2) !important;
+  transform: rotate(1.5deg);
+}
 
-.sortable-drag { opacity: .95 !important; }
+.sortable-drag { opacity: .9 !important; }
 
 
 /* =========================================================
-   DOT DE ESTADO — Punto animado en el header de la card
+   DOT DE ESTADO
    ========================================================= */
 .estado-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   display: inline-block;
-  animation: estadoPulse 1.6s infinite;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.3);
+  animation: estadoPulse 2s infinite;
 }
 
-/* Color según estado */
-.estado-pendiente  .estado-dot { background: #ff9800; }
-.estado-en_curso   .estado-dot { background: #6c757d; }
-.estado-finalizado .estado-dot { background: #4caf50; }
+.estado-pendiente  .estado-dot { background: #f59e0b; }
+.estado-en_curso   .estado-dot { background: #60a5fa; }
+.estado-finalizado .estado-dot { background: #34d399; }
 
-/* Animación de pulso continuo */
 @keyframes estadoPulse {
-  0%   { transform: scale(1);    opacity: 1;  }
-  50%  { transform: scale(1.35); opacity: .7; }
-  100% { transform: scale(1);    opacity: 1;  }
+  0%   { box-shadow: 0 0 0 0 rgba(255,255,255,.5);  }
+  50%  { box-shadow: 0 0 0 4px rgba(255,255,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,.5);  }
 }
 
 
 /* =========================================================
-   PAPELERA FLOTANTE — Aparece al arrastrar una card
+   PAPELERA FLOTANTE
    ========================================================= */
 .kanban-trash {
   position: fixed;
   bottom: 40px;
   left: 50%;
-  transform: translateX(-50%) scale(.9);
-  background: #ffffff;
-  color: #6c757d;
-  border: 2px dashed #ced4da;
-  border-radius: 16px;
-  padding: 16px 28px;
+  transform: translateX(-50%) scale(.92);
+  background: #fff;
+  color: #94a3b8;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 14px 28px;
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, .15);
+  box-shadow: 0 12px 32px rgba(0,0,0,.12);
   opacity: 0;
-  pointer-events: none;          /* invisible por defecto, no bloquea clicks */
-  transition: all .25s ease;
+  pointer-events: none;
+  transition: all .22s ease;
   z-index: 9999;
 }
 
-.kanban-trash i { font-size: 22px; }
+.kanban-trash i { font-size: 20px; }
 
-/* Se vuelve visible durante el drag */
 .kanban-trash.active {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(-50%) scale(1);
 }
 
-/* Hover: borde y texto rojos cuando se está por soltar */
 .kanban-trash.hover {
-  background: #f8f9fa;
-  border-color: #dc3545;
-  color: #dc3545;
-  transform: translateX(-50%) scale(1.08);
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: translateX(-50%) scale(1.06);
 }

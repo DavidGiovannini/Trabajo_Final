@@ -1,123 +1,150 @@
 /* =========================================================
-   pedido_modal.css — Estilos de los modales de pedido y pago
-   Incluido via partials/pedido_modal.html en dashboard y pedidos
+   pedido_modal.css — Modales de detalle de pedido y pago
+   Incluido via partials/pedido_modal.html
    ========================================================= */
 
 
 /* =========================================================
-   MODAL PEDIDO (#modalPedido) — Detalle del pedido
+   MODAL PEDIDO (#modalPedido)
    ========================================================= */
 
-/* Ancho máximo del dialog */
-.modal-custom { max-width: 760px; }
+.modal-custom { max-width: 780px; }
 
-/* Sin borde en el modal-content, sombra profunda */
-#modalPedido .modal-content {
+#modalPedido .modal-content,
+#modalPago   .modal-content {
   border: 0 !important;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+  box-shadow: 0 24px 60px rgba(11, 42, 74, .22), 0 4px 16px rgba(0,0,0,.08);
 }
 
-/* Contenedor principal: fondo crema, bordes redondeados */
+/* ---- Contenedor principal ---- */
 .pedido-modal {
   border-radius: 16px;
   overflow: hidden;
-  background: #f6f3ee;
+  background: #f1f5f9;
 }
 
-/* Igualar font-size en todo el contenido del modal */
 .pedido-modal,
-.pedido-modal * { font-size: 0.95rem; }
+.pedido-modal * { font-size: 0.94rem; }
 
-/* Eliminar bordes extra que Bootstrap agrega al header/body */
 #modalPedido .modal-header { border-bottom: 0 !important; }
-#modalPedido .modal-body   { border-top: 0 !important; }
+#modalPedido .modal-body   { border-top:    0 !important; }
 
-/* ---- Header azul oscuro del modal ---- */
+/* ---- Header ---- */
 .pedido-modal-header {
-  background: #0b2a4a;
+  background: linear-gradient(135deg, #0f3560 0%, #0b2a4a 100%);
   color: #fff;
   border: 0;
+  padding: 20px 20px 18px;
   position: relative;
 }
 
-/* Botón cerrar posicionado en la esquina superior derecha */
 .pedido-modal-header .btn-close {
   position: absolute;
-  right: 14px;
-  top: 14px;
-  opacity: .9;
+  right: 16px;
+  top: 16px;
+  opacity: .85;
+  filter: invert(1);
 }
 
-/* Wrap del título centrado (deja espacio para el btn-close) */
 .mp-header-wrap {
   width: 100%;
   text-align: center;
   padding-right: 34px;
 }
 
-/* Nombre del cliente en mayúsculas y negrita */
 .mp-header-title {
   text-transform: uppercase;
-  font-weight: 900;
-  letter-spacing: .8px;
-  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 1px;
+  font-size: 1.05rem;
+  line-height: 1.15;
 }
 
-/* Número de orden debajo del nombre */
 .mp-header-sub {
   margin-top: 4px;
-  font-weight: 700;
-  font-size: 0.92rem;
-  opacity: .95;
+  font-weight: 500;
+  font-size: .84rem;
+  color: rgba(255,255,255,.7);
+  letter-spacing: .3px;
 }
 
-/* ---- Body del modal ---- */
+/* ---- Body ---- */
 .pedido-modal-body {
   padding: 16px;
-  background: #f6f3ee;
+  background: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* ---- Sección de datos del cliente ---- */
+/* ocultar el <hr> separador — el gap del flex lo reemplaza */
+.pedido-sep { display: none !important; }
 
-/* Caja con fondo azul muy claro */
+
+/* =========================================================
+   SECCIÓN DE DATOS DEL CLIENTE
+   ========================================================= */
+
 .pedido-datos {
-  background: rgba(11, 42, 74, .08);
-  border: 1px solid rgba(11, 42, 74, .15);
+  background: #fff;
+  border: 1px solid rgba(11, 42, 74, .1);
   border-radius: 12px;
-  padding: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(11, 42, 74, .06);
 }
 
-/* Cada fila: etiqueta | valor | botón acción — 3 columnas */
+/* Header de la sección */
+.pedido-datos::before {
+  content: "Datos del Cliente";
+  display: block;
+  background: #0b2a4a;
+  color: rgba(255,255,255,.85);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+}
+
+/* Cada fila de dato */
 .pedido-datos .dato {
   display: grid;
-  grid-template-columns: auto 1fr 58px;
+  grid-template-columns: 115px 1fr 58px;
   align-items: center;
   column-gap: 10px;
-  row-gap: 8px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, .08);
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(11, 42, 74, .06);
+  background: #fff;
+  transition: background .12s;
 }
 
 .pedido-datos .dato:last-child { border-bottom: 0; }
+.pedido-datos .dato:hover { background: #f8fafc; }
 
-/* Etiqueta (label) alineada a la izquierda sin wrap */
 .dato-label {
   display: flex;
   align-items: center;
   white-space: nowrap;
 }
 
-.dato-label strong { margin: 0; }
+.dato-label strong {
+  margin: 0;
+  color: #64748b;
+  font-weight: 600;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
 
-/* Celda de valor: toma todo el ancho disponible */
 .dato-value {
   min-width: 0;
   width: 100%;
   display: flex;
   align-items: center;
+  color: #1e293b;
+  font-weight: 500;
 }
 
-/* Variante con links de contacto al lado (WhatsApp, Gmail, Maps) */
 .dato-value-inline {
   display: flex;
   align-items: center;
@@ -125,7 +152,6 @@
   min-width: 0;
 }
 
-/* Texto truncado con ellipsis si no entra */
 .dato-value > span,
 .dato-value-inline > span {
   display: block;
@@ -133,284 +159,243 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-/* Input y textarea ocupan todo el ancho disponible */
 .dato-value input,
 .dato-value textarea,
 .dato-value-inline input {
   width: 100%;
   margin: 0 !important;
+  font-size: .88rem !important;
 }
 
 .dato-value textarea { width: 100%; }
 
-/* Botones de edición alineados a la derecha */
 .dato-action {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding-left: 6px;
+  padding-left: 4px;
 }
 
-/* Responsive: apila las 3 columnas verticalmente en móvil */
 @media (max-width: 768px) {
   .pedido-datos .dato {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 6px;
   }
-
   .dato-action { justify-content: flex-start; }
   .dato-value > span,
   .dato-value-inline > span { white-space: normal; }
 }
 
-/* ---- Botones de edición inline (lápiz / guardar) ---- */
-
-/* Botón lápiz: cuadrado pequeño */
+/* Botones edición inline */
 .mp-edit-btn {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
   padding: 0;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #64748b;
+  border-color: #cbd5e1;
 }
 
-.mp-edit-btn i { font-size: 12px; }
+.mp-edit-btn:hover { color: #0b2a4a; border-color: #0b2a4a; }
+.mp-edit-btn i { font-size: 11px; }
 
-/* Botón guardar: texto pequeño, aparece al editar */
 .mp-save-btn {
-  height: 30px;
-  min-height: 30px;
-  padding: 0 8px;
-  font-size: .70rem;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: .72rem;
   font-weight: 700;
   border-radius: 6px;
   white-space: nowrap;
-  margin-left: 6px;
+  margin-left: 4px;
 }
 
-/* Separador interno del modal — oculto (lo maneja el layout) */
-.pedido-sep { display: none !important; }
 
+/* =========================================================
+   SECCIÓN DE ÍTEMS DEL PEDIDO
+   ========================================================= */
 
-/* ---- Sección de ítems del pedido (caja naranja) ---- */
+.pedido-detalle { margin-top: 0; }
+
 .pedido-box {
-  margin-top: 14px;
-  background: rgba(196, 98, 0, .08);
-  border: 1px solid rgba(196, 98, 0, .18);
+  background: #fff;
+  border: 1px solid rgba(11, 42, 74, .1);
+  border-top: 3px solid #0b2a4a;
   border-radius: 12px;
-  padding: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(11, 42, 74, .06);
+  padding: 0;
 }
 
-/* ---- Títulos de sección (naranja / verde) ---- */
+/* Barra de título de ítems */
 .seccion-titulo {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-weight: 800;
-  margin-bottom: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: .82rem;
+  letter-spacing: .5px;
+  text-transform: uppercase;
   color: #fff;
+  background: #0b2a4a;
 }
 
-/* Variante naranja para sección de ítems */
-.pedido-titulo      { background: #c46200; }
+.pedido-titulo      { color: #fff; }
 .pedido-titulo-text { min-width: 0; }
 
-/* ---- Badge de estado dentro del modal ---- */
+/* Badge de estado */
 #mp-estado-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  font-size: .8rem;
-  padding: 6px 10px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  padding: 4px 10px;
   border-radius: 999px;
 }
 
-.mp-badge-pendiente  { background: #ffc107; color: #212529; }
-.mp-badge-curso      { background: #6c757d; color: #fff; }
-.mp-badge-finalizado { background: #198754; color: #fff; }
+.mp-badge-pendiente  { background: #fef3c7; color: #92400e; }
+.mp-badge-curso      { background: #dbeafe; color: #1e40af; }
+.mp-badge-finalizado { background: #dcfce7; color: #166534; }
 
-/* ---- Lista de ítems del pedido en el modal ---- */
-
-/* Override del .pedido-items genérico: sin fondo ni borde, flex column */
+/* Lista de ítems */
 .pedido-box #mp-items.pedido-items {
   background: transparent;
   border: 0;
   border-radius: 0;
-  padding: 8px 4px;
+  padding: 8px 14px;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
-/* Cada fila de ítem: descripción + línea de puntos + precio */
 .pedido-item-row {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 4px 2px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-/* Descripción: truncado si el texto es muy largo */
+.pedido-item-row:last-child { border-bottom: 0; }
+
 .pedido-item-desc {
   flex: 0 1 auto;
-  font-weight: 400;
+  font-weight: 500;
+  color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Línea de puntos entre descripción y precio */
 .pedido-item-dots {
   flex: 1;
-  border-bottom: 2px dotted rgba(0, 0, 0, .25);
-  transform: translateY(-2px);
+  border-bottom: 1px dashed #cbd5e1;
+  transform: translateY(-3px);
 }
 
-/* Precio alineado a la derecha con ancho fijo */
 .pedido-item-sub {
   min-width: 110px;
   text-align: right;
-  font-weight: 400;
+  font-weight: 600;
+  color: #0b2a4a;
   font-variant-numeric: tabular-nums;
 }
 
-/* Fila de total al pie de la lista de ítems */
+/* Fila de total */
 .pedido-total {
   display: flex;
   justify-content: space-between;
-  padding: 10px 12px;
-  margin-top: 10px;
-  background: rgba(255, 255, 255, .92);
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, .08);
-  font-size: 1.02rem;
-  font-weight: 900;
+  align-items: center;
+  padding: 10px 14px;
+  margin: 0;
+  background: #f8fafc;
+  border-top: 1px solid rgba(11, 42, 74, .08);
+  font-weight: 800;
+  color: #0b2a4a;
+  font-size: 1rem;
 }
 
-/* ---- Sección de estado de pago (caja verde) ---- */
+
+/* =========================================================
+   SECCIÓN DE ESTADO DE PAGO
+   ========================================================= */
+
 .forma-pago-box {
-  margin-top: 14px;
-  background: rgba(34, 120, 70, .08);
-  border: 1px solid rgba(34, 120, 70, .18);
+  background: #fff;
+  border: 1px solid rgba(11, 42, 74, .1);
+  border-top: 3px solid #15803d;
   border-radius: 12px;
-  padding: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(11, 42, 74, .06);
+  padding: 0;
 }
 
-/* Título de la caja de pago en verde */
 .forma-pago-box .seccion-titulo {
-  background: #227846;
-  margin-top: 0;
+  background: #15803d;
+  color: #fff;
 }
 
-/* Indicadores de deuda pendiente / saldada */
-.debe-bad { color: #b02a37; font-weight: 900; }
-.debe-ok  { color: #1e7e34; font-weight: 900; }
-
-/* Botón "Registrar Pago" centrado */
-.mp-addpago-wrap {
-  display: flex;
-  justify-content: center;
-  margin-top: 12px;
+/* Contenido interno de la caja de pago */
+.forma-pago-box > .dato,
+.forma-pago-box > div:not(.seccion-titulo):not(.mp-addpago-wrap):not(.mt-3) {
+  padding: 10px 14px 0;
 }
 
-#mp-add-pago {
-  width: auto !important;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: .92rem;
+.forma-pago-box .dato {
+  padding: 8px 14px;
+  color: #1e293b;
+}
+
+.debe-bad { color: #dc2626; font-weight: 800; font-size: 1rem; }
+.debe-ok  { color: #15803d; font-weight: 800; font-size: 1rem; }
+
+/* Historial de pagos */
+.forma-pago-box .mt-3 { padding: 0 14px; }
+.forma-pago-box .fw-bold.mb-2 {
+  font-size: .78rem;
   font-weight: 700;
-}
-
-/* Ícono "+" del botón de pago */
-#mp-add-pago .mp-plus {
-  display: inline-block;
-  font-weight: 900;
-  font-size: 1.2rem;
-  line-height: 1;
-  margin-right: 8px;
-  transform: translateY(1px);
-}
-
-/* Botones de acción del pedido (Imprimir / Eliminar) — grid 2 columnas */
-.pedido-acciones {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.pedido-acciones .btn {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-weight: 700;
-}
-
-/* ---- Links de contacto (WhatsApp, Gmail, Maps) ---- */
-
-/* Iconos de links inline dentro de la fila de datos */
-#mp-wpp,
-#mp-gmail {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
-#mp-wpp   i { font-size: 1.1rem !important; }
-#mp-gmail i { font-size: 1rem  !important; }
-
-/* Link de Google Maps con pequeño hover */
-#mp-maps {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 6px;
-  text-decoration: none;
-}
-
-#mp-maps i     { font-size: 1.1rem; }
-#mp-maps:hover { transform: scale(1.15); transition: .15s; }
-
-/* ---- Historial de pagos ---- */
-
-/* Lista con fondo blanco y scroll máximo */
-.mp-pagos-list {
-  background: rgba(255, 255, 255, .65);
-  border: 1px solid rgba(0, 0, 0, .08);
-  border-radius: 10px;
-  padding: 10px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #64748b;
+  margin-bottom: 6px !important;
 }
 
 .mp-pagos-scroll {
   max-height: 180px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 2px;
 }
 
-/* Scrollbar fina y discreta */
-.mp-pagos-scroll::-webkit-scrollbar       { width: 6px; }
-.mp-pagos-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, .3); border-radius: 10px; }
+.mp-pagos-scroll::-webkit-scrollbar       { width: 5px; }
+.mp-pagos-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 .mp-pagos-scroll::-webkit-scrollbar-track { background: transparent; }
 
-/* Cada fila: info del pago a la izquierda, botones a la derecha */
+.mp-pagos-list {
+  background: #f8fafc;
+  border: 1px solid rgba(11, 42, 74, .08);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
 .mp-pago-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
-  padding: 8px 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, .06);
+  padding: 7px 4px;
+  border-bottom: 1px solid #f1f5f9;
   align-items: center;
 }
 
@@ -420,62 +405,213 @@
   min-width: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   align-items: baseline;
 }
 
-.mp-pago-fecha  { font-weight: 800; color: #1f2937; }
-.mp-pago-monto  { font-weight: 900; }
-.mp-pago-metodo { color: #374151; font-weight: 700; }
+.mp-pago-fecha  { font-weight: 700; color: #475569; font-size: .82rem; }
+.mp-pago-monto  { font-weight: 800; color: #0b2a4a; font-size: .9rem; }
+.mp-pago-metodo {
+  color: #64748b;
+  font-weight: 500;
+  font-size: .78rem;
+  background: #f1f5f9;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
 
 .mp-pago-actions {
   display: inline-flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: flex-end;
+}
+
+/* Botón "Registrar Pago" */
+.mp-addpago-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 12px 14px 14px;
+}
+
+#mp-add-pago {
+  background: #15803d;
+  border-color: #15803d;
+  width: auto !important;
+  padding: 8px 22px;
+  border-radius: 8px;
+  font-size: .88rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+  transition: background .15s;
+}
+
+#mp-add-pago:hover { background: #166534; border-color: #166534; }
+
+#mp-add-pago .mp-plus {
+  display: inline-block;
+  font-weight: 900;
+  font-size: 1.1rem;
+  line-height: 1;
+  margin-right: 6px;
+  transform: translateY(1px);
 }
 
 
 /* =========================================================
-   MODAL PAGO (#modalPago) — Registrar o ver un pago
+   ACCIONES DEL PEDIDO (PDF / Remito / Eliminar)
    ========================================================= */
 
-/* Bordes redondeados y sin borde del modal */
+.pedido-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.pedido-accion-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 11px 8px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: .76rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .15s ease;
+  letter-spacing: .2px;
+}
+
+.pedido-accion-btn i { font-size: 1.35rem; }
+.pedido-accion-btn span { line-height: 1; }
+
+/* PDF presupuesto — acento rojo */
+.pedido-accion-pdf {
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, .2);
+}
+.pedido-accion-pdf:hover {
+  background: rgba(192, 57, 43, .05);
+  border-color: #c0392b;
+  color: #a93226;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(192, 57, 43, .15);
+}
+
+/* Remito — acento navy */
+.pedido-accion-remito {
+  color: #0b2a4a;
+  border-color: rgba(11, 42, 74, .2);
+}
+.pedido-accion-remito:hover {
+  background: rgba(11, 42, 74, .04);
+  border-color: #0b2a4a;
+  color: #0b2a4a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(11, 42, 74, .12);
+}
+
+/* Eliminar — acento rojo destructivo */
+.pedido-accion-danger {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, .2);
+}
+.pedido-accion-danger:hover {
+  background: rgba(220, 38, 38, .05);
+  border-color: #dc2626;
+  color: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, .13);
+}
+
+
+/* =========================================================
+   LINKS DE CONTACTO (WhatsApp / Gmail / Maps)
+   ========================================================= */
+
+#mp-wpp, #mp-gmail {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background .15s, transform .15s;
+}
+
+#mp-wpp   { background: rgba(21, 128, 61, .08);  }
+#mp-gmail { background: rgba(220, 38, 38, .08);  }
+#mp-wpp:hover   { background: rgba(21, 128, 61, .15); transform: scale(1.1); }
+#mp-gmail:hover { background: rgba(220, 38, 38, .15); transform: scale(1.1); }
+#mp-wpp   i { font-size: 1rem !important; color: #15803d; }
+#mp-gmail i { font-size: .95rem !important; color: #dc2626; }
+
+#mp-maps {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(220, 38, 38, .08);
+  margin-left: 4px;
+  text-decoration: none;
+  transition: background .15s, transform .15s;
+}
+
+#mp-maps:hover { background: rgba(220, 38, 38, .15); transform: scale(1.1); }
+#mp-maps i     { font-size: 1rem; color: #dc2626; }
+
+
+/* =========================================================
+   MODAL PAGO (#modalPago)
+   ========================================================= */
+
 .pago-modal {
   border-radius: 16px;
   overflow: hidden;
   border: 0;
 }
 
-/* Header azul oscuro (igual que en el modal de pedido) */
 .pago-modal-header {
-  background: #0b2a4a;
+  background: linear-gradient(135deg, #0f3560 0%, #0b2a4a 100%);
   color: #fff;
   border-bottom: 0;
-  padding: 18px;
+  padding: 18px 20px;
 }
 
-/* Body sin scroll forzado — el contenido puede crecer */
+.pago-modal-header .mp-header-title {
+  font-size: .98rem;
+  letter-spacing: .6px;
+}
+
 .pago-modal-body {
-  background: #f7f7fb;
-  padding: 14px !important;
+  background: #f8fafc;
+  padding: 16px !important;
   max-height: none !important;
   overflow: visible !important;
 }
 
-/* Títulos de sección dentro del modal de pago: sin color de fondo */
+/* Títulos de sección dentro del modal de pago */
 .pago-modal-body .seccion-titulo {
-  color: #000 !important;
-  font-weight: 800;
-  font-size: 1rem;
+  color: #0b2a4a !important;
+  font-weight: 700;
+  font-size: .78rem;
+  letter-spacing: .6px;
+  text-transform: uppercase;
   margin: 0 0 10px 0;
-  padding: 0;
+  padding: 0 0 6px 0;
   background: transparent;
   border-radius: 0;
+  border-bottom: 2px solid rgba(11, 42, 74, .12);
 }
 
-/* ---- Selector de método de pago ---- */
-
-/* Grid de 4 botones (2 en móvil) */
+/* Métodos de pago */
 .pay-methods {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -486,90 +622,99 @@
   .pay-methods { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Cada botón de método: borde, sombra, ícono + texto */
 .pay-method {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  border: 1px solid rgba(11, 42, 74, .25);
+  gap: 5px;
+  border: 1.5px solid #e2e8f0;
   background: #fff;
   border-radius: 10px;
-  padding: 7px 10px;
-  font-weight: 700;
-  font-size: .93rem;
-  color: #2c2c2c;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, .06);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  padding: 10px 8px;
+  font-weight: 600;
+  font-size: .8rem;
+  color: #475569;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  transition: all .15s;
+  cursor: pointer;
 }
 
-.pay-method i { font-size: 16px; }
-
-/* Hover: sube levemente */
-.pay-method:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(0, 0, 0, .10);
-  border-color: rgba(11, 42, 74, .45);
-}
-
-/* Activo: fondo azul claro, borde más marcado */
-.pay-method.active {
-  outline: 2px solid rgba(11, 42, 74, .25);
-  border-color: #0b2a4a;
-  background: #eef3fb;
+.pay-method i {
+  font-size: 18px;
   color: #0b2a4a;
 }
 
-/* Área intercambiable (campos tarjeta vs campos normal) */
-.pay-swap { min-height: 92px; }
+.pay-method:hover {
+  border-color: #0b2a4a;
+  background: #f8fafc;
+  color: #0b2a4a;
+  box-shadow: 0 4px 12px rgba(11, 42, 74, .1);
+}
 
-/* ---- Inputs del formulario de pago ---- */
+.pay-method.active {
+  border-color: #0b2a4a;
+  background: #eff6ff;
+  color: #0b2a4a;
+  box-shadow: 0 0 0 3px rgba(11, 42, 74, .12);
+}
+
+.pay-method.active i { color: #0b2a4a; }
+
+.pay-swap { min-height: 88px; }
+
+/* Inputs del formulario de pago */
 .pago-modal-body .form-control {
-  border-radius: 6px;
-  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
   box-shadow: none;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
 }
 
 .pago-modal-body .form-control:focus {
   border-color: #0b2a4a;
-  box-shadow: 0 0 0 2px rgba(11, 42, 74, .10);
+  box-shadow: 0 0 0 3px rgba(11, 42, 74, .08);
 }
 
 .pago-modal-body .col-md-6 .form-control { max-width: 420px; }
-.pago-modal-body label { font-weight: 700; }
+.pago-modal-body label {
+  font-weight: 600;
+  color: #374151;
+  font-size: .84rem;
+}
 
-/* ---- Comprobante adjunto ---- */
-
-/* Preview del archivo seleccionado */
+/* Comprobante adjunto */
 #pay-file-preview {
-  border: 1px solid #d6d6d6;
+  border: 1.5px solid #e2e8f0;
   background: #fff;
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   font-weight: 600;
-  color: #1c1c1c;
+  color: #1e293b;
+  font-size: .84rem;
 }
 
 #pay-file-preview a {
   text-decoration: none;
-  font-weight: 800;
+  font-weight: 700;
+  color: #0b2a4a;
 }
 
-/* Barra de progreso de subida — color azul oscuro */
 #pay-upload-bar { background: #0b2a4a; }
 
-/* Botón de clip para adjuntar comprobante */
 .pay-clip-solid {
-  width: 46px;
+  width: 40px;
   height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #dc3545;
+  background: #dc2626;
   border: 0;
-  border-radius: .375rem;
+  border-radius: 8px;
   padding: 0;
+  transition: background .15s;
 }
 
-.pay-clip-solid i     { color: #fff; font-size: 1.1rem; }
-.pay-clip-solid:hover { filter: brightness(.95); }
+.pay-clip-solid i     { color: #fff; font-size: 1rem; }
+.pay-clip-solid:hover { background: #b91c1c; }

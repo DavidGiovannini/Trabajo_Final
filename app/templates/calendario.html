@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/calendario.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="cal-wrapper">
+
+  <!-- ── Cabecera del calendario ────────────────────────── -->
+  <div class="cal-topbar">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" id="btnPrevYear"  title="Año anterior"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="cal-nav-btn" id="btnPrevMonth" title="Mes anterior"><i class="bi bi-chevron-left"></i></button>
+    </div>
+
+    <div class="cal-title-area">
+      <select id="selMes" class="cal-select"></select>
+      <select id="selAnio" class="cal-select"></select>
+      <button class="cal-hoy-btn" id="btnHoy">Hoy</button>
+    </div>
+
+    <div class="cal-nav">
+      <button class="cal-nav-btn" id="btnNextMonth" title="Mes siguiente"><i class="bi bi-chevron-right"></i></button>
+      <button class="cal-nav-btn" id="btnNextYear"  title="Año siguiente"><i class="bi bi-chevron-double-right"></i></button>
+    </div>
+  </div>
+
+  <!-- ── Grid de días de la semana ─────────────────────── -->
+  <div class="cal-weekdays">
+    <div>Dom</div><div>Lun</div><div>Mar</div>
+    <div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+  </div>
+
+  <!-- ── Grid del mes (llenado por JS) ─────────────────── -->
+  <div class="cal-grid" id="calGrid"></div>
+
+</div>
+
+<!-- ==================== MODAL DÍA ==================== -->
+<div class="modal fade" id="modalDia" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+    <div class="modal-content cal-modal-content">
+
+      <div class="cal-modal-header">
+        <div>
+          <div class="cal-modal-fecha" id="modalDiaFecha"></div>
+          <div class="cal-modal-subtitle" id="modalDiaSubtitle"></div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-0">
+
+        <!-- Lista de recordatorios del día -->
+        <div id="listaRecordatorios" class="cal-rec-list"></div>
+
+        <!-- Formulario nuevo / editar -->
+        <div id="formRecordatorioWrap" class="cal-form-wrap d-none">
+          <div class="cal-form-title" id="formRecTitle">Nuevo recordatorio</div>
+
+          <div class="mb-3">
+            <label class="cal-label">Título *</label>
+            <input type="text" id="recTitulo" class="form-control cal-input" placeholder="Ej: Entrega cocina García" maxlength="200">
+            <div class="cal-err d-none" id="errRecTitulo">Ingresá un título.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="cal-label">Descripción</label>
+            <textarea id="recDescripcion" class="form-control cal-input" rows="2" placeholder="Detalles adicionales..."></textarea>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="cal-label">Hora</label>
+              <input type="time" id="recHora" class="form-control cal-input">
+            </div>
+            <div class="col-6">
+              <label class="cal-label">Color</label>
+              <div class="cal-colors" id="colorPicker">
+                <button type="button" class="cal-color-btn active" data-color="azul"    style="background:#0b2a4a;" title="Azul"></button>
+                <button type="button" class="cal-color-btn"        data-color="naranja" style="background:#c46200;" title="Naranja"></button>
+                <button type="button" class="cal-color-btn"        data-color="verde"   style="background:#15803d;" title="Verde"></button>
+                <button type="button" class="cal-color-btn"        data-color="rojo"    style="background:#dc2626;" title="Rojo"></button>
+                <button type="button" class="cal-color-btn"        data-color="gris"    style="background:#6b7280;" title="Gris"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-light btn-sm cal-btn-cancel" id="btnCancelarForm">Cancelar</button>
+            <button class="btn btn-primary btn-sm cal-btn-save"  id="btnGuardarRec">
+              <i class="bi bi-check-lg me-1"></i>Guardar
+            </button>
+          </div>
+        </div>
+
+        <!-- Botón agregar (visible cuando no hay form abierto) -->
+        <div class="cal-add-wrap" id="addRecWrap">
+          <button class="cal-add-btn" id="btnNuevoRec">
+            <i class="bi bi-plus-lg me-1"></i>Agregar recordatorio
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL CONFIRMAR ELIMINAR ==================== -->
+<div class="modal fade" id="modalConfElim" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:360px;">
+    <div class="modal-content" style="border-radius:14px;overflow:hidden;border:0;">
+      <div class="modal-header" style="background:#dc2626;border:0;">
+        <span class="text-white fw-bold"><i class="bi bi-trash me-2"></i>Eliminar recordatorio</span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body py-4 text-center">
+        <div class="mb-1 fw-semibold" id="elimRecTitulo"></div>
+        <div class="text-muted small">Esta acción no se puede deshacer.</div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger btn-sm" id="btnConfElim">
+          <i class="bi bi-trash me-1"></i>Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/calendario.js') }}"></script>
+{% endblock %}

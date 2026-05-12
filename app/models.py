@@ -83,6 +83,10 @@ class Pedido(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente = db.Column(db.String(150), nullable=False)
     telefono = db.Column(db.String(50))
+    pais = db.Column(db.String(100))
+    localidad = db.Column(db.String(100))
+    codigo_postal = db.Column(db.String(20))
+    barrio = db.Column(db.String(100))
     direccion = db.Column(db.String(200))
     email = db.Column(db.String(120))
     observaciones = db.Column(db.Text)
@@ -96,6 +100,7 @@ class Pedido(db.Model):
     forma_pago_preferida = db.Column(db.String(50), nullable=True)
     activo = db.Column(db.Boolean, nullable=False, default=True)
     stock_descontado = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    token_pdf = db.Column(db.String(32), unique=True, nullable=True)
     items = db.relationship(
         "PedidoItem",
         back_populates="pedido",
@@ -155,3 +160,29 @@ class PagoComprobante(db.Model):
     size_bytes = db.Column(db.Integer, nullable=True)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     pago = db.relationship("Pago", back_populates="comprobantes")
+
+
+# =========================
+# RECORDATORIOS / CALENDARIO
+# =========================
+class Recordatorio(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    descripcion = db.Column(db.Text, nullable=True)
+    fecha = db.Column(db.Date, nullable=False)
+    hora = db.Column(db.String(5), nullable=True)   # "HH:MM" o None
+    color = db.Column(db.String(20), nullable=False, default="azul")
+    completado = db.Column(db.Boolean, nullable=False, default=False)
+    notificado = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "titulo": self.titulo,
+            "descripcion": self.descripcion or "",
+            "fecha": self.fecha.isoformat(),
+            "hora": self.hora or "",
+            "color": self.color,
+            "completado": self.completado,
+        }

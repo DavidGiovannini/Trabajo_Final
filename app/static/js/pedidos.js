@@ -60,11 +60,14 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshEmptyColumns();
         if (evt.from === evt.to) return;  // no cambió de columna → nada que guardar
 
-        /* Actualizar el punto de color del estado en la card visualmente */
+        /* Actualizar clases de color en la card (borde + dot) */
+        const estadoClass = "estado-" + newEstado.toLowerCase();
+        card.classList.remove("estado-pendiente", "estado-en_curso", "estado-finalizado");
+        card.classList.add(estadoClass);
         const titleWrap = card.querySelector(".pedido-title-wrap");
         if (titleWrap) {
           titleWrap.classList.remove("estado-pendiente", "estado-en_curso", "estado-finalizado");
-          titleWrap.classList.add("estado-" + newEstado.toLowerCase());
+          titleWrap.classList.add(estadoClass);
         }
 
         /* POST al backend para persistir el cambio de estado */

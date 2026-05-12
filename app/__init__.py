@@ -11,12 +11,26 @@ login_manager.login_view = "login"
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
 
-    # Clave simple para entorno LAN interno (igual podés cambiarla)
-    app.config["SECRET_KEY"] = "cambia-esta-clave"
+    # SECRET_KEY: se genera automáticamente y se guarda en instance/secret.key
+    # De esta forma es única por instalación y persiste entre reinicios
+    import secrets as _secrets
+    _key_file = Path(app.instance_path) / "secret.key"
+    Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+    if _key_file.exists():
+        _secret = _key_file.read_text().strip()
+    else:
+        _secret = _secrets.token_hex(32)
+        _key_file.write_text(_secret)
+    app.config["SECRET_KEY"] = _secret
+
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(Path(app.instance_path) / "app.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+    # Hardening de cookies de sesión
+    app.config["SESSION_COOKIE_HTTPONLY"] = True   # JS no puede leer la cookie
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Protege contra CSRF básico
+    app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+
     # uploads (comprobantes)
     uploads_dir = Path(app.instance_path) / "uploads" / "comprobantes"
     uploads_dir.mkdir(parents=True, exist_ok=True)
