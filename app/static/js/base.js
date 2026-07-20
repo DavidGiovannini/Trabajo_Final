@@ -2,6 +2,46 @@
    base.js — Scripts globales cargados en todas las páginas
 ========================================================= */
 
+/* ── Modal de advertencia: cambio de precio vs pedidos activos ──────────────
+   Uso:
+     mostrarModalPrecio({
+       mensaje : "<p>...</p>",    // HTML del cuerpo
+       labelSi : "Sí, actualizar",
+       labelNo : "No, cancelar",
+       onSi    : function() { ... },   // callback botón Sí
+       onNo    : function() { ... }    // callback botón No (opcional)
+     });
+────────────────────────────────────────────────────────── */
+window.mostrarModalPrecio = function (opts) {
+  var cuerpo = document.getElementById("modalPreciosCuerpo");
+  var btnSi  = document.getElementById("modalPreciosSi");
+  var btnNo  = document.getElementById("modalPreciosNo");
+  if (!cuerpo || !btnSi || !btnNo) return;
+
+  cuerpo.innerHTML  = opts.mensaje  || "";
+  btnSi.textContent = opts.labelSi  || "Sí";
+  btnNo.textContent = opts.labelNo  || "No";
+
+  /* Reemplazar nodos para limpiar listeners anteriores */
+  var nSi = btnSi.cloneNode(true);
+  var nNo = btnNo.cloneNode(true);
+  btnSi.replaceWith(nSi);
+  btnNo.replaceWith(nNo);
+
+  var modal = new bootstrap.Modal(document.getElementById("modalPreciosPedidos"));
+
+  nSi.addEventListener("click", function () {
+    modal.hide();
+    if (typeof opts.onSi === "function") opts.onSi();
+  });
+  nNo.addEventListener("click", function () {
+    modal.hide();
+    if (typeof opts.onNo === "function") opts.onNo();
+  });
+
+  modal.show();
+};
+
 document.addEventListener("DOMContentLoaded", function () {
 
   /* ── Auto-cerrar alertas flash a los 3 segundos ──────── */

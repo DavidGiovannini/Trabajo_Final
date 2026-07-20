@@ -45,10 +45,16 @@ function fmtPrecio(n) {
 
   btnGuardar?.addEventListener("click", async function () {
     const items = [];
+
+    /* Capturar los PIDs que efectivamente cambiaron ANTES de limpiar */
+    const changedPids = [];
     document.querySelectorAll(".prod-card-price").forEach(function (el) {
       const pid    = el.dataset.pid;
       const precio = Number(el.dataset.precioActual ?? el.dataset.precioOriginal ?? 0);
-      if (pid) items.push({ id: parseInt(pid, 10), precio });
+      if (pid) {
+        items.push({ id: parseInt(pid, 10), precio });
+        if (el.dataset.precioActual) changedPids.push(parseInt(pid, 10));
+      }
     });
 
     try {
@@ -76,6 +82,31 @@ function fmtPrecio(n) {
       pctAcciones?.classList.remove("d-flex");
       btnGuardar.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar cambios';
       btnGuardar.disabled  = false;
+
+      /* ── Verificar si hay pedidos activos con alguno de los artículos modificados ── */
+      if (changedPids.length > 0) {
+        try {
+          const r2 = await fetch("/api/pedidos/hay_activos");
+          const d2 = await r2.json();
+          if (d2.count > 0) {
+            const n = d2.count;
+            mostrarModalPrecio({
+              mensaje: `<p>Hay <strong>${n} pedido${n !== 1 ? "s" : ""} activo${n !== 1 ? "s" : ""}</strong>` +
+                       ` (Pendiente o En Curso) que podrían contener artículos con precios actualizados.</p>` +
+                       `<p class="mb-0 text-muted small">¿Querés recalcular el total de esos pedidos?</p>`,
+              labelSi: "Sí, recalcular pedidos",
+              labelNo: "No, mantener totales",
+              onSi: async function () {
+                await fetch("/api/pedidos/recalcular_productos", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ producto_ids: changedPids })
+                });
+              }
+            });
+          }
+        } catch (_) { /* no bloquear si el chequeo falla */ }
+      }
 
     } catch (_) {
       alert("Error al guardar los precios.");
@@ -137,6 +168,31 @@ document.addEventListener("click", async function (e) {
       btn.classList.remove("is-editing");
       btn.querySelector("i").className = "bi bi-pencil";
       btn.disabled = false;
+
+      /* ── Verificar si hay pedidos activos con este producto ── */
+      const pidNum = parseInt(pid, 10);
+      try {
+        const r2 = await fetch("/api/pedidos/afectados_producto?producto_id=" + pidNum);
+        const d2 = await r2.json();
+        if (d2.count > 0) {
+          const n = d2.count;
+          mostrarModalPrecio({
+            mensaje: `<p>Hay <strong>${n} pedido${n !== 1 ? "s" : ""} activo${n !== 1 ? "s" : ""}</strong>` +
+                     ` (Pendiente o En Curso) que contiene${n !== 1 ? "n" : ""} este artículo.</p>` +
+                     `<p class="mb-0 text-muted small">¿Querés actualizar el total de ` +
+                     `eso${n !== 1 ? "s" : ""} pedido${n !== 1 ? "s" : ""} con el nuevo precio?</p>`,
+            labelSi: "Sí, actualizar pedidos",
+            labelNo: "No, mantener totales",
+            onSi: async function () {
+              await fetch("/api/pedidos/recalcular_productos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ producto_ids: [pidNum] })
+              });
+            }
+          });
+        }
+      } catch (_) { /* no bloquear si el chequeo falla */ }
 
     } catch (_) {
       alert("Error al guardar el precio.");

@@ -200,13 +200,47 @@ document.addEventListener("click", function (e) {
   acciones?.classList.remove("d-flex");
 });
 
+/* ── Helper: consulta cuántos pedidos están activos ──────── */
+async function contarPedidosActivos() {
+  try {
+    const r = await fetch("/api/pedidos/hay_activos");
+    const d = await r.json();
+    return d.count || 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+/* ── Helper: confirmar guardado mostrando modal si hay pedidos activos ── */
+async function guardarConfigConAdvertencia() {
+  const count = await contarPedidosActivos();
+  if (count > 0) {
+    const n = count;
+    mostrarModalPrecio({
+      mensaje: `<p>Hay <strong>${n} pedido${n !== 1 ? "s" : ""} activo${n !== 1 ? "s" : ""}</strong>` +
+               ` (Pendiente o En Curso).</p>` +
+               `<p class="mb-0 text-muted small">Los presupuestos de muebles ya generados` +
+               ` <strong>no se actualizan automáticamente</strong>.` +
+               ` ¿Querés guardar los nuevos precios de todas formas?</p>`,
+      labelSi: "Sí, guardar precios",
+      labelNo: "Cancelar",
+      onSi: function () {
+        desformatearAntesDeEnviar();
+        document.getElementById("formConfig").submit();
+      }
+    });
+  } else {
+    desformatearAntesDeEnviar();
+    document.getElementById("formConfig").submit();
+  }
+}
+
 /* ── Guardar cambios de una card ─────────────────────────
-   Envía el formulario completo (todos los datos del form).
+   Antes de enviar el formulario verifica si hay pedidos activos.
 ──────────────────────────────────────────────────────── */
 document.addEventListener("click", function (e) {
   if (!e.target.classList.contains("btn-guardar-bloque")) return;
-  desformatearAntesDeEnviar();
-  document.getElementById("formConfig").submit();
+  guardarConfigConAdvertencia();
 });
 
 /* ── Sincronizar el checkbox global con los individuales ─
@@ -408,10 +442,9 @@ function desformatearAntesDeEnviar() {
   });
 }
 
-/* ── Guardar global: envía el formulario ─────────────── */
+/* ── Guardar global: verifica pedidos activos antes de enviar ── */
 document.getElementById("btnGuardarGlobal")?.addEventListener("click", function () {
-  desformatearAntesDeEnviar();
-  document.getElementById("formConfig").submit();
+  guardarConfigConAdvertencia();
 });
 
 /* ── Aplicar % global a todas las filas seleccionadas ── */

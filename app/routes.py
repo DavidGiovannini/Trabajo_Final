@@ -865,7 +865,90 @@ def register_routes(app):
             })
 
         return {"pedidos": data}
-    
+
+    @app.get("/api/pedidos/hay_activos")
+    @login_required
+    def api_hay_pedidos_activos():
+        """Devuelve la cantidad de pedidos en estado PENDIENTE o EN_CURSO.
+        Usado para mostrar advertencia al modificar precios de configuración.
+        """
+        count = Pedido.query.filter(
+            Pedido.activo == True,
+            Pedido.estado.in_(["PENDIENTE", "EN_CURSO"])
+        ).count()
+        return jsonify({"count": count})
+
+    @app.get("/api/pedidos/afectados_producto")
+    @login_required
+    def api_pedidos_afectados_producto():
+        """Devuelve pedidos activos que contienen un producto específico.
+        Usado para la advertencia al editar el precio de un producto del catálogo.
+        """
+        producto_id = request.args.get("producto_id", type=int)
+        if not producto_id:
+            return jsonify({"count": 0, "pedidos": []})
+
+        pedidos = (
+            Pedido.query
+            .join(PedidoItem, PedidoItem.pedido_id == Pedido.id)
+            .filter(
+                Pedido.activo == True,
+                Pedido.estado.in_(["PENDIENTE", "EN_CURSO"]),
+                PedidoItem.producto_id == producto_id
+            )
+            .distinct()
+            .all()
+        )
+        return jsonify({
+            "count": len(pedidos),
+            "pedidos": [
+                {"id": p.id, "cliente": p.cliente, "estado": p.estado}
+                for p in pedidos
+            ]
+        })
+
+    @app.post("/api/pedidos/recalcular_productos")
+    @login_required
+    def api_recalcular_precio_productos():
+        """Recalcula los subtotales (precio × cantidad) de los ítems de los
+        pedidos activos que contienen alguno de los productos indicados, y
+        actualiza el total del pedido.  Solo afecta pedidos PENDIENTE o EN_CURSO.
+        """
+        data = request.get_json() or {}
+        ids  = data.get("producto_ids", [])
+        if not ids:
+            return jsonify({"ok": True, "actualizados": 0})
+
+        pedido_ids_afectados = set()
+
+        for pid in ids:
+            producto = Producto.query.get(pid)
+            if not producto:
+                continue
+            items = (
+                PedidoItem.query
+                .join(Pedido, Pedido.id == PedidoItem.pedido_id)
+                .filter(
+                    Pedido.activo == True,
+                    Pedido.estado.in_(["PENDIENTE", "EN_CURSO"]),
+                    PedidoItem.producto_id == pid
+                )
+                .all()
+            )
+            for item in items:
+                item.subtotal = round(float(producto.precio or 0) * item.cantidad, 2)
+                pedido_ids_afectados.add(item.pedido_id)
+
+        for pid in pedido_ids_afectados:
+            pedido = Pedido.query.get(pid)
+            if pedido:
+                pedido.total = round(
+                    sum(float(i.subtotal or 0) for i in pedido.items), 2
+                )
+
+        db.session.commit()
+        return jsonify({"ok": True, "actualizados": len(pedido_ids_afectados)})
+
     # ==========================================================================
     #  GENERACIÓN DE PDFs
     #  _generar_pdf_presupuesto — presupuesto para el cliente (A4, con logo,
